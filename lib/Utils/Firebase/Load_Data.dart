@@ -222,8 +222,7 @@ class LoadData {
   //Tutores, guardar
   Future obtenertutores() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ??
-        false;
+    bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
       print("a descargar tutores por primera vez");
       CollectionReference referencetablaclientes = await FirebaseFirestore
@@ -240,6 +239,7 @@ class LoadData {
         String univerisdad = TutorDoc['Universidad'];
         String uid = TutorDoc['uid'];
         String idcarpeta = TutorDoc.data().toString().contains('idcarpeta') ? TutorDoc.get('idcarpeta') : 'NO REGISTRADO';
+        bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
 
         //Cargamos materias
         QuerySnapshot materiasDocs = await TutorDoc.reference.collection(
@@ -279,13 +279,14 @@ class LoadData {
             uid,
             materiaList,
             cuentasBancariasList,
-            idcarpeta);
+            idcarpeta,
+            activo);
         tutoresList.add(newTutores);
       }
       guardardatostablatutores(tutoresList);
       return tutoresList;
     } else {
-      print("ya descargadas la tutores tablas");
+        print("ya descargadas la tutores tablas");
       String solicitudesJson = prefs.getString('tutores_list') ?? '';
       List<dynamic> ClienteData = jsonDecode(solicitudesJson);
       List tutoresList = ClienteData.map((tutorData) =>
@@ -374,7 +375,6 @@ class LoadData {
     await prefs.setBool('datos_descargados_listauniversidades', true);
   }
 
-  /*
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
   Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded}) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -444,7 +444,7 @@ class LoadData {
     print("guardando solicitudes");
   }
 
-   */
+   
 
   /*
 //Obtener contabilidad

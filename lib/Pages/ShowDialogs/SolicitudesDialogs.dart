@@ -334,9 +334,11 @@ class _AgregarCarreraDialogState extends State<AgregarCarreraDialog> {
 
 class TutoresDialog extends StatefulWidget {
   final Tutores tutor;
+  final List<Materia> materiasList;
 
   const TutoresDialog({Key?key,
     required this.tutor,
+    required this.materiasList,
   }) :super(key: key);
 
   @override
@@ -455,7 +457,7 @@ class _TutoresDialogState extends State<TutoresDialog> {
                     height: 30,
                     width: currentwidth-200,
                     child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                      items: widget.materiasList.map<AutoSuggestBoxItem<Materia>>(
                             (materia) => AutoSuggestBoxItem<Materia>(
                           value: materia,
                           label: _truncateLabel(materia.nombremateria),
@@ -486,7 +488,7 @@ class _TutoresDialogState extends State<TutoresDialog> {
                   FilledButton(
                       child: const Text('Subir Matería'),
                       onPressed: (){
-
+                        Uploads().addMateriaTutor(widget.tutor.uid, selectedMateria!.nombremateria);
                         Navigator.pop(context);
                       }),
                 ],

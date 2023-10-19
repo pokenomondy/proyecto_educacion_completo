@@ -1,13 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
 import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
+import 'package:dashboard_admin_flutter/Utils/Utiles/NotaTutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
+import '../Objetos/Solicitud.dart';
+import '../Utils/Firebase/Uploads.dart';
 
 class TutoresVista extends StatelessWidget {
 
@@ -125,7 +131,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                 return GestureDetector(
                   onTap: (){
                     print("te toco");
-                    TutoresDialog(tutor: tutor,);
+                    TutoresDialog(tutor: tutor,materiasList: [],);
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
@@ -147,7 +153,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                               ),
                             ],
                           ),
-                          TutoresDialog(tutor: tutor,),
+                          TutoresDialog(tutor: tutor,materiasList: materiaList,),
                           //# de materias manejadas
                           Text("${tutor.materias.length.toString()} materias registradas"),
                           //# de cuentas bancarias registradas
@@ -160,6 +166,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                               Expanded(child: Text(tutor.univerisdad)),
                             ],
                           ),
+                          Text('Activo? ${tutor.activo}')
                         ],
                       ),
                     ),
@@ -205,10 +212,11 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   Carrera? selectedCarreratres;
   Carrera? selectedCarreracuatro;
   Carrera? selectedCarrercinco;
-
-
-
-
+  List<Solicitud> solicitudesList = [];
+  List<ServicioAgendado> serviciosagendadosList = [];
+  Map<String, Map<String, double>> tutorNotas = {};
+  List<double> tutorCalificaiconGlobal = [];
+  TutorEvaluator? tutorEvaluator;
 
   @override
   void initState() {
@@ -219,6 +227,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   Future<void> loadDataTablasMaterias() async {
     materiaList = await LoadData().tablasmateria();
     carreraList = await LoadData().obtenercarreras();
+    solicitudesList = await LoadData().obtenerSolicitudes();
+    serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       _materiacargarauto = true;
     });
@@ -237,7 +247,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
 
   Future<void> busquedatutor(String materiabusqueda, String materiabusquedados, String materiaTres, String materiaCuatro, String materiaCinco,String carreraUno,String carreraDos,
       String carreraTres, String carreraCuatro, String carreraCinco
-
       ) async {
     if (materiabusqueda.isEmpty){
       tutoresFiltrados.clear();
@@ -245,20 +254,38 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       tutoresList = await LoadData().obtenertutores();
       // Filtrar los tutores que tienen la materia buscada
       tutoresFiltrados = tutoresList.where((tutor) {
+        return tutor.activo; // Filtrar los tutores con atributo activo en false
+      }).where((tutor) {
         return tutor.materias.any((materia) =>
         materia.nombremateria == materiabusqueda ||
-        materia.nombremateria == materiabusquedados ||
-        materia.nombremateria == materiaTres ||
-        materia.nombremateria == materiaCuatro ||
-        materia.nombremateria == materiaCinco
-        );
+            materia.nombremateria == materiabusquedados ||
+            materia.nombremateria == materiaTres ||
+            materia.nombremateria == materiaCuatro ||
+            materia.nombremateria == materiaCinco);
       }).toList();
+
+
+      tutorEvaluator = TutorEvaluator(
+        solicitudesList,
+        serviciosagendadosList,
+        tutoresFiltrados,
+        selectedMateria,
+      );
+      tutorNotas = tutorEvaluator!.tutorNotas;
+
+      // Ordenar la lista tutoresFiltrados por notaoficial de mayor a menor
+      tutoresFiltrados.sort((tutor1, tutor2) {
+        double? nota1 = tutorEvaluator?.retornocalificacion(tutor1);
+        double? nota2 = tutorEvaluator?.retornocalificacion(tutor2);
+        return nota2!.compareTo(nota1!);
+      });
 
       setState(() {
         _cargadotutoresfiltradosmateria = true;
       });
     }
   }
+
 
   String _truncateLabel(String label) {
     const int maxLength = 20; // Define la longitud máxima permitida para la etiqueta
@@ -267,7 +294,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     }
     return label;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -638,35 +664,66 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
               String carreraCuatro = selectedCarreracuatro != null ? selectedCarreracuatro!.nombrecarrera : "";
               String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
 
-
-
-
-
               busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
               print("tutores filtrados $tutoresFiltrados");
               print("materias: $materiaUno");
               print(materiaDos);
               loadDataTablasMaterias();
+
+              //cargarlistas
+
             },
           ),
           if(_cargadotutoresfiltradosmateria==true)
             Column(
               children: [
                 Container(
-                  height: 300,
+                  height: 600,
                   child: ListView.builder(
                       itemCount: tutoresFiltrados.length,
                       itemBuilder: (context,index){
                         Tutores? tutore = tutoresFiltrados[index];
 
                         return Container(
-                          height: 70,
+                          height: 220,
                           child: Card(
                               child: Row(
+
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(child: Text(tutore.nombrewhatsapp)),
-                                  Expanded(child: Text(tutore.numerowhatsapp.toString()))
+                                  Expanded(child: Text(tutore.numerowhatsapp.toString())),
+                                  Column(
+                                    children: [
+                                      Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("# cot materia ${tutorEvaluator?.getNumeroCotizaciones(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("% resp global ${tutorEvaluator?.getPromedioRespuesta(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("% resp materia ${tutorEvaluator?.getPromedioRespuestaMateria(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("% precio global ${tutorEvaluator?.getPromedioPrecioTutor(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+
+                                    ],
+                                  ), //de materia
+                                  Column(
+                                    children: [
+                                      Text("not cot global ${tutorNotas[tutore.nombrewhatsapp]?['num_materiasglobal']?.toStringAsFixed(1)}"),
+                                      Text("not cot materia ${tutorNotas[tutore.nombrewhatsapp]?['num_materiaslocal']?.toStringAsFixed(1)}"),
+                                      Text("not % resp global ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestaglobal']?.toStringAsFixed(2)}"),
+                                      Text("not % resp materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestalocal']?.toStringAsFixed(1)}"),
+                                      Text("not % precio global ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobal']?.toStringAsFixed(1)}"),
+                                      Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
+                                      Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
+                                      Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
+                                      Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
+                                      Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
+
+                                      Text('calificación ${tutorEvaluator?.retornocalificacion(tutore).toStringAsFixed(1)}'),
+                                    ],
+                                  )
                                 ],
                               )),
                         );
@@ -710,6 +767,7 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
   String correogmail = "";
   String passuno = "";
   String passdos = "";
+  String iddcarpeta = "";
   final db = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
   List<Carrera> CarrerasList = [];
@@ -856,6 +914,16 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
             },
             maxLines: null,
           ),
+          //id carpeta
+          TextBox(
+            placeholder: 'id carpeta',
+            onChanged: (value){
+              setState(() {
+                iddcarpeta = value;
+              });
+            },
+            maxLines: null,
+          ),
           FilledButton(child: const Text('Agregar'), onPressed: (){
            createUserWithEmailAndPassword();
            //loadDataTablasMaterias();
@@ -872,8 +940,7 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
         email: correogmail,
         password: passuno,
       );
-      //Meter información de base de datos
-      //Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, auth.currentUser!.uid);
+      Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, auth.currentUser!.uid,iddcarpeta);
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
