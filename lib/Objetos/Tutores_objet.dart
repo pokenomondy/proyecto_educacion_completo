@@ -13,9 +13,9 @@ class Tutores{
   List<Materia> materias = [];
   List<CuentasBancarias> cuentas = [];
   String idcarpeta = "";
+  bool activo = true;
 
-
-  Tutores(this.nombrewhatsapp,this.nombrecompleto,this.numerowhatsapp,this.carrera,this.correogmail,this.univerisdad,this.uid,this.materias,this.cuentas,idcarpeta);
+  Tutores(this.nombrewhatsapp,this.nombrecompleto,this.numerowhatsapp,this.carrera,this.correogmail,this.univerisdad,this.uid,this.materias,this.cuentas,this.idcarpeta,this.activo);
 
   Map<String, dynamic> toMap() {
     return{
@@ -27,6 +27,7 @@ class Tutores{
       "Universidad":univerisdad,
       'uid':uid,
       'idcarpeta':idcarpeta,
+      'activo':activo,
     };
   }
 
@@ -42,6 +43,7 @@ class Tutores{
       'materias': materias.map((materia) => materia.toJson()).toList(),
       'cuentas': cuentas.map((cuenta) => cuenta.toJson()).toList(),
       'idcarpeta':idcarpeta,
+      'activo':activo,
     };
   }
 
@@ -61,6 +63,7 @@ class Tutores{
           .map((cuentaData) => CuentasBancarias.fromJson(cuentaData))
           .toList(),
       json['idcarpeta'],
+      json['activo'],
     );
   }
 }

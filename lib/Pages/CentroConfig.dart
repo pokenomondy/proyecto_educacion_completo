@@ -69,7 +69,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     });
   }
 
-  /*
+
   void actualizarsolicitudes() async{
     print("obtener solicitudes");
     await LoadData().obtenerSolicitudes(
@@ -82,7 +82,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     );
   }
 
-   */
+
 
 
   @override
@@ -105,7 +105,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
           FilledButton(
           child: Text('Actualizar solicitudes'),
           onPressed: (){
-            //actualizarsolicitudes();
+            actualizarsolicitudes();
             print("actualizar solicitudes verificando");
           }),
           Text(numsolicitudes.toString()),

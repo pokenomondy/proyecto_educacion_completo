@@ -6,6 +6,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
+import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/Uploads.dart';
@@ -27,9 +28,11 @@ class ContaDashState extends State<ContaDash> {
   ServicioAgendado? servicioAgendado;
   String datoscambiostext = "";
   Materia? selectedMateria;
+  Tutores? selectedTutor;
   List<String> identificadoresList = ["T","P","Q","A"];
   String? selectedIdentificador;
   DateTime cambiarfecha = DateTime.now();
+  List<Tutores> tutoresList = [];
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class ContaDashState extends State<ContaDash> {
 
   Future loadtablas() async{
     materiaList = await LoadData().tablasmateria();
+    tutoresList = await LoadData().obtenertutores();
   }
 
   void actualizarvalores(){
@@ -54,6 +58,7 @@ class ContaDashState extends State<ContaDash> {
     valores.add(servicioAgendado!.idsolicitud.toString()); //9
     valores.add(servicioAgendado!.idcontable.toString()); //10 id contable
     valores.add(servicioAgendado!.entregadotutor);
+    cambiarfecha = servicioAgendado!.fechaentrega;
   }
 
   @override
@@ -158,6 +163,39 @@ class ContaDashState extends State<ContaDash> {
               //Fecha de entrega
               if(index == 5)
                 selectfecha(context),
+              if(index == 6)
+                Container(
+                  height: 30,
+                  width: 300,
+                  child: AutoSuggestBox<Tutores>(
+                    items: tutoresList.map<AutoSuggestBoxItem<Tutores>>(
+                          (tutor) => AutoSuggestBoxItem<Tutores>(
+                        value: tutor,
+                        label: _truncateLabel(tutor.nombrewhatsapp),
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused #${tutor.nombrewhatsapp} - ');
+                          }
+                        },
+                      ),
+                    )
+                        .toList(),
+                    decoration: Disenos().decoracionbuscador(),
+                    onSelected: (item) {
+                      setState(() {
+                        print("seleccionado ${item.label}");
+                        selectedTutor = item.value; // Actualizar el valor seleccionado
+                      });
+                    },
+                    onChanged: (text, reason) {
+                      if (text.isEmpty ) {
+                        setState(() {
+                          selectedTutor = null; // Limpiar la selección cuando se borra el texto
+                        });
+                      }
+                    },
+                  ),
+                ),
               //Lista materias
               if(index == 1)
                 Container(

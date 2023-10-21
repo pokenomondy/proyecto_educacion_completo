@@ -50,7 +50,10 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   final CalendarController _calendarController = CalendarController();
   List<ServicioAgendado> servicioagendadoList = [];
   List<Appointment>? meetings = [];
-  String? _subject = '',_start = '',_end = '', _notes = '';
+  String? _subject = '',
+      _start = '',
+      _end = '',
+      _notes = '';
   bool datosDescargados = false;
   bool cargarinterfaz = false;
 
@@ -61,9 +64,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
     super.initState();
   }
 
-  void loadchecks() async{
+  void loadchecks() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
+    datosDescargados = false;
     print("datos descargados $datosDescargados");
     setState(() {
       cargarinterfaz = true;
@@ -77,85 +80,99 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
       child: Column(
         children: [
           if(cargarinterfaz == true)
-          Column(
-            children: [
-              if(datosDescargados==false)
-                StreamBuilder<List<ServicioAgendado>>(
-                  stream: stream_builders().getServiciosAgendados(),
-                  builder: (context, snapshot){
-                    List<ServicioAgendado>? servicioagendadoList= [];
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error al cargar las solicitudes'));
-                    }
-                    if (!snapshot.hasData) {
-                      return Center(child: Text('cargando'));
-                    }
-                    servicioagendadoList = snapshot.data;
-                    meetings = servicioagendadoList
-                        ?.map((servicio) => Appointment(
-                      startTime: DateTime(servicio.fechaentrega.year,servicio.fechaentrega.month,servicio.fechaentrega.day,servicio.fechaentrega.hour-1,servicio.fechaentrega.minute,0),
-                      endTime: DateTime(servicio.fechaentrega.year,servicio.fechaentrega.month,servicio.fechaentrega.day,servicio.fechaentrega.hour,servicio.fechaentrega.minute,0),
-                      subject: "${servicio.materia} - ${servicio.codigo}",
-                      notes: "${servicio.materia}"
-                          "\n ${servicio.preciotutor}"
-                          "\n ${servicio.cliente}",
-                      color: servicio.identificadorcodigo == "T" ? dialog.Colors.green : dialog.Colors.red,
-                    ))
-                        .toList();
+            Column(
+              children: [
+                if(datosDescargados == false)
+                  StreamBuilder<List<ServicioAgendado>>(
+                    stream: stream_builders().getServiciosAgendados(),
+                    builder: (context, snapshot) {
+                      List<ServicioAgendado>? servicioagendadoList = [];
+                      if (snapshot.hasError) {
+                        return Center(
+                            child: Text('Error al cargar las solicitudes'));
+                      }
+                      if (!snapshot.hasData) {
+                        return Center(child: Text('cargando'));
+                      }
+                      servicioagendadoList = snapshot.data;
+                      meetings = servicioagendadoList
+                          ?.map((servicio) =>
+                          Appointment(
+                            startTime: DateTime(servicio.fechaentrega.year,
+                                servicio.fechaentrega.month,
+                                servicio.fechaentrega.day,
+                                servicio.fechaentrega.hour - 1,
+                                servicio.fechaentrega.minute, 0),
+                            endTime: DateTime(servicio.fechaentrega.year,
+                                servicio.fechaentrega.month,
+                                servicio.fechaentrega.day,
+                                servicio.fechaentrega.hour,
+                                servicio.fechaentrega.minute, 0),
+                            subject: "${servicio.materia} - ${servicio.codigo}",
+                            notes: "${servicio.materia}"
+                                "\n ${servicio.preciotutor}"
+                                "\n ${servicio.cliente}",
+                            color: servicio.identificadorcodigo == "T" ? dialog
+                                .Colors.green : dialog.Colors.red,
+                          ))
+                          .toList();
 
-                    print("meetings $meetings");
-                    return Container(
-                      height: 800,
-                      child: SfCalendar(
-                        controller: _calendarController,
-                        showDatePickerButton: true,
-                        allowedViews: _vistascalendario,
-                        dataSource: meetings != null ? _DataSource(meetings!) : null,
-                        initialDisplayDate: DateTime.now(),
-                        initialSelectedDate: DateTime.now(),
-                        showNavigationArrow: true,
-                        monthViewSettings: MonthViewSettings(
-                            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment
+                      print("meetings $meetings");
+                      return Container(
+                        height: 800,
+                        child: SfCalendar(
+                          controller: _calendarController,
+                          showDatePickerButton: true,
+                          allowedViews: _vistascalendario,
+                          dataSource: meetings != null
+                              ? _DataSource(meetings!)
+                              : null,
+                          initialDisplayDate: DateTime.now(),
+                          initialSelectedDate: DateTime.now(),
+                          showNavigationArrow: true,
+                          monthViewSettings: MonthViewSettings(
+                              appointmentDisplayMode: MonthAppointmentDisplayMode
+                                  .appointment
+                          ),
+                          scheduleViewSettings: ScheduleViewSettings(
+                              appointmentItemHeight: 70,
+                              monthHeaderSettings: MonthHeaderSettings(
+                                  monthFormat: 'MMMM, yyyy',
+                                  height: 100,
+                                  textAlign: TextAlign.left,
+                                  backgroundColor: dialog.Colors.green,
+                                  monthTextStyle: TextStyle(
+                                      color: dialog.Colors.red,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w400))
+                          ),
+                          onTap: calendario_oprimido,
                         ),
-                        scheduleViewSettings: ScheduleViewSettings(
-                            appointmentItemHeight: 70,
-                            monthHeaderSettings: MonthHeaderSettings(
-                                monthFormat: 'MMMM, yyyy',
-                                height: 100,
-                                textAlign: TextAlign.left,
-                                backgroundColor: dialog.Colors.green,
-                                monthTextStyle: TextStyle(
-                                    color: dialog.Colors.red,
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w400))
-                        ),
-                        onTap: calendario_oprimido,
-                      ),
-                    );
-                  },
-                ),
-              if(datosDescargados==true)
-                Text('Descargados'),
-            ],
-          )
+                      );
+                    },
+                  ),
+                if(datosDescargados == true)
+                  Text('Descargados'),
+              ],
+            )
 
         ],
       ),
     );
   }
 
-  void calendario_oprimido(CalendarTapDetails details){
-    if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda){
+  void calendario_oprimido(CalendarTapDetails details) {
+    if (details.targetElement == CalendarElement.appointment ||
+        details.targetElement == CalendarElement.agenda) {
       final Appointment appointmentdetails = details.appointments![0];
       _subject = appointmentdetails.subject;
       _notes = appointmentdetails.notes;
-
-    }else{
+    } else {
 
     }
     dialog.showDialog(
         context: context,
-        builder: (BuildContext context){
+        builder: (BuildContext context) {
           return dialog.AlertDialog(
             title: Text('Agenda $_subject'),
             content: Column(
@@ -167,7 +184,6 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
         }
     );
   }
-
 
 }
 
