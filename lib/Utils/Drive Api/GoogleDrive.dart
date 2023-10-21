@@ -250,7 +250,8 @@ class DriveApi {
                 print('Archivo "${file
                     .name}" subido correctamente a la nueva carpeta.');
                 archivosubidos = archivosubidos + 1;
-                Uploads().modifyServicioAgendado(codigo);
+                //modificar trabajo de tutor como entregado, toca hacerlo de forma diferente
+                //Uploads().modifyServicioAgendado(codigo);
                 Utiles().notificacion("ARCHIVO SUBIDO", context, true, "archivo subido");
               } else {
                 print('No se pudo subir el archivo "${file

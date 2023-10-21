@@ -115,7 +115,8 @@ class ContaDashState extends State<ContaDash> {
     String? cambio = "";
     String valor = valores[index];
 
-    if (index == 0) {
+    if (index == 1) {
+      cambio = selectedMateria?.nombremateria;
     }
 
     return Row(
@@ -264,6 +265,15 @@ class ContaDashState extends State<ContaDash> {
               //actualizar variable
               GestureDetector(
                 onTap: () async{
+                  print("texto a cambiar = ${servicioAgendado!.codigo} cambio = ${cambio!} textoanterior = ${valor}");
+                  await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!);
+                  setState(() {
+                    valores[index] = cambio!;
+                    editarcasilla[index] = editarcasilla[index];
+                    if (!editarcasilla[index]) {
+                      editarcasilla[index] = editarcasilla[index];
+                    }
+                  });
                 },
                 child: Icon(FluentIcons.check_list),
               ),

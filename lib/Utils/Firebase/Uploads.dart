@@ -5,6 +5,7 @@ import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
 import 'package:dashboard_admin_flutter/Objetos/CuentasBancaraias.dart';
+import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
@@ -13,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
 import 'Load_Data.dart';
+import 'package:intl/intl.dart';
 
 class Uploads{
   final db = FirebaseFirestore.instance; //inicializar firebase
@@ -116,12 +118,24 @@ class Uploads{
   }
 
   //modificar un servicio agendado
-  Future<void> modifyServicioAgendado(String codigo)async {
+  Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior)async {
+    String variable = "";
+    Map<String, dynamic> uploadinformacion = {};
+    if(index == 1){
+      variable = "materia";
+    }
+    //actualizamos este cambio
     CollectionReference contabilidad = db.collection("CONTABILIDAD");
-    Map<String, dynamic> datosActualizados = {
-      "entregadotutor": "ENTREGADO",
+    uploadinformacion = {
+      "$variable": "$texto",
     };
-    await contabilidad.doc(codigo).update(datosActualizados);
+
+    String fecha = DateFormat('dd-MM-yyyy-hh:mma').format(DateTime.now());
+    await contabilidad.doc(codigo).update(uploadinformacion);
+    //Guardamos el historial del cambio
+    HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable);
+    CollectionReference refhistorial = db.collection("CONTABILIDAD").doc(codigo).collection("HISTORIAL");
+    await refhistorial.doc(fecha).set(newhistorial.toMap());
   }
 
   void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid,String idcarpeta) async{
