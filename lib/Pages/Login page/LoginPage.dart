@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
+    const LoginPage({super.key});
+
     @override
     LoginPageState createState() => LoginPageState();
   }
@@ -18,7 +20,7 @@ import '../../Utils/Firebase/Load_Data.dart';
 
     @override
     void initState(){
-      print("usuario ingresado $currentUser");
+      //print("usuario ingresado $currentUser");
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid);
       }
@@ -26,56 +28,101 @@ import '../../Utils/Firebase/Load_Data.dart';
 
     @override
     Widget build(BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(50.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Login Plataforma educativa'),
-            TextBox(
-              decoration: BoxDecoration(
-                color: Config.secundaryColor,
-                borderRadius: BorderRadius.circular(20),
+      const double widthTextBox = 350;
+      const EdgeInsets marginTextBox = EdgeInsets.only(top: 10, bottom: 1);
+      const TextStyle estiloBotones = TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      );
+      return Center(
+        child: Container(
+          width: 500,
+          height: 450,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(
+              color: Config.buttoncolor.withOpacity(0.08),
+              offset: const Offset(0, 3),
+              blurRadius: 8,
+              spreadRadius: 3
+            )],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                    'Inicio de Sesion',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18
+                  ),
+                ),
               ),
-              placeholder: 'Correo electronico para acceder',
-              onChanged: (value){
-                setState(() {
-                  correo = value;
-                });
-              },
-              maxLines: null,
-            ),
-            TextBox(
-              decoration: BoxDecoration(
-                color: Config.secundaryColor,
-                borderRadius: BorderRadius.circular(20),
+              Container(
+                width: widthTextBox,
+                margin: marginTextBox,
+                child: TextBox(
+                  decoration: BoxDecoration(
+                    color: Config.secundaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  placeholder: 'Correo electronico para acceder',
+                  onChanged: (value){
+                    setState(() {
+                      correo = value;
+                    });
+                  },
+                  maxLines: null,
+                ),
               ),
-              placeholder: 'Temas a evaluar',
-              onChanged: (value){
-                setState(() {
-                  contrasena = value;
-                });
-              },
-              maxLines: null,
-            ),
-            FilledButton(
-                child: Text('Iniciar sesión'),
-                onPressed: (){
-                  login();
-                }),
-            //Google
-            FilledButton(
-                child: Text('Configuración inicial'),
-                onPressed: (){
-                  context.go('/home/configuracion_inicial');
-                }),
-          ],
+              Container(
+                width: widthTextBox,
+                margin: marginTextBox,
+                child: TextBox(
+                  decoration: BoxDecoration(
+                    color: Config.secundaryColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  placeholder: 'Contraseña',
+                  onChanged: (value){
+                    setState(() {
+                      contrasena = value;
+                    });
+                  },
+                  maxLines: null,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 20, bottom: 8),
+                child: FilledButton(
+                    child: const Text(
+                      'Iniciar sesión',
+                      style: estiloBotones,
+                    ),
+                    onPressed: (){
+                      login();
+                    }),
+              ),
+              //Google
+              FilledButton(
+                  child: const Text(
+                      'Configuración inicial',
+                      style: estiloBotones,
+                  ),
+                  onPressed: (){
+                    context.go('/home/configuracion_inicial');
+                  }),
+            ],
+          ),
         ),
       );
     }
 
     Future<void> login()  async {
-      print('presionado login');
+      //print('presionado login');
       try {
         final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: correo,
@@ -89,20 +136,20 @@ import '../../Utils/Firebase/Load_Data.dart';
 
         if(getutoradmin.exists){
           String rol = getutoradmin.get('rol') ?? '';
-          print(rol);
+          //print(rol);
           if(rol=="TUTOR"){
             context.go('/homeTutor');
           }else{
             context.go('/home');
           }
         }else{
-          print("vos no tenes rol, error gravisimo");
+          //print("vos no tenes rol, error gravisimo");
           context.go('/home');
         }
         Utiles().notificacion("Logueado con extio", context, false, "log");
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
-          print('No user found for that email.');
+          //print('No user found for that email.');
           Utiles().notificacion("Usuario no encontrado con ese email", context, false, "log");
         } else if (e.code == 'wrong-password') {
           print('Wrong password provided for that user.');
