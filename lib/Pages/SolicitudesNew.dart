@@ -156,7 +156,7 @@ class _SolicitudesResponsiveCelularState extends State<SolicitudesResponsiveCelu
           PaneItem(
             icon:  const Icon(FluentIcons.home),
             title: const Text('New solicitud'),
-            body:  _subirsolicitudes(currentwidth: currentwidth,onUpdateListaClientes: widget.onUpdateListaClientes,materiaList: widget.materiaList,clienteList: widget.clienteList,carreraList:widget.carreraList ,universidadList: widget.universidadList,primarycolor: Color(0xFFFFFFFF),),
+            body:  _subirsolicitudes(currentwidth: currentwidth,onUpdateListaClientes: widget.onUpdateListaClientes,materiaList: widget.materiaList,clienteList: widget.clienteList,carreraList:widget.carreraList ,universidadList: widget.universidadList,primarycolor: widget.primarycolor,),
           ),
           PaneItem(
             icon:  const Icon(FluentIcons.home),
@@ -516,7 +516,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                         FilledButton(
                             style: Disenos().boton_estilo(),
                             child: Text('Subir archivos'), onPressed: () async{
-                          final result = await DriveApi().subirSolicitudes("1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD", selectedFiles,numsolicitud.toString());
+                          final result = await DriveApiUsage().subirSolicitudes("1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD", selectedFiles,numsolicitud.toString());
                           print("Número de archivos subidos: ${result.numberfilesUploaded}");
                           print("URL de la carpeta: ${result.folderUrl}");
                           //Ahora avisar numero de archivos subidos y url

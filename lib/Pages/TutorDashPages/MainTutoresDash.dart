@@ -7,6 +7,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 import 'AgendaTutor.dart';
 import 'EntregasTutor.dart';
+import 'TutorConfiguracion.dart';
 
 class MainTutoresDash extends StatefulWidget {
 
@@ -60,6 +61,11 @@ class MainTutoresDashState extends State<MainTutoresDash> {
             PaneItem(icon: const Icon(FluentIcons.home),
               title:  configuracion.panelnavegacion("ENTREGAS",_currentPage == 1),
               body: EntregaTutor(), //Este puede variar, entre detalles y solicitudes
+              selectedTileColor:ButtonState.all(configuracion.primaryColor),
+            ),
+            PaneItem(icon: const Icon(FluentIcons.home),
+              title:  configuracion.panelnavegacion("Config Tutor",_currentPage == 2),
+              body: ConfiguracionTutor(), //Este puede variar, entre detalles y solicitudes
               selectedTileColor:ButtonState.all(configuracion.primaryColor),
             ),
           ],

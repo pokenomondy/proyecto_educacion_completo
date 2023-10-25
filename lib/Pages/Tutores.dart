@@ -9,13 +9,20 @@ import 'package:dashboard_admin_flutter/Utils/Utiles/NotaTutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import '../Config/Config.dart';
 import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/Solicitud.dart';
 import '../Utils/Firebase/Uploads.dart';
 
-class TutoresVista extends StatelessWidget {
+class TutoresVista extends StatefulWidget {
+  @override
+  _TutoresVistaVistaState createState() => _TutoresVistaVistaState();
+}
+
+class _TutoresVistaVistaState extends State<TutoresVista> {
+  Config configuracion = Config();
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +31,64 @@ class TutoresVista extends StatelessWidget {
     return NavigationView(
       content: Row(
         children: [
-          _Creartutores(currentwidth: tamanowidth,),
-          _BusquedaTutor(currentwidth: tamanowidth,),
-          _CrearTutorNuevo(currentwidth: tamanowidth),
+          if(currentwidth>=configuracion.computador)
+            Row(children: [
+              _Creartutores(currentwidth: tamanowidth,),
+              _BusquedaTutor(currentwidth: tamanowidth,),
+              _CrearTutorNuevo(currentwidth: tamanowidth),
+            ],),
+          if(currentwidth < 1200 && currentwidth > 620)
+            Container(
+                width: currentwidth,
+                child: TutoresResponsiveVista()),
+          if(currentwidth <= 620)
+            Container(
+                width: currentwidth,
+                child: TutoresResponsiveVista()),
+
         ],
+      ),
+    );
+  }
+}
+
+class TutoresResponsiveVista extends StatefulWidget {
+  @override
+  _TutoresResponsiveVistaState createState() => _TutoresResponsiveVistaState();
+}
+
+class _TutoresResponsiveVistaState extends State<TutoresResponsiveVista> {
+  int _selectedpage = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentwidth = MediaQuery.of(context).size.width;
+    return Container(
+      child: NavigationView(
+        pane: NavigationPane(
+          selected: _selectedpage,
+          onChanged: (index) => setState(() {
+            _selectedpage = index;
+          }),
+          displayMode: PaneDisplayMode.top,
+          items: <NavigationPaneItem>[
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Tutores'),
+              body:  _Creartutores(currentwidth: currentwidth,),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Busqueda'),
+              body: _BusquedaTutor(currentwidth: currentwidth,),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Nuevo tutor'),
+              body:  _CrearTutorNuevo(currentwidth: currentwidth),
+            ),
+          ],
+        ),
       ),
     );
   }

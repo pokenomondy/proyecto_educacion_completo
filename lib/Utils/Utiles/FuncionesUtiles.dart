@@ -59,5 +59,18 @@ class Utiles{
       initialTime: material.TimeOfDay(hour: fechaagendado.hour, minute: fechaagendado.minute)
   );
 
+  //Cortar pálabras
+  String truncateLabel(String label) {
+    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
+    if (label.length > maxLength) {
+      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
+    }
+    return label;
+  }
+
+  Color hexToColor(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    return Color(int.parse(hexColor, radix: 16));
+  }
 
 }

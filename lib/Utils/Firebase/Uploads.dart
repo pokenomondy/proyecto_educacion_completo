@@ -118,24 +118,54 @@ class Uploads{
   }
 
   //modificar un servicio agendado
-  Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior)async {
+  Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
     String variable = "";
+    CollectionReference contabilidad = db.collection("CONTABILIDAD");
     Map<String, dynamic> uploadinformacion = {};
     if(index == 1){
       variable = "materia";
+    }else if(index == 4){
+      variable = "preciocobrado";
+    }else if(index == 7){
+      variable = "preciotutor";
+    }else if(index == 8){
+      variable = "identificadorcodigo";
+    }else if(index == 5){
+      variable = "fechaentrega";
+    }else if(index == 6){
+      variable = "tutor";
     }
-    //actualizamos este cambio
-    CollectionReference contabilidad = db.collection("CONTABILIDAD");
-    uploadinformacion = {
-      "$variable": "$texto",
-    };
 
-    String fecha = DateFormat('dd-MM-yyyy-hh:mma').format(DateTime.now());
+    if(index==4 || index==7){
+      uploadinformacion = {
+        "$variable": valores,
+      };
+    }else if(index == 5){
+      uploadinformacion = {
+        "$variable": fechas,
+      };
+    }else{
+      uploadinformacion = {
+        "$variable": "$texto",
+      };
+    }
+
+    String fecha = DateFormat('dd-MM-yyyy-hh:mm:ssa').format(DateTime.now());
     await contabilidad.doc(codigo).update(uploadinformacion);
     //Guardamos el historial del cambio
     HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable);
     CollectionReference refhistorial = db.collection("CONTABILIDAD").doc(codigo).collection("HISTORIAL");
     await refhistorial.doc(fecha).set(newhistorial.toMap());
+  }
+  //Entregar trabajos
+  Future<void> modifyServicioAgendadoEntregado(String codigo)async {
+    print("entregado de tutor");
+    CollectionReference contabilidad = db.collection("CONTABILIDAD");
+    Map<String, dynamic> uploadinformacion = {};
+    uploadinformacion = {
+      "entregadotutor": "ENTREGADO",
+    };
+    await contabilidad.doc(codigo).update(uploadinformacion);
   }
 
   void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid,String idcarpeta) async{

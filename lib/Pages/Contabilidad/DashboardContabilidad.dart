@@ -20,7 +20,7 @@ class ContaDash extends StatefulWidget {
 }
 
 class ContaDashState extends State<ContaDash> {
-  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false];
+  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false,false];
   List<Materia> materiaList = [];
   List<String> valores = [];
   String codigobuscar = "";
@@ -33,6 +33,7 @@ class ContaDashState extends State<ContaDash> {
   String? selectedIdentificador;
   DateTime cambiarfecha = DateTime.now();
   List<Tutores> tutoresList = [];
+  int valorcambio = 0;
 
   @override
   void initState() {
@@ -117,6 +118,14 @@ class ContaDashState extends State<ContaDash> {
 
     if (index == 1) {
       cambio = selectedMateria?.nombremateria;
+    }else if(index == 4 ||index == 7){
+      cambio = valorcambio.toString();
+    }else if(index == 8){
+      cambio = selectedIdentificador;
+    }else if(index == 5){
+      cambio = DateFormat('dd/MM/yyyy-hh:mm:ssa').format(cambiarfecha);
+    }else if(index == 6){
+      cambio = selectedTutor?.nombrewhatsapp;
     }
 
     return Row(
@@ -155,7 +164,8 @@ class ContaDashState extends State<ContaDash> {
                     placeholder: valor,
                     onChanged: (value){
                       setState(() {
-                        datoscambiostext = value;
+                        valorcambio = int.parse(value);
+                        cambio = valorcambio.toString();
                       });
                     },
                     maxLines: null,
@@ -266,13 +276,10 @@ class ContaDashState extends State<ContaDash> {
               GestureDetector(
                 onTap: () async{
                   print("texto a cambiar = ${servicioAgendado!.codigo} cambio = ${cambio!} textoanterior = ${valor}");
-                  await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!);
+                  await Uploads().modifyServicioAgendado(index, codigobuscar, cambio!,valor!,valorcambio,cambiarfecha);
                   setState(() {
                     valores[index] = cambio!;
-                    editarcasilla[index] = editarcasilla[index];
-                    if (!editarcasilla[index]) {
-                      editarcasilla[index] = editarcasilla[index];
-                    }
+                    editarcasilla[index] = false;  // Desactiva el modo de edición
                   });
                 },
                 child: Icon(FluentIcons.check_list),

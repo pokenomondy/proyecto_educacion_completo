@@ -1,7 +1,9 @@
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
+import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
+import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import 'package:flutter/material.dart' as dialog;
 import 'package:intl/intl.dart';
@@ -73,9 +75,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
   @override
   Widget build(BuildContext context) {
+    final currentheight = MediaQuery.of(context).size.height-80;
     return Column(
       children: [
-        Text('Agenda tutores'),
         StreamBuilder<List<ServicioAgendado>>(
           stream: stream_builders().getServiciosAgendadosTutor(nombretutor),
           builder: (context, snapshot){
@@ -102,7 +104,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
             print("meetings $meetings");
             return Container(
-              height: 800,
+              height: currentheight,
               child: SfCalendar(
                 controller: _calendarController,
                 showDatePickerButton: true,
@@ -155,7 +157,15 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                 Text(_notes!),
                 Text(servicioseleccionado!.materia),
                 Text(servicioseleccionado!.preciotutor.toString()),
-                Text(servicioseleccionado!.codigo),
+                GestureDetector(
+                  onTap: () {
+                    final textToCopy = servicioseleccionado!.codigo
+                        .toString();
+                    Clipboard.setData(
+                        ClipboardData(text: textToCopy));
+                  },
+                  child: Text(servicioseleccionado!.codigo),
+                ),
                 Text(DateFormat('dd/MM/yyyy hh:mm a').format(servicioseleccionado!.fechaentrega)),
                 Text(servicioseleccionado!.idcontable.toString()),
                 Text(servicioseleccionado!.idsolicitud.toString()),

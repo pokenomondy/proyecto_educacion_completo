@@ -1,12 +1,16 @@
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
+import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:googleapis/drive/v2.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart' as dialog;
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
+import '../../Utils/Drive Api/GoogleDrive.dart';
+
 
 class DetallesServicio extends StatefulWidget {
   final Solicitud solicitud;
@@ -20,6 +24,37 @@ class DetallesServicio extends StatefulWidget {
 }
 
 class DetallesServicioState extends State<DetallesServicio> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    final currentwidth = MediaQuery.of(context).size.width;
+    final tamanowidth = currentwidth/2 -30;
+    return Row(
+      children: [
+        PrimaryColumn(solicitud: widget.solicitud,currentwith: tamanowidth,),
+        SecundaryColumn(solicitud: widget.solicitud, currentwith: tamanowidth)
+      ],
+    );
+  }
+
+}
+
+class PrimaryColumn extends StatefulWidget {
+  final Solicitud solicitud;
+  final double currentwith;
+
+  const PrimaryColumn({Key?key,
+    required this.solicitud,
+    required this.currentwith,
+  }) :super(key: key);
+
+  @override
+  PrimaryColumnState createState() => PrimaryColumnState();
+
+}
+
+class PrimaryColumnState extends State<PrimaryColumn> {
   String servicio = "";
   List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false];
   List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
@@ -53,25 +88,22 @@ class DetallesServicioState extends State<DetallesServicio> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
-    return Padding(
-      padding: const EdgeInsets.all(40.0),
-      child: Container(
-        width: 500,
-        child: Column(
-          children: [
-            textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
-            textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
-            textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
-            textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
-            textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
-            textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
-            textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
-            textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
-            textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
-            textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
-          ],
-        ),
+    return Container(
+      color: Colors.red,
+      width: widget.currentwith,
+      child: Column(
+        children: [
+          textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
+          textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
+          textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
+          textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
+          textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
+          textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
+          textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
+          textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
+          textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
+          textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
+        ],
       ),
     );
   }
@@ -106,19 +138,19 @@ class DetallesServicioState extends State<DetallesServicio> {
               children: [
                 Text("$text : $valor"),
                 if(!bool)
-                GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                      if (!editarcasilla[index]) {
-                        // Si se desactiva la edición, actualiza el texto original con el texto editado
-                        editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                      }
-                    });
-                    print("oprimido para cambiar");
-                  },
-                  child: Icon(FluentIcons.edit),
-                )
+                  GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                        if (!editarcasilla[index]) {
+                          // Si se desactiva la edición, actualiza el texto original con el texto editado
+                          editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                        }
+                      });
+                      print("oprimido para cambiar");
+                    },
+                    child: Icon(FluentIcons.edit),
+                  )
               ],
             ),
           ),
@@ -127,17 +159,17 @@ class DetallesServicioState extends State<DetallesServicio> {
             children: [
               if(index == 7 || index == 8)
                 Container(
-                width: 100,
-                child: TextBox(
-                  placeholder: valor,
-                  onChanged: (value){
-                    setState(() {
-                      datoscambiostext = value;
-                    });
-                  },
-                  maxLines: null,
+                  width: 100,
+                  child: TextBox(
+                    placeholder: valor,
+                    onChanged: (value){
+                      setState(() {
+                        datoscambiostext = value;
+                      });
+                    },
+                    maxLines: null,
+                  ),
                 ),
-              ),
               if(index == 0 )
                 Container(
                   width: 300,
@@ -299,6 +331,128 @@ class DetallesServicioState extends State<DetallesServicio> {
     );
   }
 
+  }
+
+class SecundaryColumn extends StatefulWidget {
+  final Solicitud solicitud;
+  final double currentwith;
+
+  const SecundaryColumn({Key?key,
+    required this.solicitud,
+    required this.currentwith,
+  }) :super(key: key);
+
+  @override
+  SecundaryColumnState createState() => SecundaryColumnState();
+
 }
 
+class SecundaryColumnState extends State<SecundaryColumn> {
+  List<ArchivoResultado> archivosresultados = [];
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.blue,
+      width: widget.currentwith,
+      child: Column(
+        children: [
+          //Generar lista de archivos que hay en la carpeta de esta solicitud
+          FilledButton(child: Text('vericiar'), onPressed: (){
+            DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion);
+          }),
+          FutureBuilder(
+              future: DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion),
+              builder: (context,snapshot){
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Mientras se espera, mostrar un mensaje de carga
+                  return const Center(
+                    child: Text('cargando'), // O cualquier otro widget de carga
+                  );
+                } else if (snapshot.hasError) {
+                  // Si ocurre un error en el Future, mostrar un mensaje de error
+                  return const Center(
+                    child: Text("Error al cargar los datos"),
+                  );
+                } else {
+                  List<ArchivoResultado>? archivosList = snapshot.data;
+
+                  return _TarjetaArchivos(archivosList: archivosList);
+                }
+              }),
+        ],
+      ),
+    );
+  }
+}
+
+class _TarjetaArchivos extends StatefulWidget{
+  final List<ArchivoResultado>? archivosList;
+
+  const _TarjetaArchivos({Key?key,
+    required this.archivosList,
+  }) :super(key: key);
+
+  @override
+  _TarjetaArchivosState createState() => _TarjetaArchivosState();
+
+}
+
+class _TarjetaArchivosState extends State<_TarjetaArchivos> {
+  @override
+  Widget build(BuildContext context) {
+    final currentheight = MediaQuery.of(context).size.height;
+    return Column(
+      children: [
+        Text("hay ${widget.archivosList?.length.toString()} archivos"),
+        SizedBox(
+            height: currentheight-90,
+            child: ListView.builder(
+                itemCount: widget.archivosList?.length,
+                itemBuilder: (context,index) {
+                  ArchivoResultado? archivo = widget.archivosList?[index];
+
+                  return GestureDetector(
+                    onTap: (){
+                      print("te toco");
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                      child: Card(
+                        child:Column(
+                          children: [
+                            //nombre del archivo
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(archivo!.nombrearchivo)),
+                              ],
+                            ),
+                            //extension de pdf
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(archivo!.mimeType)),
+                              ],
+                            ),
+                            //id de archivo
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(archivo!.id)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+            )
+        ),
+      ],
+    );
+  }
+}
 

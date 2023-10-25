@@ -579,11 +579,17 @@ class LoadData {
           String Primarycolor = getconfiguracioninicial.get('Primarycolor') ?? '';
           String Secundarycolor = getconfiguracioninicial.get('Secundarycolor') ?? '';
           String nombre_empresa = getconfiguracioninicial.get('nombre_empresa') ?? '';
+          String idcarpetaPagos = getconfiguracioninicial.get('idcarpetaPagos') ?? '';
+          String idcarpetaSolicitudes = getconfiguracioninicial.get('idcarpetaSolicitudes') ?? '';
+
+
 
           Map<String, dynamic> uploadconfiguracion = {
             'Primarycolor': Primarycolor,
             'Secundarycolor': Secundarycolor,
             'nombre_empresa': nombre_empresa,
+            'idcarpetaPagos' : idcarpetaPagos,
+            'idcarpetaSolicitudes' : idcarpetaSolicitudes,
           };
 
           String solicitudesJson = jsonEncode(uploadconfiguracion);
@@ -596,9 +602,8 @@ class LoadData {
           return {};
         }
       } catch (e) {
-        // Manejar errores aquí, como problemas de conexión o de lectura de Firestore.
         print("Error: $e");
-        return {}; // Puedes devolver una lista vacía o null en caso de error.
+        return {};
       }
     } else {
       // Cargar lista ya descargada
@@ -622,10 +627,12 @@ class LoadData {
     DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
     String nametutor = getutoradmin.get('nombre Whatsapp');
     String idcarpeta = getutoradmin.get('idcarpeta');
+    String Correo_gmail = getutoradmin.get('Correo gmail');
 
     Map<String, dynamic> datos_tutor = {
       'nametutor': nametutor,
       'idcarpeta': idcarpeta,
+      'Correo_gmail' : Correo_gmail,
     };
     return datos_tutor;
   }

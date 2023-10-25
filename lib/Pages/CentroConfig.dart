@@ -1,3 +1,4 @@
+import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../Objetos/Solicitud.dart';
 import '../Utils/Drive Api/GoogleDrive.dart';
+import '../Utils/Utiles/FuncionesUtiles.dart';
 
 class ConfiguracionDatos extends StatefulWidget {
   @override
@@ -52,14 +54,23 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
   DateTime fechasolicitudesfirebasedate = DateTime.now();
   List<Solicitud> solicitudesList = [];
   int numsolicitudes = 0;
+  Config configuracion = Config();
+  bool configloaded = false;
+
 
   @override
   void initState() {
     loadactualizadores();
+    configuracion.initConfig().then((_) {
+      setState(() {
+        configloaded = true;
+      }); // Actualiza el estado para reconstruir el widget
+    });
     super.initState();
   }
 
   void loadactualizadores()async{
+
     Map<String, dynamic> actualizadoresFechas = await LoadData().verificar_cambios();
     setState((){
       fechasolicitudesfirebase = actualizadoresFechas['fecha_firebase'];
@@ -68,7 +79,6 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
       fechasolicitdeslocaldate = DateTime.parse(fechasolicitudesfirebase);
     });
   }
-
 
   void actualizarsolicitudes() async{
     print("obtener solicitudes");
@@ -82,39 +92,68 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     );
   }
 
-
-
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.currentwidth+400,
-      child: Column(
-        children: [
-          Text('Primary Color: '),
-          Text('Secundary Color: '),
-          Text('Button color: '),
-          Text('Descarga de datos, cambios ?'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('solicitudes actualización guardada: ${DateFormat('dd/MM/yyyy hh:mm a').format(fechasolicitudesfirebasedate)}'),
-              Text('solicitudes actualizacion firebase: ${DateFormat('dd/MM/yyyy hh:mm a').format(fechasolicitdeslocaldate)}'),
-            ],
-          ),
-          FilledButton(
-          child: Text('Actualizar solicitudes'),
-          onPressed: (){
-            actualizarsolicitudes();
-            print("actualizar solicitudes verificando");
-          }),
-          Text(numsolicitudes.toString()),
-          FilledButton(child: Text('Cerrar sesión'), onPressed: (){
-            signOut();
-          })
-        ],
-      ),
-    );
+    if (!configloaded) {
+      print("cargando vainas");
+      // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
+      return Text('cargando'); // Ejemplo de indicador de carga
+    }else{
+      return Container(
+        width: widget.currentwidth+400,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //Primary Color
+            Row(
+              children: [
+                Text('Primary Color: '),
+                Container(
+                  height: 20,
+                  width: 20,
+                  color: configuracion.primaryColor,
+                  child: Text('A'),
+                ),
+              ],
+            ),
+            //Secundary Color
+            Row(
+              children: [
+                Text('Secundary Color: '),
+                Container(
+                  height: 20,
+                  width: 20,
+                  color: configuracion.Secundarycolor,
+                  child: Text('A'),
+                ),
+              ],
+            ),
+            //Nombre de la empresa
+            Text('Nombre de la empresa : ${configuracion.nombreempresa}'),
+            //Cerrar sesión
+            FilledButton(child: Text('Cerrar sesión'), onPressed: (){
+              signOut();
+            }),
+            //Solicitudes con Drive Api
+            Column(
+              children: [
+                Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
+                Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
+              ],
+            ),
+            //Pagos con Drive Api
+            Column(
+              children: [
+                Text('------ PAGOS DRIVE API PLUGIN -----'),
+                Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
+              ],
+            ),
+            //Plugins con fechas de validez del programa
+
+          ],
+        ),
+      );
+    }
   }
 
   void signOut() async {

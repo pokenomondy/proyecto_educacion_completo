@@ -397,7 +397,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     print("Registrar nuevo pago");
     // Actualiza la lista de pagos por servicio
     widget.onUpdateListaPagos();
-    DriveApi().subirPago('1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N', selectedFiles,referenciapago);
+    DriveApiUsage().subirPago('1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N', selectedFiles,referenciapago);
     //Borrar todas las variables anteriores
     setState(() {
       selectedservicio==null;

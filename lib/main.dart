@@ -12,7 +12,9 @@ import 'package:go_router/go_router.dart';
 
 import 'Objetos/Solicitud.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
+import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
+import 'Pages/TutorDashPages/TutorConfiguracion.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -71,6 +73,14 @@ class MyApp extends StatelessWidget {
             GoRoute(path: 'homeTutor',
               builder: (BuildContext context, GoRouterState state) {
                 return MainTutoresDash();
+              },),
+            GoRoute(path: 'EntregaTutor',
+              builder: (BuildContext context, GoRouterState state) {
+                return EntregaTutor();
+              },),
+            GoRoute(path: 'ConfiguracionTutor',
+              builder: (BuildContext context, GoRouterState state) {
+                return ConfiguracionTutor();
               },)
           ],
         ),

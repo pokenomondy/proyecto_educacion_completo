@@ -13,6 +13,24 @@ class Disenos{
     await configuracion.initConfig();
   }
 
+  //Texto de demora de entrega de trabajo
+  Text textoentregatrabajoTutor(DateTime fechaentrega){
+    final now = DateTime.now();
+    final timeRemaining = fechaentrega.difference(now);
+    Color color = Colors.black;
+    String texto = "Tiempo restante:";
+    if(fechaentrega.isBefore(DateTime.now())){
+      color = Colors.red;
+      texto = "Retrasado:";
+    }else{
+      color = Colors.black;
+    }
+    return Text('$texto ${timeRemaining.inDays.abs()} días, ${timeRemaining.inHours.remainder(24).abs()} horas '
+            ', ${timeRemaining.inMinutes.remainder(60).abs()} minutos',
+        style: aplicarEstilo(color, 15, true),
+    );
+
+  }
 
   //Estilo para nuevas solicitudes
   Text textonuevasolicitudblanco(String text){
@@ -83,6 +101,9 @@ class Disenos{
 
     );
   }
+
+  //TEXTO
+
 
 
 
