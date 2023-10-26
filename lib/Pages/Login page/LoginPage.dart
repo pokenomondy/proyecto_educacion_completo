@@ -107,14 +107,7 @@ import '../../Utils/Firebase/Load_Data.dart';
                     }),
               ),
               //Google
-              FilledButton(
-                  child: const Text(
-                      'Configuración inicial',
-                      style: estiloBotones,
-                  ),
-                  onPressed: (){
-                    context.go('/home/configuracion_inicial');
-                  }),
+
             ],
           ),
         ),

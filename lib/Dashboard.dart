@@ -1,12 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadistica.dart';
 import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'Objetos/Solicitud.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/ContableDash.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
+import 'package:intl/intl.dart';
+
+import 'Utils/Firebase/Load_Data.dart';
 
 class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
@@ -22,7 +27,10 @@ class DashboardState extends State<Dashboard> {
   int _currentPage = 0;
   Config configuracion = Config();
   bool configloaded = false;
+  bool configloadedos = false;
   bool showDetallesSolicitud = false;
+  final currentUser = FirebaseAuth.instance.currentUser;
+  String rol = "";
 
   @override
   void initState() {
@@ -37,13 +45,18 @@ class DashboardState extends State<Dashboard> {
   }
 
 
+
   @override
   Widget build(BuildContext context) {
-    if (!configloaded) {
+    if (!configloaded && !configloadedos) {
       print("cargando vainas");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
       return Text('cargando'); // Ejemplo de indicador de carga
-    }else{
+    }else if(configuracion.basicofecha.isBefore(DateTime.now())){
+      return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
+  }else if(currentUser == null || configuracion.rol == "TUTOR" ){
+      return Text('ERROR 404');
+  }else{
       print("cargando main dash");
       return NavigationView(
         appBar: NavigationAppBar(

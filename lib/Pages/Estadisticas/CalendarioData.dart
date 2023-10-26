@@ -5,7 +5,8 @@ import 'package:fluent_ui/fluent_ui.dart' hide CalendarView,Colors;
 import 'package:flutter/material.dart' as dialog;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
-import '../../Utils/Firebase/Load_Data.dart';
+
+import '../../Utils/Calendario/CalendarioEstilo.dart';
 
 class CalendarioData extends StatefulWidget{
 
@@ -65,9 +66,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   }
 
   void loadchecks() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
     datosDescargados = false;
-    print("datos descargados $datosDescargados");
     setState(() {
       cargarinterfaz = true;
     });
@@ -98,26 +97,14 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                       meetings = servicioagendadoList
                           ?.map((servicio) =>
                           Appointment(
-                            startTime: DateTime(servicio.fechaentrega.year,
-                                servicio.fechaentrega.month,
-                                servicio.fechaentrega.day,
-                                servicio.fechaentrega.hour - 1,
-                                servicio.fechaentrega.minute, 0),
-                            endTime: DateTime(servicio.fechaentrega.year,
-                                servicio.fechaentrega.month,
-                                servicio.fechaentrega.day,
-                                servicio.fechaentrega.hour,
-                                servicio.fechaentrega.minute, 0),
-                            subject: "${servicio.materia} - ${servicio.codigo}",
-                            notes: "${servicio.materia}"
-                                "\n ${servicio.preciotutor}"
-                                "\n ${servicio.cliente}",
-                            color: servicio.identificadorcodigo == "T" ? dialog
-                                .Colors.green : dialog.Colors.red,
+                            startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                            endTime: CalendarioStyle().tiempotarjetaend(servicio),
+                            subject: "${servicio.identificadorcodigo} - ${servicio.tutor  } - ${servicio.idcontable}",
+                            notes: servicio.materia,
+                            color: CalendarioStyle().colortarjetaAdmin(servicio),
                           ))
                           .toList();
 
-                      print("meetings $meetings");
                       return Container(
                         height: 800,
                         child: SfCalendar(

@@ -1,4 +1,5 @@
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:dashboard_admin_flutter/Utils/Calendario/CalendarioEstilo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:flutter/services.dart';
@@ -59,7 +60,6 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   @override
   void initState() {
     _calendarController.view = CalendarView.month;
-    print("usuario iod ${currentUser?.uid}");
     loaddata().then((_) {
       setState(() {}); // Trigger a rebuild after data is loaded.
     });
@@ -69,8 +69,6 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   Future<void> loaddata() async {
     Map<String, dynamic> datos_tutor = await LoadData().getinfotutor(currentUser!);
     nombretutor = datos_tutor['nametutor'];
-    print("agenda tutores la verga");
-    print(nombretutor);
   }
 
   @override
@@ -92,17 +90,16 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
             List<Appointment>? meetings = servicioagendadoList
                 ?.map((servicio) {
               final appointment = Appointment(
-                startTime: tiempotarjetastart(servicio),
-                endTime: tiempotarjetaend(servicio),
+                startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                endTime: CalendarioStyle().tiempotarjetaend(servicio),
                 subject: "${servicio.identificadorcodigo} - ${servicio.materia} - ${servicio.idcontable}",
                 notes: servicio.materia,
-                color: colortarjeta(servicio),
+                color: CalendarioStyle().colortarjetaAdmin(servicio),
               );
               appointmentToServicioMap[appointment] = servicio;
               return appointment;
             }).toList();
 
-            print("meetings $meetings");
             return Container(
               height: currentheight,
               child: SfCalendar(
@@ -128,7 +125,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                             fontSize: 25,
                             fontWeight: FontWeight.w400))
                 ),
-                onTap: calendario_oprimido,
+                onTap: (CalendarTapDetails details) {
+                  CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context);
+                },
               ),
             );
           },
@@ -200,52 +199,6 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
     );
   }
 
-  dialog.Color colortarjeta(ServicioAgendado servicio){
-    print("efectuando");
-    if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
-      return dialog.Colors.yellow;
-    }else if(servicio.entregadotutor == "ENTREGADO"){
-      return dialog.Colors.green; //Ya esta entregado
-    }else if(servicio.identificadorcodigo == "P"){
-      return dialog.Colors.orange; //Ya esta entregado
-    }else if(servicio.identificadorcodigo == "A"){
-      return dialog.Colors.blue; //Ya esta entregado
-    }else if(servicio.identificadorcodigo == "T"){
-      return dialog.Colors.red; //Ya esta entregado
-    }else{
-      return dialog.Colors.grey;
-    }
-  }
-
-  DateTime tiempotarjetastart(ServicioAgendado servicio){
-    if(servicio.identificadorcodigo == "T"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour -1, servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "P"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour, servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "Q"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour, servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "A"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour, servicio.fechaentrega.minute, 0);
-    }else{
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour - 1, servicio.fechaentrega.minute, 0);
-    }
-  }
-
-  DateTime tiempotarjetaend(ServicioAgendado servicio){
-    if(servicio.identificadorcodigo == "T"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour , servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "P"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour+2, servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "Q"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour+1, servicio.fechaentrega.minute, 0);
-    }else if(servicio.identificadorcodigo == "A"){
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour+1, servicio.fechaentrega.minute, 0);
-    }else{
-      return DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour - 1, servicio.fechaentrega.minute, 0);
-    }
-  }
-
-//    endTime: DateTime(servicio.fechaentrega.year, servicio.fechaentrega.month, servicio.fechaentrega.day, servicio.fechaentrega.hour, servicio.fechaentrega.minute, 0),
 
 }
 

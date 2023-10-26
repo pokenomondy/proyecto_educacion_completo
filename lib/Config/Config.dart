@@ -1,48 +1,69 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Utils/Firebase/Load_Data.dart';
 import '../Utils/Utiles/FuncionesUtiles.dart';
 
 class Config {
-  Map<String, dynamic> configuracion_inicial = {
-  }; // Configuración inicial del proyecto
+  //Configuración inicial
+  Map<String, dynamic> configuracion_inicial = {}; // Configuración inicial del proyecto
   String nombreempresa = "Error, reportar"; //Nombre de la empresa del proyecto
   Color primaryColor = Color(0xFF235FD9); //Color primario de la plataforma
   Color Secundarycolor = Color(0xFF235FD9); //Color primario de la plataforma
   String idcarpetaPagos = "";
   String idcarpetaSolicitudes = "";
+  //plugins
+  Map<String, dynamic> configuracion_plugins = {}; //plugins
+  bool PagosDriveApi = false;
+  bool SolicitudesDriveApi = false;
+  bool TutoresBanca = false;
+  bool basicoNormal = false;
+  DateTime basicofecha = DateTime.now();
+  DateTime SolicitudesDriveApiFecha = DateTime.now();
+  DateTime PagosDriveApiFecha = DateTime.now();
+  //info de tutor
+  String rol = "";
+  final currentUser = FirebaseAuth.instance.currentUser;
+
+
   Config() {
     initConfig();
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
+    configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
+    DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+    rol = getutoradmin.get('rol') ?? '';
+    print("current user $rol");
 
     // Verificar si 'nombre_empresa' existe y no es nulo
     if (configuracion_inicial.containsKey('nombre_empresa')) {
       nombreempresa = configuracion_inicial['nombre_empresa'];
-    } else {
-    }
-    // Verificar si 'Primarycolor' existe y no es nulo
-    if (configuracion_inicial.containsKey('Primarycolor')) {
       primaryColor = Utiles().hexToColor(configuracion_inicial['Primarycolor']);
-    } else {
-    }
-    // secundary color
-    if (configuracion_inicial.containsKey('Primarycolor')) {
       Secundarycolor = Utiles().hexToColor(configuracion_inicial['Secundarycolor']);
-    } else {
-    }
-    //Llamar idCarpetaPagos
-    if (configuracion_inicial.containsKey('idcarpetaPagos')) {
       idcarpetaPagos = configuracion_inicial['idcarpetaPagos'];
-    } else {
-    }
-    //Llamar idcarpetaSolicitudes
-    if (configuracion_inicial.containsKey('idcarpetaSolicitudes')) {
       idcarpetaSolicitudes = configuracion_inicial['idcarpetaSolicitudes'];
+
     } else {
     }
 
+    //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
+    if(configuracion_plugins.containsKey('basicoNormal')){
+      basicoNormal = configuracion_plugins['basicoNormal'];
+      SolicitudesDriveApi = configuracion_plugins['SolicitudesDriveApi'];
+      PagosDriveApi = configuracion_plugins['PagosDriveApi'];
+      basicofecha = configuracion_plugins['basicoFecha'] != null
+          ? DateTime.parse(configuracion_plugins['basicoFecha'])
+          : DateTime.now();
+      SolicitudesDriveApiFecha = configuracion_plugins['SolicitudesDriveApiFecha'] != null
+          ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
+          : DateTime.now();
+      PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
+          ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
+          : DateTime.now();
+      print("fechas y cosas");
+    }
   }
 
   //Configuraciones de diseño

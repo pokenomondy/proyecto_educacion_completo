@@ -14,6 +14,7 @@ import 'package:dashboard_admin_flutter/Pages/Estadisticas/Contabilida.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:googleapis/driveactivity/v2.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
@@ -521,6 +522,7 @@ class LoadData {
    */
 
   //cambios de servicios empezamos, toca pensar en como se puede realizar de mejor forma
+  /*
   Future verificar_cambios() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('verificacionesGeneral') ?? false;
@@ -566,6 +568,8 @@ class LoadData {
 
   }
 
+   */
+
   //Leer configuración inicial, que es la priemra que hay
   Future<Map<String, dynamic>> configuracion_inicial() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -573,6 +577,7 @@ class LoadData {
 
     if (!datosDescargados) {
       try {
+        print("cargando colores y nombres inicialmente");
         DocumentSnapshot getconfiguracioninicial = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("CONFIGURACION").get();
 
         if (getconfiguracioninicial.exists) {
@@ -581,8 +586,6 @@ class LoadData {
           String nombre_empresa = getconfiguracioninicial.get('nombre_empresa') ?? '';
           String idcarpetaPagos = getconfiguracioninicial.get('idcarpetaPagos') ?? '';
           String idcarpetaSolicitudes = getconfiguracioninicial.get('idcarpetaSolicitudes') ?? '';
-
-
 
           Map<String, dynamic> uploadconfiguracion = {
             'Primarycolor': Primarycolor,
@@ -606,17 +609,84 @@ class LoadData {
         return {};
       }
     } else {
-      // Cargar lista ya descargada
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String solicitudesJson = prefs.getString('configuracion_inicial_List') ?? '';
-
       if (solicitudesJson.isNotEmpty) {
-        // Si la cadena no está vacía, la parseamos a un Map<String, dynamic>
         Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
         return configuracion;
       } else {
-        // Si la cadena está vacía, puedes devolver un valor predeterminado o null según tu lógica
-        return {}; // O puedes devolver null en lugar de una lista vacía si prefieres.
+        return {};
+      }
+    }
+  }
+
+  //Leer plugins, para ver cuales estan o no estan
+  Future<Map<String, dynamic>> configuracion_plugins() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('datos_descargados_plugins') ?? false;
+    if (!datosDescargados) {
+      try {
+        print("descarngado plugins");
+        DocumentSnapshot getplugins = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("Plugins").get();
+        if (getplugins.exists) {
+          bool PagosDriveApi = getplugins.get('PagosDriveApi') ?? '';
+          bool SolicitudesDriveApi = getplugins.get('SolicitudesDriveApi') ?? '';
+          bool TutoresBanca = getplugins.get('TutoresBanca') ?? '';
+          bool basicoNormal = getplugins.get('basicoNormal') ?? '';
+          DateTime basicoFecha = getplugins.get('basicoFecha').toDate() ?? DateTime.now();
+          DateTime SolicitudesDriveApiFecha = getplugins.get('SolicitudesDriveApiFecha').toDate() ?? DateTime.now();
+          DateTime PagosDriveApiFecha = getplugins.get('PagosDriveApiFecha').toDate() ?? DateTime.now();
+          //Guardar variable
+          DateTime verificador = getplugins.get('verificadoractualizar').toDate() ?? DateTime.now();
+
+          Map<String, dynamic> uploadconfiguracion = {
+            'PagosDriveApi': PagosDriveApi,
+            'SolicitudesDriveApi': SolicitudesDriveApi,
+            'TutoresBanca': TutoresBanca,
+            'basicoNormal' : basicoNormal,
+            'basicoFecha' : basicoFecha.toIso8601String(),
+            'SolicitudesDriveApiFecha' : SolicitudesDriveApiFecha.toIso8601String(),
+            'PagosDriveApiFecha' : PagosDriveApiFecha.toIso8601String(),
+            'verificador' : verificador.toIso8601String(),
+          };
+
+          String solicitudesJson = jsonEncode(uploadconfiguracion);
+          await prefs.setString('configuracion_plugins', solicitudesJson);
+          await prefs.setBool('datos_descargados_plugins', true);
+
+          return uploadconfiguracion;
+        } else {
+          return {};
+        }
+      } catch (e) {
+        print("Error: $e");
+        return {};
+      }
+    } else {
+      CollectionReference actualizacion = db.collection("ACTUALIZACION");
+      DocumentSnapshot actualizacionsnapshots = await actualizacion.doc("Plugins").get();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
+      Map<String, dynamic> servicioData = actualizacionsnapshots.data() as Map<String, dynamic>;
+      if (solicitudesJson.isNotEmpty) {
+        Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
+        //Verificador de tiempo
+        DateTime verificador = configuracion['verificador'] != null
+            ? DateTime.parse(configuracion['verificador'])
+            : DateTime.now();
+        Duration diferenciaTiempo = DateTime.now().difference(verificador);
+        print("tiempo recorrido ${diferenciaTiempo.inMinutes}");
+        if(diferenciaTiempo.inMinutes >= 30){
+            servicioData['verificadoractualizar'] = DateTime.now();
+            await actualizacion.doc("Plugins").update(servicioData);
+            await prefs.setBool('datos_descargados_plugins', false);
+            await configuracion_plugins();
+          return configuracion;
+        }else{
+          return configuracion;
+        }
+      } else {
+        return {};
       }
     }
   }

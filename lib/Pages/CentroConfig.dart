@@ -48,10 +48,6 @@ class PrimaryColumnDatos extends StatefulWidget {
 }
 
 class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
-  String fechasolicitudeslocal = "";
-  DateTime fechasolicitdeslocaldate = DateTime.now();
-  String fechasolicitudesfirebase = "";
-  DateTime fechasolicitudesfirebasedate = DateTime.now();
   List<Solicitud> solicitudesList = [];
   int numsolicitudes = 0;
   Config configuracion = Config();
@@ -60,25 +56,15 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
 
   @override
   void initState() {
-    loadactualizadores();
     configuracion.initConfig().then((_) {
       setState(() {
         configloaded = true;
-      }); // Actualiza el estado para reconstruir el widget
+      });
     });
     super.initState();
   }
 
-  void loadactualizadores()async{
 
-    Map<String, dynamic> actualizadoresFechas = await LoadData().verificar_cambios();
-    setState((){
-      fechasolicitudesfirebase = actualizadoresFechas['fecha_firebase'];
-      fechasolicitudesfirebasedate = DateTime.parse(fechasolicitudesfirebase);
-      fechasolicitudeslocal = actualizadoresFechas['fecha_firebase'];
-      fechasolicitdeslocaldate = DateTime.parse(fechasolicitudesfirebase);
-    });
-  }
 
   void actualizarsolicitudes() async{
     print("obtener solicitudes");
@@ -95,8 +81,6 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
   @override
   Widget build(BuildContext context) {
     if (!configloaded) {
-      print("cargando vainas");
-      // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
       return Text('cargando'); // Ejemplo de indicador de carga
     }else{
       return Container(
@@ -135,6 +119,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
               signOut();
             }),
             //Solicitudes con Drive Api
+            if(configuracion.SolicitudesDriveApi==true)
             Column(
               children: [
                 Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
@@ -142,6 +127,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
               ],
             ),
             //Pagos con Drive Api
+            if(configuracion.PagosDriveApi==true)
             Column(
               children: [
                 Text('------ PAGOS DRIVE API PLUGIN -----'),
@@ -149,11 +135,34 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
               ],
             ),
             //Plugins con fechas de validez del programa
+            Row(
+              children: [
+                cartaplugins("Sistema Básico",configuracion.basicoNormal,configuracion.basicofecha),
+                cartaplugins("Solicitudes Drive Api",configuracion.SolicitudesDriveApi,configuracion.SolicitudesDriveApiFecha),
+                cartaplugins("Pagos Drive Api",configuracion.PagosDriveApi,configuracion.PagosDriveApiFecha),
 
+              ],
+            ),
           ],
         ),
       );
     }
+  }
+
+  Container cartaplugins(String titulo, bool activacion, DateTime fecha){
+    return Container(
+      width: 150,
+      height: 150,
+      color: Colors.blue,
+      child: Column(
+        children: [
+          Text(titulo),
+          Text(activacion.toString()),
+          Text("fecha de expiración:"),
+          Text(DateFormat('dd/MM/yyyy hh:mma').format(fecha)),
+        ],
+      ),
+    );
   }
 
   void signOut() async {
