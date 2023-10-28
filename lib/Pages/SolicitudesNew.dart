@@ -52,9 +52,9 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
     configuracion.initConfig().then((_) {
       setState(() {
         configloaded = true;
-      }); // Actualiza el estado para reconstruir el widget
+      });
     });
-    loadtablas(); // Cargar los datos al inicializar el widget
+    loadtablas();
     super.initState();
   }
 
@@ -245,7 +245,9 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   Config configuracion = Config();
   String carpetaurl = "";
 
-  //Reusltados Google Drive
+  //Modo de carga
+  bool cargandoservicio = false;
+
 
   void main() async {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
@@ -267,17 +269,26 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     super.initState();
   }
 
-  String _truncateLabel(String label) {
-    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
-    if (label.length > maxLength) {
-      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
-    }
-    return label;
-  }
-
   @override
   Widget build(BuildContext context) {
     final tamanowidht = MediaQuery.of(context).size.height;
+    return Stack(
+      children: [
+        solicitudescuadro(tamanowidht),
+        if(cargandoservicio==true)
+          Positioned.fill(
+            child: AbsorbPointer(
+              absorbing: true, // Evita todas las interacciones del usuario
+              child: Center(
+                child: material.CircularProgressIndicator(), // Puedes personalizar el indicador de carga
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget solicitudescuadro(double tamanowidht){
     return Container(
       width: widget.currentwidth,
       height: tamanowidht,
@@ -354,7 +365,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
               //Variables despues de seleccionar servicio
                 Column(
                   children: [
-                    //Materia
+                    //Materia - Agregar materia aca mismo
                     Container(
                       margin: EdgeInsets.only(top: margen_solicitud),
                       child: Row(
@@ -368,7 +379,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                               items: widget.materiaList.map<AutoSuggestBoxItem<Materia>>(
                                     (materia) => AutoSuggestBoxItem<Materia>(
                                   value: materia,
-                                  label: _truncateLabel(materia.nombremateria),
+                                  label: Utiles().truncateLabel(materia.nombremateria),
                                   onFocusChange: (focused) {
                                     if (focused) {
                                       debugPrint('Focused #${materia.nombremateria} - ');
@@ -413,7 +424,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                               items: widget.clienteList.map<AutoSuggestBoxItem<Clientes>>(
                                     (cliente) => AutoSuggestBoxItem<Clientes>(
                                   value: cliente,
-                                  label: _truncateLabel(cliente.numero.toString() ),
+                                  label: Utiles().truncateLabel(cliente.numero.toString() ),
                                   onFocusChange: (focused) {
                                     if (focused) {
                                       debugPrint('Focused #${cliente.numero} - ');
@@ -478,7 +489,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                         ],
                       ),
                     ),
-
                     if(selectedServicio=="PARCIAL")
                       showservicios("Temas a evaluar", "Duración del examen"),
                     if(selectedServicio=="TALLER")
@@ -513,18 +523,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                             child: Text('seleccionar archivos'), onPressed: (){
                           selectFile();
                         }),
-                        FilledButton(
-                            style: Disenos().boton_estilo(),
-                            child: Text('Subir archivos'), onPressed: () async{
-                          final result = await DriveApiUsage().subirSolicitudes("1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD", selectedFiles,numsolicitud.toString());
-                          print("Número de archivos subidos: ${result.numberfilesUploaded}");
-                          print("URL de la carpeta: ${result.folderUrl}");
-                          //Ahora avisar numero de archivos subidos y url
-                          setState(() {
-                            uploadedCount = result.numberfilesUploaded;
-                            carpetaurl = result.folderUrl;
-                          });
-                        }),
                       ],
                     ),
                     //Botón para añadir servicio
@@ -543,32 +541,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
       ),
     );
   }
-
-  /*
-  void uploadfile() async {
-    if (kIsWeb) {
-      for (final file in selectedFiles!) {
-        TaskSnapshot taskSnapshot = await FirebaseStorage.instance
-            .ref('SOLICITUDES/$numsolicitud/${file.name}')
-            .putData(file.bytes!);
-
-        String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-
-        print('Enlace de descarga: $downloadUrl');
-
-        setState(() {
-          uploadedCount++;
-        });
-        if(uploadedCount == selectedFiles!.length){
-          Utiles().notificacion("Se han subido los elementos, subieron $uploadedCount archivos", context, true, "Subido");
-        }
-      }
-    } else {
-      print("Esta parte no se ejecutará en dispositivos no web");
-    }
-  }
-
-   */
 
   Future selectFile() async{
     if(kIsWeb){
@@ -592,13 +564,17 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     }
   }
 
-  void validar_antesde_solicitar(){
+  void validar_antesde_solicitar() async{
     //Validación de fecha, que no sea fecha pasada
     if (fechaentrega.isBefore(DateTime.now())) {
       Utiles().notificacion("La fecha de entrega no puede ser menor a hoy", context, false,"Cambien la fecha");
     }else if(selectedMateria == null || selectedCliente == null){
       Utiles().notificacion("Materia o cliente no seleccionado", context, false,"Seleccione cliente o matería");
     } else{
+      setState(() {
+        cargandoservicio = true;
+      });
+      await uploadarchivosDrive();
       setState(() {
         numcotizacionstream = LoadData().cargarnumerodesolicitudes();
         selectedFiles = [];
@@ -613,6 +589,17 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     }
   }
 
+  Future<void> uploadarchivosDrive() async{
+    final result = await DriveApiUsage().subirSolicitudes("1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD", selectedFiles,numsolicitud.toString());
+    print("Número de archivos subidos: ${result.numberfilesUploaded}");
+    print("URL de la carpeta: ${result.folderUrl}");
+    //Ahora avisar numero de archivos subidos y url
+    setState(() {
+      uploadedCount = result.numberfilesUploaded;
+      carpetaurl = result.folderUrl;
+    });
+  }
+
   void eliminar_Datos(){
     setState(() {
       selectedServicio = "";
@@ -623,6 +610,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
       selectedCliente = null;
       selectedServicio = null;
       carpetaurl = "";
+      cargandoservicio = false;
     });
   }
 
@@ -888,8 +876,20 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
   String editnombrewspcliente = "";
   final GlobalKey<_CuadroSolicitudesState> statefulBuilderKey = GlobalKey<_CuadroSolicitudesState>();
   String codigo = "";
+  Config configuracion = Config();
+  bool configloaded = false;
+  TextEditingController _textControllerSolicitudes = TextEditingController();
 
 
+  @override
+  void initState() {
+    configuracion.initConfig().then((_) {
+      setState(() {
+        configloaded = true;
+      });
+    });
+    super.initState();
+  }
 
   void update(){
     setState(() {
@@ -1055,7 +1055,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                                     onTap: () {
                                       print("Ver detalles");
                                       material.Navigator.push(context, material.MaterialPageRoute(
-                                        builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud,),
+                                        builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud),
                                       ));
                                     },
                                     child: Icon(FluentIcons.a_a_d_logo),
@@ -1134,21 +1134,24 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
 
   void copiarSolicitud(String servicio, int idcotizacion, String materia, DateTime fechaentrega, String resumen, String infocliente, String urlArchivos) {
     String horaRealizada = "";
+    String fecha_de_realizacion = "";
+    fecha_de_realizacion = "${DateFormat('dd/MM/yyyy').format(fechaentrega)}";
     if(servicio=="TALLER"){
       horaRealizada = 'ANTES DE LAS ${DateFormat('hh:mma').format(fechaentrega)}';
     }else{
       horaRealizada = '${DateFormat('hh:mma').format(fechaentrega)}';
     }
 
-    String solicitud = '🔴TIPO SERVICIO = $servicio \n🔴SOLICITUD = ${idcotizacion.toString()}'
-        '\n🔴MATERIA = $materia'
-        '\n🔴FECHA ENTREGA = ${DateFormat('dd/MM/yyyy').format(fechaentrega)}'
-        '\n🔴HORA ENTREGA =  $horaRealizada'
-        '\n🔴RESUMEN = $resumen'
-        '\n🔴INFORMACIÓN CLIENTE = $infocliente'
-        '\n '
-        '\n🔴ARCHIVOS = $urlArchivos';
-
+    String solicitud = configuracion.mensaje_solicitd;
+    
+    solicitud = solicitud.replaceAll("/servicio/", servicio);
+    solicitud = solicitud.replaceAll("/idcotizacion/", idcotizacion.toString());
+    solicitud = solicitud.replaceAll("/materia/", materia);
+    solicitud = solicitud.replaceAll("/fechaentrega/", fecha_de_realizacion);
+    solicitud = solicitud.replaceAll("/horaentrega/", horaRealizada);
+    solicitud = solicitud.replaceAll("/resumen/", resumen);
+    solicitud = solicitud.replaceAll("/infocliente/", infocliente);
+    solicitud = solicitud.replaceAll("/urlarchivos/", urlArchivos);
 
     Clipboard.setData(ClipboardData(text: solicitud));
     print("se copio");

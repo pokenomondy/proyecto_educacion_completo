@@ -17,7 +17,9 @@ class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
   final Solicitud solicitud;
 
-  Dashboard({Key? key, required this.showSolicitudesNew, required this.solicitud}) : super(key: key);
+  Dashboard({Key? key,
+    required this.showSolicitudesNew,
+    required this.solicitud,}) : super(key: key);
 
   @override
   DashboardState createState() => DashboardState();
@@ -43,8 +45,6 @@ class DashboardState extends State<Dashboard> {
       }); // Actualiza el estado para reconstruir el widget
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {

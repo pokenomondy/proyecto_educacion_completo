@@ -32,12 +32,13 @@ class stream_builders{
           int idsolicitud = servicio['idsolicitud'];
           int idcontable = servicio['idcontable'];
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
+          String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
           // Obtener pagos en primera descarga
           List<RegistrarPago> pagos = [];
 
             print(idcontable);
           //Guardamos en objeto y ya lo pasamos para tutor
-          ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregado);
+          ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregado,entregadocliente);
           serviciosagendadoList.add(newservicioagendado);
         } catch (e) {
           print(e);
@@ -85,6 +86,7 @@ class stream_builders{
           int idcontable = servicio['idcontable'];
           List<RegistrarPago> pagos = [];
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
+          String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
 
           print(idcontable);
           //Guardamos en objeto y ya lo pasamos para tutor
@@ -102,7 +104,8 @@ class stream_builders{
               idsolicitud,
               idcontable,
               pagos,
-              entregado);
+              entregado,
+              entregadocliente);
           serviciosagendadoList.add(newservicioagendado);
         } catch (e) {
           print(e);

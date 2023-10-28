@@ -5,6 +5,8 @@ import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
 
+import '../Firebase/Uploads.dart';
+
 
 class CalendarioStyle{
 
@@ -35,7 +37,9 @@ class CalendarioStyle{
       return dialog.Colors.yellow;
     }else if(servicio.identificadorcodigo == "A" || servicio.identificadorcodigo == "P" || servicio.identificadorcodigo == "Q"){
       return dialog.Colors.grey;
-    } else if(servicio.entregadotutor=="ENTREGADO"){
+    } else if(servicio.entregadocliente=="ENTREGADO") {
+      return dialog.Colors.green;
+    }else if(servicio.entregadotutor=="ENTREGADO"){
       return dialog.Colors.orange;
     }else{
     return dialog.Colors.red;
@@ -70,18 +74,18 @@ class CalendarioStyle{
     }
   }
 
-
-  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context){
+  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context, Map<Appointment, ServicioAgendado> appointmentToServicioMap){
     ServicioAgendado? servicioseleccionado;
-    if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda){
+    if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda) {
       final Appointment appointmentdetails = details.appointments![0];
       _subject = appointmentdetails.subject;
       _notes = appointmentdetails.notes!;
-      //servicioseleccionado = appointmentToServicioMap[appointmentdetails] as ServicioAgendado?;
-
+      servicioseleccionado = appointmentToServicioMap[appointmentdetails];
     }else{
 
     }
+
+    //Dialogo cargado
     dialog.showDialog(
         context: context,
         builder: (BuildContext context){
@@ -89,9 +93,13 @@ class CalendarioStyle{
             title: Text('Agenda $_subject'),
             content: Column(
               children: [
-                Text(_notes!),
+                //Matería
                 Text(servicioseleccionado!.materia),
+                //Nombre de tutor
+                Text(servicioseleccionado!.tutor),
+                //Precio del tutor
                 Text(servicioseleccionado!.preciotutor.toString()),
+                //Código
                 GestureDetector(
                   onTap: () {
                     final textToCopy = servicioseleccionado!.codigo
@@ -101,11 +109,18 @@ class CalendarioStyle{
                   },
                   child: Text(servicioseleccionado!.codigo),
                 ),
+                //fecha de entrega
                 Text(DateFormat('dd/MM/yyyy hh:mm a').format(servicioseleccionado!.fechaentrega)),
-                Text(servicioseleccionado!.idcontable.toString()),
+                //id de solicitud
                 Text(servicioseleccionado!.idsolicitud.toString()),
+                //entrega de tutor
                 Text(servicioseleccionado!.entregadotutor), //Algun color, si tiene entrega o no?
-
+                //Entrega de cliente con botón
+                FilledButton(child: Text('Entregar trabajo'),
+                    onPressed: (){
+                      Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
+                      Navigator.pop(context, 'User deleted file');
+                    }),
                 if(servicioseleccionado!.entregadotutor != "ENTREGADO")
                   Column(
                     children: [

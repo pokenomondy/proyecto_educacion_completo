@@ -102,7 +102,7 @@ class Uploads{
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = db.collection('CONTABILIDAD');
     List<RegistrarPago> pagos = [];
-    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado);
+    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO");
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
     //Llamar servicios ya agendados y guardar el nuevo
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -157,7 +157,7 @@ class Uploads{
     CollectionReference refhistorial = db.collection("CONTABILIDAD").doc(codigo).collection("HISTORIAL");
     await refhistorial.doc(fecha).set(newhistorial.toMap());
   }
-  //Entregar trabajos
+  //Entregar trabajos tutores
   Future<void> modifyServicioAgendadoEntregado(String codigo)async {
     print("entregado de tutor");
     CollectionReference contabilidad = db.collection("CONTABILIDAD");
@@ -167,12 +167,22 @@ class Uploads{
     };
     await contabilidad.doc(codigo).update(uploadinformacion);
   }
+  //Entregar trabajos clientes
+  Future<void> modifyServicioAgendadoEntregadoCliente(String codigo)async {
+    print("entregado de Cliente");
+    CollectionReference contabilidad = db.collection("CONTABILIDAD");
+    Map<String, dynamic> uploadinformacion = {};
+    uploadinformacion = {
+      "entregadocliente": "ENTREGADO",
+    };
+    await contabilidad.doc(codigo).update(uploadinformacion);
+  }
 
-  void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid,String idcarpeta) async{
+  void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
     CollectionReference tutor = db.collection("TUTORES");
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
-    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,idcarpeta,true);
+    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true);
     await tutor.doc(uid).set(newtutor.toMap());
     print("se subio un nuevo tutor");
     print(newtutor);
@@ -360,6 +370,14 @@ class Uploads{
     String solicitudesJson = jsonEncode(uploadconfiguracion);
     await prefs.setString('configuracion_inicial_List', solicitudesJson);
     await prefs.setBool('datos_descargados_configinicial', true);
+  }
+  //uploadmsgs
+  Future<void> uploadconfigmensaje(String text) async{
+    CollectionReference actualizadores = db.collection("ACTUALIZACION");
+    Map<String, dynamic> uploadconfiguracion = {
+      'SOLICITUDES':  text,
+    };
+    await actualizadores.doc("MENSAJES").set(uploadconfiguracion);
   }
 
 

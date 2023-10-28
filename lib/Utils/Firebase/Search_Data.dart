@@ -20,13 +20,14 @@ class Buscador{
     int idsolicitud = getserviceagendado.get('idsolicitud');
     int idcontable = getserviceagendado.get('idcontable');
     String entregadotutor = getserviceagendado.get('entregadotutor');
+    String entregadocliente = getserviceagendado.get('entregadocliente');
     List<RegistrarPago> pagos = [];
 
     print("Campo 'codigo': $codigo");
     print("Campo 'sistema': $sistema");
 
 
-    ServicioAgendado newservice = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregadotutor);
+    ServicioAgendado newservice = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregadotutor,entregadocliente);
 
     return newservice;
   }

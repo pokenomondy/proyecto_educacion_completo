@@ -828,7 +828,6 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
   String correogmail = "";
   String passuno = "";
   String passdos = "";
-  String iddcarpeta = "";
   final db = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
   List<Carrera> CarrerasList = [];
@@ -976,15 +975,6 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
             maxLines: null,
           ),
           //id carpeta
-          TextBox(
-            placeholder: 'id carpeta',
-            onChanged: (value){
-              setState(() {
-                iddcarpeta = value;
-              });
-            },
-            maxLines: null,
-          ),
           FilledButton(child: const Text('Agregar'), onPressed: (){
            createUserWithEmailAndPassword();
            //loadDataTablasMaterias();
@@ -1001,7 +991,7 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
         email: correogmail,
         password: passuno,
       );
-      Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, auth.currentUser!.uid,iddcarpeta);
+      Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, auth.currentUser!.uid);
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {

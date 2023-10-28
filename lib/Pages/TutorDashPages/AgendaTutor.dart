@@ -126,76 +126,13 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                             fontWeight: FontWeight.w400))
                 ),
                 onTap: (CalendarTapDetails details) {
-                  CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context);
+                  CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context,appointmentToServicioMap);
                 },
               ),
             );
           },
         ),
       ],
-    );
-  }
-
-  void calendario_oprimido(CalendarTapDetails details){
-    if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda){
-      final Appointment appointmentdetails = details.appointments![0];
-      _subject = appointmentdetails.subject;
-      _notes = appointmentdetails.notes;
-      servicioseleccionado = appointmentToServicioMap[appointmentdetails];
-
-    }else{
-
-    }
-    dialog.showDialog(
-        context: context,
-        builder: (BuildContext context){
-          return dialog.AlertDialog(
-            title: Text('Agenda $_subject'),
-            content: Column(
-              children: [
-                Text(_notes!),
-                Text(servicioseleccionado!.materia),
-                Text(servicioseleccionado!.preciotutor.toString()),
-                GestureDetector(
-                  onTap: () {
-                    final textToCopy = servicioseleccionado!.codigo
-                        .toString();
-                    Clipboard.setData(
-                        ClipboardData(text: textToCopy));
-                  },
-                  child: Text(servicioseleccionado!.codigo),
-                ),
-                Text(DateFormat('dd/MM/yyyy hh:mm a').format(servicioseleccionado!.fechaentrega)),
-                Text(servicioseleccionado!.idcontable.toString()),
-                Text(servicioseleccionado!.idsolicitud.toString()),
-                Text(servicioseleccionado!.entregadotutor), //Algun color, si tiene entrega o no?
-
-                if(servicioseleccionado!.entregadotutor != "ENTREGADO")
-                  Column(
-                    children: [
-                      StreamBuilder<int>(
-                        stream: Stream.periodic(Duration(seconds: 1), (i) => i), // Actualiza cada minuto
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Text('sin datos'); // Manejar el caso en el que no hay datos aún
-                          }
-
-                          final now = DateTime.now();
-                          final timeRemaining = servicioseleccionado!.fechaentrega.difference(now);
-
-                          return Text(
-                            'Tiempo restante: ${timeRemaining.inDays} días, ${timeRemaining.inHours.remainder(24)} horas '
-                                ', ${timeRemaining.inMinutes.remainder(60)} minutos',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-          );
-        }
     );
   }
 

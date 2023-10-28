@@ -51,12 +51,10 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   final CalendarController _calendarController = CalendarController();
   List<ServicioAgendado> servicioagendadoList = [];
   List<Appointment>? meetings = [];
-  String? _subject = '',
-      _start = '',
-      _end = '',
-      _notes = '';
+  String? _subject = '', _start = '', _end = '', _notes = '';
   bool datosDescargados = false;
   bool cargarinterfaz = false;
+  Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
 
   @override
   void initState() {
@@ -94,16 +92,18 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                         return Center(child: Text('cargando'));
                       }
                       servicioagendadoList = snapshot.data;
-                      meetings = servicioagendadoList
-                          ?.map((servicio) =>
-                          Appointment(
-                            startTime: CalendarioStyle().tiempotarjetastart(servicio),
-                            endTime: CalendarioStyle().tiempotarjetaend(servicio),
-                            subject: "${servicio.identificadorcodigo} - ${servicio.tutor  } - ${servicio.idcontable}",
-                            notes: servicio.materia,
-                            color: CalendarioStyle().colortarjetaAdmin(servicio),
-                          ))
-                          .toList();
+                      List<Appointment>? meetings = servicioagendadoList
+                          ?.map((servicio) {
+                        final appointment = Appointment(
+                          startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                          endTime: CalendarioStyle().tiempotarjetaend(servicio),
+                          subject: "${servicio.identificadorcodigo} - ${servicio.materia} - ${servicio.idcontable}",
+                          notes: servicio.materia,
+                          color: CalendarioStyle().colortarjetaAdmin(servicio),
+                        );
+                        appointmentToServicioMap[appointment] = servicio;
+                        return appointment;
+                      }).toList();
 
                       return Container(
                         height: 800,
@@ -133,7 +133,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                                       fontSize: 25,
                                       fontWeight: FontWeight.w400))
                           ),
-                          onTap: calendario_oprimido,
+                          onTap: (CalendarTapDetails details) {
+                            CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context,appointmentToServicioMap);
+                          },
                         ),
                       );
                     },

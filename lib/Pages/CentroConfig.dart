@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../Objetos/Solicitud.dart';
 import '../Utils/Drive Api/GoogleDrive.dart';
+import '../Utils/Firebase/Uploads.dart';
 import '../Utils/Utiles/FuncionesUtiles.dart';
 
 class ConfiguracionDatos extends StatefulWidget {
@@ -52,6 +53,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
   int numsolicitudes = 0;
   Config configuracion = Config();
   bool configloaded = false;
+  String msgsolicitud = "";
 
 
   @override
@@ -140,7 +142,27 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
                 cartaplugins("Sistema Básico",configuracion.basicoNormal,configuracion.basicofecha),
                 cartaplugins("Solicitudes Drive Api",configuracion.SolicitudesDriveApi,configuracion.SolicitudesDriveApiFecha),
                 cartaplugins("Pagos Drive Api",configuracion.PagosDriveApi,configuracion.PagosDriveApiFecha),
-
+              ],
+            ),
+            Column(
+              children: [
+                Text('------ MENSAJES PERSONALIZADOS -----'),
+                Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                Container(
+                  width: 200,
+                  child: TextBox(
+                    placeholder: 'Mensaje solicitdes',
+                    onChanged: (value){
+                      setState(() {
+                        msgsolicitud = value;
+                      });
+                    },
+                    maxLines: null,
+                  ),
+                ),
+                FilledButton(child: Text('Subir'), onPressed: (){
+                  Uploads().uploadconfigmensaje(msgsolicitud);
+                }),
               ],
             ),
           ],

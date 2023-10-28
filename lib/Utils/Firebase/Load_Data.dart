@@ -239,7 +239,6 @@ class LoadData {
         String correogmail = TutorDoc['Correo gmail'];
         String univerisdad = TutorDoc['Universidad'];
         String uid = TutorDoc['uid'];
-        String idcarpeta = TutorDoc.data().toString().contains('idcarpeta') ? TutorDoc.get('idcarpeta') : 'NO REGISTRADO';
         bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
 
         //Cargamos materias
@@ -280,7 +279,6 @@ class LoadData {
             uid,
             materiaList,
             cuentasBancariasList,
-            idcarpeta,
             activo);
         tutoresList.add(newTutores);
       }
@@ -376,6 +374,7 @@ class LoadData {
     await prefs.setBool('datos_descargados_listauniversidades', true);
   }
 
+
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
   Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded}) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -436,6 +435,7 @@ class LoadData {
       return solicitudList;
     }
   }
+
 
   Future guardaDatosSolicitudes(List<Solicitud> solicitudList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -691,21 +691,104 @@ class LoadData {
     }
   }
 
+  //LLer mensajes personalizados
+  Future<Map<String, dynamic>> configuracion_mensajes() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('datos_descargados_config_mensajes') ?? false;
+
+    if (!datosDescargados) {
+      try {
+        DocumentSnapshot getconfiguracioninicial = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("MENSAJES").get();
+
+        if (getconfiguracioninicial.exists) {
+          String msjsolicitudes = getconfiguracioninicial.get('SOLICITUDES') ?? '';
+
+          Map<String, dynamic> uploadconfiguracion = {
+            'SOLICITUDES': msjsolicitudes,
+          };
+
+          String solicitudesJson = jsonEncode(uploadconfiguracion);
+          await prefs.setString('configuracion_mensajes_list', solicitudesJson);
+          await prefs.setBool('datos_descargados_config_mensajes', true);
+
+          return uploadconfiguracion;
+        } else {
+          // El documento no existe, puedes devolver una lista vacía o lo que sea adecuado para tu aplicación.
+          return {};
+        }
+      } catch (e) {
+        print("Error: $e");
+        return {};
+      }
+    } else {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String solicitudesJson = prefs.getString('configuracion_mensajes_list') ?? '';
+      await prefs.setBool('datos_descargados_config_mensajes', false);
+      if (solicitudesJson.isNotEmpty) {
+        Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
+        return configuracion;
+      } else {
+        return {};
+      }
+    }
+  }
+
+
   //Obtener TUTORES - NOMBRE DE TUTOR , TOCA PASARLO A LOCAL
 
+  //Tutores en local
   Future getinfotutor(User currentUser) async {
-    DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
-    String nametutor = getutoradmin.get('nombre Whatsapp');
-    String idcarpeta = getutoradmin.get('idcarpeta');
-    String Correo_gmail = getutoradmin.get('Correo gmail');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
+    if (!datosDescargados) {
+      print("descargando datos de info de cero");
+      DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+      String nametutor = getutoradmin.get('nombre Whatsapp');
+      String Correo_gmail = getutoradmin.get('Correo gmail');
+      Map<String, dynamic> datos_tutor = {
+        'nametutor': nametutor,
+        'Correo_gmail' : Correo_gmail,
+      };
 
-    Map<String, dynamic> datos_tutor = {
-      'nametutor': nametutor,
-      'idcarpeta': idcarpeta,
-      'Correo_gmail' : Correo_gmail,
-    };
-    return datos_tutor;
+      String solicitudesJson = jsonEncode(datos_tutor);
+      await prefs.setString('informacion_tutor', solicitudesJson);
+      await prefs.setBool('datos_descargadios_getinfotutor', true);
+      return datos_tutor;
+    }else{
+      print("local admon");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String solicitudesJson = prefs.getString('informacion_tutor') ?? '';
+      Map<String, dynamic> datos_tutor = jsonDecode(solicitudesJson);
+      return datos_tutor;
+    }
+
+
+
+
+
   }
+
+  Future<String> verificar_rol(User currentUser) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
+    if(!datosDescargados){
+      print("descargando rol de cero");
+      DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+      String rol = getutoradmin.get('rol') ?? '';
+      await prefs.setString('rol_usuario', rol);
+      await prefs.setBool('datos_Descargados_verificar_rol', true);
+      return rol;
+    }else{
+      print("rol totalmente cacheado");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('datos_Descargados_verificar_rol', false); //Quitar esto
+      String rol = prefs.getString('rol_usuario') ?? '';
+      return rol;
+    }
+
+  }
+
+
 
   }
 

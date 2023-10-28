@@ -14,6 +14,7 @@ class Config {
   String idcarpetaSolicitudes = "";
   //plugins
   Map<String, dynamic> configuracion_plugins = {}; //plugins
+  Map<String, dynamic> configuracion_mensajes = {}; //mensajes
   bool PagosDriveApi = false;
   bool SolicitudesDriveApi = false;
   bool TutoresBanca = false;
@@ -24,6 +25,8 @@ class Config {
   //info de tutor
   String rol = "";
   final currentUser = FirebaseAuth.instance.currentUser;
+  //mensajes
+  String mensaje_solicitd = "";
 
 
   Config() {
@@ -33,9 +36,8 @@ class Config {
   Future<void> initConfig() async {
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
     configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
-    DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
-    rol = getutoradmin.get('rol') ?? '';
-    print("current user $rol");
+    rol = await LoadData().verificar_rol(currentUser!);
+    configuracion_mensajes = await LoadData().configuracion_mensajes();
 
     // Verificar si 'nombre_empresa' existe y no es nulo
     if (configuracion_inicial.containsKey('nombre_empresa')) {
@@ -47,7 +49,6 @@ class Config {
 
     } else {
     }
-
     //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
     if(configuracion_plugins.containsKey('basicoNormal')){
       basicoNormal = configuracion_plugins['basicoNormal'];
@@ -63,6 +64,10 @@ class Config {
           ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
           : DateTime.now();
       print("fechas y cosas");
+    }
+
+    if(configuracion_mensajes.containsKey('SOLICITUDES')){
+      mensaje_solicitd = configuracion_mensajes['SOLICITUDES'];
     }
   }
 
@@ -81,6 +86,8 @@ class Config {
   String carpetasolicitudes = "1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD";
   //Carpeta de Pagos
   String carpetapagos = "1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N";
+  //Carpeta de entregas de trabajos
+  String carpetaentregatutores = "1I2RvuF9pOVgN5laPkahMdBoYaAY9Ma_1";
 
   //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
   //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.

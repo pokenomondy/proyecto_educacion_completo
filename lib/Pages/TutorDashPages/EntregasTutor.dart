@@ -186,7 +186,8 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                   textoestado = "Archivos subiendose ..., espere mensaje de confirmación";
                   subiendoentrega = true;
                 });
-                await DriveApiUsage().entrega_tutor(widget.idcarpeta, widget.nombretutor,selectedServicio!.codigo,selectedFiles,context);
+                await DriveApiUsage().entregartrabajo(selectedServicio!.codigo, selectedFiles, "1I2RvuF9pOVgN5laPkahMdBoYaAY9Ma_1", context);
+
                 setState(() {
                   selectedFiles = [];
                   selectedServicio = null;

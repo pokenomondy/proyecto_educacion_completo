@@ -17,9 +17,11 @@ class ServicioAgendado{
   List<RegistrarPago> pagos = [];
   //Agregar estado si ha sido entregado o no entregado
   String entregadotutor = "";
+  String entregadocliente = "";
 
   ServicioAgendado(this.codigo,this.sistema,this.materia,this.fechasistema,this.cliente,this.preciocobrado,this.fechaentrega,
-      this.tutor,this.preciotutor,this.identificadorcodigo,this.idsolicitud,this.idcontable,this.pagos,this.entregadotutor);
+      this.tutor,this.preciotutor,this.identificadorcodigo,this.idsolicitud,this.idcontable,this.pagos,this.entregadotutor,
+      this.entregadocliente);
 
   Map<String,dynamic> toMap(){
     return{
@@ -36,6 +38,7 @@ class ServicioAgendado{
       'idsolicitud': idsolicitud,
       'idcontable' : idcontable,
       'entregadotutor' : entregadotutor,
+      'entregadocliente' : entregadocliente,
     };
   }
 
@@ -55,6 +58,7 @@ class ServicioAgendado{
       'idcontable' : idcontable,
       'pagos': pagos.map((pagoData) => pagoData.toJson()).toList(),
       'entregadotutor' : entregadotutor,
+      'entregadocliente' : entregadocliente,
     };
   }
 
@@ -76,6 +80,7 @@ class ServicioAgendado{
           .map((pagoData) => RegistrarPago.fromJson(pagoData))
           .toList(),
       json['entregadotutor'],
+      json['entregadocliente'],
     );
   }
 
