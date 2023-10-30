@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadistica.dart';
 import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
@@ -10,8 +9,6 @@ import 'Pages/ContableDash.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'package:intl/intl.dart';
-
-import 'Utils/Firebase/Load_Data.dart';
 
 class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
@@ -49,7 +46,7 @@ class DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
     if (!configloaded && !configloadedos) {
-      print("cargando vainas");
+      print("Cargando configuración inicial");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
       return Text('cargando'); // Ejemplo de indicador de carga
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
@@ -57,7 +54,6 @@ class DashboardState extends State<Dashboard> {
   }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
   }else{
-      print("cargando main dash");
       return NavigationView(
         appBar: NavigationAppBar(
           title: Container(

@@ -7,8 +7,7 @@ import '../../Objetos/RegistrarPago.dart';
 class stream_builders{
 
   //Streambuilders de servicios agendados
-  Stream<List<ServicioAgendado>> getServiciosAgendados() async* {
-    print("streambuilder descargando datos ?, pesado?");
+  Stream<List<ServicioAgendado>> getServiciosAgendados() async*   {
     CollectionReference refcontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
@@ -17,6 +16,7 @@ class stream_builders{
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
       List<ServicioAgendado> serviciosagendadoList = [];
 
+      print("llamando contabilidad desde stream");
       for (var servicio in servicioSnapshot.docs) {
         try {
           String codigo = servicio['codigo'];
@@ -36,7 +36,6 @@ class stream_builders{
           // Obtener pagos en primera descarga
           List<RegistrarPago> pagos = [];
 
-            print(idcontable);
           //Guardamos en objeto y ya lo pasamos para tutor
           ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregado,entregadocliente);
           serviciosagendadoList.add(newservicioagendado);

@@ -279,7 +279,7 @@ class _CrearSolicitudesState extends State<CrearSolciitudes> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    //solicitudesList = await LoadData().obtenerSolicitudes();
+    solicitudesList = await LoadData().obtenerSolicitudes();
     setState(() {
       carguelistas = true;
       print("cargadas las listas");

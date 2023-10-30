@@ -1,3 +1,5 @@
+import 'package:googleapis/driveactivity/v2.dart';
+
 import 'Cotizaciones.dart';
 
 class Solicitud {
@@ -14,6 +16,7 @@ class Solicitud {
   String infocliente = ""; //Cronograma de avances
   DateTime fechaactualizacion = DateTime.now(); //fecha de verificación, si esta cambia, se debe solo leer esta para ver si se debe actualizar
   String urlArchivos = "";
+  DateTime actualizarsolicitudes = DateTime.now();
 
   Solicitud(
       this.servicio,
@@ -28,6 +31,7 @@ class Solicitud {
       this.cotizaciones,
       this.fechaactualizacion,
       this.urlArchivos,
+      this.actualizarsolicitudes
       );
 
   // Constructor para crear una Solicitud vacía con valores predeterminados
@@ -43,7 +47,8 @@ class Solicitud {
         resumen = "",
         infocliente = "",
         fechaactualizacion = DateTime.now(),
-        urlArchivos = "";
+        urlArchivos = "",
+        actualizarsolicitudes = DateTime.now();
 
   Map<String, dynamic> toMap() {
     return {
@@ -58,6 +63,7 @@ class Solicitud {
       'Estado': estado,
       'fechaactualizacion':fechaactualizacion,
       'archivos':urlArchivos,
+      'actualizarsolicitudes' : actualizarsolicitudes,
     };
   }
 
@@ -77,6 +83,7 @@ class Solicitud {
           .toList(),
       DateTime.parse(json['fechaactualizacion']),
       json['archivos'],
+      DateTime.parse(json['actualizarsolicitudes']),
     );
   }
 
@@ -94,6 +101,7 @@ class Solicitud {
       'cotizaciones': cotizaciones.map((cotizacion) => cotizacion.toJson()).toList(),
       'fechaactualizacion': fechaactualizacion.toIso8601String(),
       'archivos' : urlArchivos,
+      'actualizarsolicitudes' : actualizarsolicitudes.toIso8601String(),
     };
   }
 }

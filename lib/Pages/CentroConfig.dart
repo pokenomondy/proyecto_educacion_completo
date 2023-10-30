@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../Objetos/Solicitud.dart';
 import '../Utils/Drive Api/GoogleDrive.dart';
+import '../Utils/Firebase/DeleteLocalData.dart';
 import '../Utils/Firebase/Uploads.dart';
 import '../Utils/Utiles/FuncionesUtiles.dart';
 
@@ -54,6 +55,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
   Config configuracion = Config();
   bool configloaded = false;
   String msgsolicitud = "";
+  String msgsconfirmacioncliente = "";
 
 
   @override
@@ -87,85 +89,112 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     }else{
       return Container(
         width: widget.currentwidth+400,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //Primary Color
-            Row(
-              children: [
-                Text('Primary Color: '),
-                Container(
-                  height: 20,
-                  width: 20,
-                  color: configuracion.primaryColor,
-                  child: Text('A'),
-                ),
-              ],
-            ),
-            //Secundary Color
-            Row(
-              children: [
-                Text('Secundary Color: '),
-                Container(
-                  height: 20,
-                  width: 20,
-                  color: configuracion.Secundarycolor,
-                  child: Text('A'),
-                ),
-              ],
-            ),
-            //Nombre de la empresa
-            Text('Nombre de la empresa : ${configuracion.nombreempresa}'),
-            //Cerrar sesión
-            FilledButton(child: Text('Cerrar sesión'), onPressed: (){
-              signOut();
-            }),
-            //Solicitudes con Drive Api
-            if(configuracion.SolicitudesDriveApi==true)
-            Column(
-              children: [
-                Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
-                Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
-              ],
-            ),
-            //Pagos con Drive Api
-            if(configuracion.PagosDriveApi==true)
-            Column(
-              children: [
-                Text('------ PAGOS DRIVE API PLUGIN -----'),
-                Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
-              ],
-            ),
-            //Plugins con fechas de validez del programa
-            Row(
-              children: [
-                cartaplugins("Sistema Básico",configuracion.basicoNormal,configuracion.basicofecha),
-                cartaplugins("Solicitudes Drive Api",configuracion.SolicitudesDriveApi,configuracion.SolicitudesDriveApiFecha),
-                cartaplugins("Pagos Drive Api",configuracion.PagosDriveApi,configuracion.PagosDriveApiFecha),
-              ],
-            ),
-            Column(
-              children: [
-                Text('------ MENSAJES PERSONALIZADOS -----'),
-                Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
-                Container(
-                  width: 200,
-                  child: TextBox(
-                    placeholder: 'Mensaje solicitdes',
-                    onChanged: (value){
-                      setState(() {
-                        msgsolicitud = value;
-                      });
-                    },
-                    maxLines: null,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              //Primary Color
+              Row(
+                children: [
+                  Text('Primary Color: '),
+                  Container(
+                    height: 20,
+                    width: 20,
+                    color: configuracion.primaryColor,
+                    child: Text('A'),
                   ),
-                ),
-                FilledButton(child: Text('Subir'), onPressed: (){
-                  Uploads().uploadconfigmensaje(msgsolicitud);
-                }),
-              ],
-            ),
-          ],
+                ],
+              ),
+              //Secundary Color
+              Row(
+                children: [
+                  Text('Secundary Color: '),
+                  Container(
+                    height: 20,
+                    width: 20,
+                    color: configuracion.Secundarycolor,
+                    child: Text('A'),
+                  ),
+                ],
+              ),
+              //Nombre de la empresa
+              Text('Nombre de la empresa : ${configuracion.nombreempresa}'),
+              //Cerrar sesión
+              FilledButton(child: Text('Cerrar sesión'), onPressed: (){
+                signOut();
+              }),
+              //Solicitudes con Drive Api
+              if(configuracion.SolicitudesDriveApi==true)
+              Column(
+                children: [
+                  Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
+                  Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
+                ],
+              ),
+              //Pagos con Drive Api
+              if(configuracion.PagosDriveApi==true)
+              Column(
+                children: [
+                  Text('------ PAGOS DRIVE API PLUGIN -----'),
+                  Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
+                ],
+              ),
+              //Plugins con fechas de validez del programa
+              Row(
+                children: [
+                  cartaplugins("Sistema Básico",configuracion.basicoNormal,configuracion.basicofecha),
+                  cartaplugins("Solicitudes Drive Api",configuracion.SolicitudesDriveApi,configuracion.SolicitudesDriveApiFecha),
+                  cartaplugins("Pagos Drive Api",configuracion.PagosDriveApi,configuracion.PagosDriveApiFecha),
+                ],
+              ),
+              Column(
+                children: [
+                  Text('------ MENSAJES PERSONALIZADOS -----'),
+                  Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                  Container(
+                    width: 200,
+                    child: TextBox(
+                      placeholder: 'Mensaje solicitdes',
+                      onChanged: (value){
+                        setState(() {
+                          msgsolicitud = value;
+                        });
+                      },
+                      maxLines: null,
+                    ),
+                  ),
+                  FilledButton(child: Text('Subir'), onPressed: (){
+                    Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
+                  }),
+                  Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                  Container(
+                    width: 200,
+                    child: TextBox(
+                      placeholder: 'Mensaje Confirmaciones clientes',
+                      onChanged: (value){
+                        setState(() {
+                          msgsconfirmacioncliente = value;
+                        });
+                      },
+                      maxLines: null,
+                    ),
+                  ),
+                  FilledButton(child: Text('Subir mensaje confirmación'), onPressed: (){
+                    Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
+                  }),
+                ],
+              ),
+              //Eliminar base de datos de solicitudesList
+              FilledButton(child: Text("reiniciar solicitudesList"),
+                  onPressed: (){
+                    DeleteLocalData().eliminarsolicitudesLocal();
+                  }),
+              FilledButton(child: Text("reiniciar Tutores"),
+                  onPressed: (){
+                    DeleteLocalData().eliinarTutoresLocal();
+                  }),
+            ],
+          ),
         ),
       );
     }

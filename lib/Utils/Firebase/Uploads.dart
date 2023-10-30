@@ -10,6 +10,7 @@ import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.da
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
+import 'package:googleapis/driveactivity/v2.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
@@ -27,7 +28,7 @@ class Uploads{
   //  
   CollectionReference solicitud = db.collection('SOLICITUDES');
   List<Cotizacion> cotizaciones = [];
-  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo);
+  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now());
   print("subido con exito servicio $idcotizacion");
   await solicitud.doc("$idcotizacion").set(newservice.toMap());
   //Agregamos este servicio a la lista offline ya guardada
@@ -42,7 +43,7 @@ class Uploads{
   await prefs.setString('solicitudes_list', solicitudesJsondos);
 }
   //Modificar un servicio
-  Future<void> modifyServiciosolicitud(int index, String texto, DateTime dateTime, int idcotizacion) async {
+  Future<void> modifyServiciosolicitud(int index, String texto, DateTime dateTime, int idcotizacionfire) async {
     String variable = "";
     Map<String, dynamic> uploadinformacion = {};
     if (index == 0) {
@@ -57,25 +58,27 @@ class Uploads{
       variable = "infocliente";
     }
 
-    print("Variable: $variable");
-    print("Texto: $texto");
-    print("ID Cotizacion: $idcotizacion");
-
     CollectionReference solicitud = db.collection('SOLICITUDES');
     if(index!=3){
       uploadinformacion = {
         '$variable': texto,
+        'actualizarsolicitudes': DateTime.now(),
       };
     }else{
       uploadinformacion = {
         '$variable': dateTime,
+        'actualizarsolicitudes': DateTime.now(),
       };
     }
 
-
     print("Upload Información: $uploadinformacion");
 
-    await solicitud.doc(idcotizacion.toString()).update(uploadinformacion);
+    //Modificar en local la información. //Adicional se debe actualizar la variable de actualización para que no se actualice ahorita que pase
+    List<Solicitud> solicitudesList = await LoadData().obtenerSolicitudes();
+    Solicitud solicitudEnLista = solicitudesList.where((solicitud) => solicitud.idcotizacion == idcotizacionfire).first;
+    //Seguir trabajando en esta modificación
+
+    await solicitud.doc(idcotizacionfire.toString()).update(uploadinformacion);
   }
 
 //añadir cotización
@@ -182,7 +185,7 @@ class Uploads{
     CollectionReference tutor = db.collection("TUTORES");
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
-    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true);
+    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now());
     await tutor.doc(uid).set(newtutor.toMap());
     print("se subio un nuevo tutor");
     print(newtutor);
@@ -372,12 +375,12 @@ class Uploads{
     await prefs.setBool('datos_descargados_configinicial', true);
   }
   //uploadmsgs
-  Future<void> uploadconfigmensaje(String text) async{
+  Future<void> uploadconfigmensaje(String text, String s) async{
     CollectionReference actualizadores = db.collection("ACTUALIZACION");
     Map<String, dynamic> uploadconfiguracion = {
-      'SOLICITUDES':  text,
+      '$s':  text,
     };
-    await actualizadores.doc("MENSAJES").set(uploadconfiguracion);
+    await actualizadores.doc("MENSAJES").update(uploadconfiguracion);
   }
 
 

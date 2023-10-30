@@ -34,6 +34,7 @@ class Config {
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
+    LoadData().verificar_tiempos_Cache();  //Verificamos en cache, aqui designamos tiempo de actualización de variables
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
     configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
     rol = await LoadData().verificar_rol(currentUser!);
@@ -63,7 +64,6 @@ class Config {
       PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
           : DateTime.now();
-      print("fechas y cosas");
     }
 
     if(configuracion_mensajes.containsKey('SOLICITUDES')){
