@@ -92,7 +92,7 @@ import '../../Utils/Firebase/Load_Data.dart';
                       contrasena = value;
                     });
                   },
-                  maxLines: null,
+                  obscureText: true,
                 ),
               ),
               Padding(

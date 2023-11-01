@@ -185,56 +185,56 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
         SizedBox(
             height: currentheight-90,
             child: ListView.builder(
-              itemCount: widget.tutoresList.length,
-              itemBuilder: (context,index) {
-                Tutores? tutor = widget.tutoresList[index];
+                itemCount: widget.tutoresList.length,
+                itemBuilder: (context,index) {
+                  Tutores? tutor = widget.tutoresList[index];
 
-                return GestureDetector(
-                  onTap: (){
-                    print("te toco");
-                    TutoresDialog(tutor: tutor,materiasList: [],);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                    child: Card(
-                      child:Column(
-                        children: [
-                          //nombre y numero de wasap
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(child: Text(tutor.nombrewhatsapp)),
-                              GestureDetector(
-                                onTap: () {
-                                  final textToCopy = tutor.numerowhatsapp.toString();
-                                  Clipboard.setData(ClipboardData(text: textToCopy));
-                                },
-                                child:Text(tutor.numerowhatsapp.toString()),
+                  return GestureDetector(
+                    onTap: (){
+                      print("te toco");
+                      TutoresDialog(tutor: tutor,materiasList: [],);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                      child: Card(
+                        child:Column(
+                          children: [
+                            //nombre y numero de wasap
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(tutor.nombrewhatsapp)),
+                                GestureDetector(
+                                  onTap: () {
+                                    final textToCopy = tutor.numerowhatsapp.toString();
+                                    Clipboard.setData(ClipboardData(text: textToCopy));
+                                  },
+                                  child:Text(tutor.numerowhatsapp.toString()),
 
-                              ),
-                            ],
-                          ),
-                          TutoresDialog(tutor: tutor,materiasList: materiaList,),
-                          //# de materias manejadas
-                          Text("${tutor.materias.length.toString()} materias registradas"),
-                          //# de cuentas bancarias registradas
-                          Text("${tutor.cuentas.length.toString()} cuentas registradas"),
-                          //carrera y universidad
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(child: Text(tutor.carrera)),
-                              Expanded(child: Text(tutor.univerisdad)),
-                            ],
-                          ),
-                          Text('Activo? ${tutor.activo}')
-                        ],
+                                ),
+                              ],
+                            ),
+                            TutoresDialog(tutor: tutor,materiasList: materiaList,),
+                            //# de materias manejadas
+                            Text("${tutor.materias.length.toString()} materias registradas"),
+                            //# de cuentas bancarias registradas
+                            Text("${tutor.cuentas.length.toString()} cuentas registradas"),
+                            //carrera y universidad
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(tutor.carrera)),
+                                Expanded(child: Text(tutor.univerisdad)),
+                              ],
+                            ),
+                            Text('Activo? ${tutor.activo}')
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }
-          )
+                  );
+                }
+            )
         ),
       ],
     );
@@ -365,352 +365,352 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
         children: [
           const Text('Busqueda'),
           if(_materiacargarauto==true)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                            (materia) => AutoSuggestBoxItem<Materia>(
-                          value: materia,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: [
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
 
-                          label: _truncateLabel(materia.nombremateria),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${materia.nombremateria} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                            label: _truncateLabel(materia.nombremateria),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${materia.nombremateria} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedMateria = item.value; // Actualizar el valor seleccionado
+                        onSelected: (item) {
+                          setState(() {
+                            selectedMateria = item.value; // Actualizar el valor seleccionado
                           }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
-                          setState(() {
-                            print("vacio");
-                            selectedMateria = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedMateria = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                            (materia) => AutoSuggestBoxItem<Materia>(
-                          value: materia,
-                          label: _truncateLabel(materia.nombremateria),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${materia.nombremateria} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          print("seleccionado ${item.label}");
-                          selectedMateriados = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty) {
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
+                            label: _truncateLabel(materia.nombremateria),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${materia.nombremateria} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
                           setState(() {
-                            selectedMateriados = null; // Limpiar la selección cuando se borra el texto
+                            print("seleccionado ${item.label}");
+                            selectedMateriados = item.value; // Actualizar el valor seleccionado
                           });
-                        }
-                      },
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty) {
+                            setState(() {
+                              selectedMateriados = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                            (materia) => AutoSuggestBoxItem<Materia>(
-                          value: materia,
-                          label: _truncateLabel(materia.nombremateria),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${materia.nombremateria} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          print("seleccionado ${item.label}");
-                          selectedMateriatres = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty) {
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
+                            label: _truncateLabel(materia.nombremateria),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${materia.nombremateria} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
                           setState(() {
-                            selectedMateriatres = null; // Limpiar la selección cuando se borra el texto
+                            print("seleccionado ${item.label}");
+                            selectedMateriatres = item.value; // Actualizar el valor seleccionado
                           });
-                        }
-                      },
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty) {
+                            setState(() {
+                              selectedMateriatres = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                            (materia) => AutoSuggestBoxItem<Materia>(
-                          value: materia,
-                          label: _truncateLabel(materia.nombremateria),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${materia.nombremateria} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          print("seleccionado ${item.label}");
-                          selectedMateriacuatro = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty) {
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
+                            label: _truncateLabel(materia.nombremateria),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${materia.nombremateria} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
                           setState(() {
-                            selectedMateriacuatro = null; // Limpiar la selección cuando se borra el texto
+                            print("seleccionado ${item.label}");
+                            selectedMateriacuatro = item.value; // Actualizar el valor seleccionado
                           });
-                        }
-                      },
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty) {
+                            setState(() {
+                              selectedMateriacuatro = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Materia>(
-                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                            (materia) => AutoSuggestBoxItem<Materia>(
-                          value: materia,
-                          label: _truncateLabel(materia.nombremateria),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${materia.nombremateria} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          print("seleccionado ${item.label}");
-                          selectedMateriacinco = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty) {
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
+                            label: _truncateLabel(materia.nombremateria),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${materia.nombremateria} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
                           setState(() {
-                            selectedMateriacinco = null; // Limpiar la selección cuando se borra el texto
+                            print("seleccionado ${item.label}");
+                            selectedMateriacinco = item.value; // Actualizar el valor seleccionado
                           });
-                        }
-                      },
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty) {
+                            setState(() {
+                              selectedMateriacinco = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: _truncateLabel(carrera.nombrecarrera),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: _truncateLabel(carrera.nombrecarrera),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedCarrera = item.value; // Actualizar el valor seleccionado
-                        }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
+                        onSelected: (item) {
                           setState(() {
-                            print("vacio");
-                            selectedCarrera = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                            selectedCarrera = item.value; // Actualizar el valor seleccionado
+                          }
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedCarrera = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: _truncateLabel(carrera.nombrecarrera),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: _truncateLabel(carrera.nombrecarrera),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedCarrerados = item.value; // Actualizar el valor seleccionado
-                        }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
+                        onSelected: (item) {
                           setState(() {
-                            print("vacio");
-                            selectedCarrerados = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                            selectedCarrerados = item.value; // Actualizar el valor seleccionado
+                          }
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedCarrerados = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: _truncateLabel(carrera.nombrecarrera),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: _truncateLabel(carrera.nombrecarrera),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedCarreratres = item.value; // Actualizar el valor seleccionado
-                        }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
+                        onSelected: (item) {
                           setState(() {
-                            print("vacio");
-                            selectedCarreratres = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                            selectedCarreratres = item.value; // Actualizar el valor seleccionado
+                          }
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedCarreratres = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: _truncateLabel(carrera.nombrecarrera),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: _truncateLabel(carrera.nombrecarrera),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedCarreracuatro = item.value; // Actualizar el valor seleccionado
-                        }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
+                        onSelected: (item) {
                           setState(() {
-                            print("vacio");
-                            selectedCarreracuatro = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                            selectedCarreracuatro = item.value; // Actualizar el valor seleccionado
+                          }
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedCarreracuatro = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: _truncateLabel(carrera.nombrecarrera),
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: _truncateLabel(carrera.nombrecarrera),
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
 
-                      onSelected: (item) {
-                        setState(() {
-                          selectedCarrercinco = item.value; // Actualizar el valor seleccionado
-                        }
-                        );
-                      },
-                      textInputAction: TextInputAction.done,
-                      onChanged: (text, reason) {
-                        if (text.isEmpty ) {
+                        onSelected: (item) {
                           setState(() {
-                            print("vacio");
-                            selectedCarrercinco = null; // Limpiar la selección cuando se borra el texto
-                          });
-                        }
-                      },
+                            selectedCarrercinco = item.value; // Actualizar el valor seleccionado
+                          }
+                          );
+                        },
+                        textInputAction: TextInputAction.done,
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              print("vacio");
+                              selectedCarrercinco = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+              ],
+            ),
           FilledButton(
             child: const Text('Buscar'),
             onPressed: () {
@@ -889,71 +889,71 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
           ),
           //Carrera estudiada
           if(_cargadodatos==true)
-          Column(
-            children: [
-              //carrera
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Carrera'),
-                  Container(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Carrera>(
-                      items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
-                            (carrera) => AutoSuggestBoxItem<Carrera>(
-                          value: carrera,
-                          label: carrera.nombrecarrera,
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${carrera.nombrecarrera} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          print("seleccionado ${item.label}");
-                          selectedCarrera = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
+            Column(
+              children: [
+                //carrera
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Carrera'),
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Carrera>(
+                        items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: carrera.nombrecarrera,
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${carrera.nombrecarrera} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
+                          setState(() {
+                            print("seleccionado ${item.label}");
+                            selectedCarrera = item.value; // Actualizar el valor seleccionado
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              //universidad
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Universidad'),
-                  SizedBox(
-                    height: 30,
-                    width: 200,
-                    child: AutoSuggestBox<Universidad>(
-                      items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
-                            (universidad) => AutoSuggestBoxItem<Universidad>(
-                          value: universidad,
-                          label: universidad.nombreuniversidad,
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused #${universidad.nombreuniversidad} - ');
-                            }
-                          },
-                        ),
-                      )
-                          .toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          selectedUniversidad = item.value; // Actualizar el valor seleccionado
-                        });
-                      },
+                  ],
+                ),
+                //universidad
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Universidad'),
+                    SizedBox(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<Universidad>(
+                        items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
+                              (universidad) => AutoSuggestBoxItem<Universidad>(
+                            value: universidad,
+                            label: universidad.nombreuniversidad,
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${universidad.nombreuniversidad} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
+                          setState(() {
+                            selectedUniversidad = item.value; // Actualizar el valor seleccionado
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+              ],
+            ),
           //correo gmail
           TextBox(
             placeholder: 'Correo gmail',
@@ -976,8 +976,8 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
           ),
           //id carpeta
           FilledButton(child: const Text('Agregar'), onPressed: (){
-           createUserWithEmailAndPassword();
-           //loadDataTablasMaterias();
+            createUserWithEmailAndPassword();
+            //loadDataTablasMaterias();
           }),
         ],
       ),

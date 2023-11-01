@@ -742,8 +742,8 @@ class LoadData {
       String nametutor = getutoradmin.get('nombre Whatsapp');
       String Correo_gmail = getutoradmin.get('Correo gmail');
       Map<String, dynamic> datos_tutor = {
-        'nametutor': nametutor,
-        'Correo_gmail' : Correo_gmail,
+        'nombre Whatsapp': nametutor,
+        'Correo gmail' : Correo_gmail,
       };
 
       String solicitudesJson = jsonEncode(datos_tutor);
@@ -777,7 +777,7 @@ class LoadData {
     }else{
       print("rol totalmente cacheado");
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String rol = prefs.getString('rol_usuario') ?? '';
+      String rol = prefs.getString('rol_usuario') ?? 'TUTOR';
       return rol;
     }
 

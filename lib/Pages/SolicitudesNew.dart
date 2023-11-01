@@ -783,7 +783,7 @@ class _CrearContainerState extends State<_CrearContainer> {
           children: [
             Text(widget.title,style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
             StreamBuilder(
-                stream: LoadData().getsolicitudstream(widget.estado),
+              stream: LoadData().getsolicitudstream(widget.estado),
               builder: (context, snapshot){
                 if (snapshot.hasError) {
                   return Center(child: Text('Error al cargar las solicitudes'));
@@ -792,9 +792,9 @@ class _CrearContainerState extends State<_CrearContainer> {
                 if (!snapshot.hasData) {
                   return Center(child: Text('cargando'));
                 }
-                    List<Solicitud>? solicitudesList = snapshot.data;
-                    return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);
-                },
+                List<Solicitud>? solicitudesList = snapshot.data;
+                return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);
+              },
             ),
           ],
         ),
@@ -878,8 +878,6 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
   String codigo = "";
   Config configuracion = Config();
   bool configloaded = false;
-  TextEditingController _textControllerSolicitudes = TextEditingController();
-
 
   @override
   void initState() {
@@ -1103,13 +1101,9 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     );
   }
 
-  void detallessolicitud() {
-
-  }
-
   StreamBuilder<QuerySnapshot<Map<String, dynamic>>> escucharnumcotizaciones(int idsolicitud){
     return StreamBuilder(
-      stream: db.collection("SOLICITUDES").doc(idsolicitud.toString()).collection("COTIZACIONES").snapshots(),
+        stream: db.collection("SOLICITUDES").doc(idsolicitud.toString()).collection("COTIZACIONES").snapshots(),
         builder: (context,snapshot){
           if(!snapshot.hasData) return Text('CARGANDO NO HAY NADA');
           List<Cotizacion> cotizaciones = [];
@@ -1143,7 +1137,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     }
 
     String solicitud = configuracion.mensaje_solicitd;
-    
+
     solicitud = solicitud.replaceAll("/servicio/", servicio);
     solicitud = solicitud.replaceAll("/idcotizacion/", idcotizacion.toString());
     solicitud = solicitud.replaceAll("/materia/", materia);
@@ -1379,9 +1373,9 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
         ),
         actions: [
           Button(
-            child: const Text('Subir precio'),
-            onPressed: () {
-            }
+              child: const Text('Subir precio'),
+              onPressed: () {
+              }
           ),
           FilledButton(
             child: const Text('Cancel'),
@@ -1549,10 +1543,10 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                   //Mensaje de confirmación
                   if(stringpropsectocliente != 'PROSPECTO CLIENTE' || stringnombrecliente == "NO REGISTRADO")
                     FilledButton(child: Text('Copiar confirmación'),
-                      onPressed: (){
-                      copiarConfirmacion(solicitud,true,cotizacion);
-                      }
-                  ),
+                        onPressed: (){
+                          copiarConfirmacion(solicitud,true,cotizacion);
+                        }
+                    ),
                   FilledButton(child: Text('Copiar confirmación tutor'),
                       onPressed: (){
                         copiarConfirmacion(solicitud,false,cotizacion);
@@ -1687,7 +1681,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
         '\nFecha de entrega: $fechita'
         '\nCódigo de confirmación: $codigo'
         '\nID solicitud confirmada: ${solicitud.idcotizacion}';
-        '\nCualquier duda o inconveniente, comunícate con nosotros!! 📝';
+    '\nCualquier duda o inconveniente, comunícate con nosotros!! 📝';
 
     Clipboard.setData(ClipboardData(text: confirmacion));
   }

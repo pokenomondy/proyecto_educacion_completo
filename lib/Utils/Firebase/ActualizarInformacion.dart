@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Objetos/CuentasBancaraias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Objetos/Cotizaciones.dart';
+import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Tutores_objet.dart';
 
 class ActualizarInformacion {
@@ -21,24 +23,16 @@ class ActualizarInformacion {
       List tutoresList = await LoadData().obtenertutores();
       CollectionReference refenrecetablaTutores = await FirebaseFirestore.instance.collection("TUTORES");
       QuerySnapshot queryTutores = await refenrecetablaTutores.get();
-
+      Set<String> localTutoresList = Set.from(tutoresList.map((tutores) => tutores.uid));
       //Aqui entramos a los tutoresDoc, y primero verificamos que si hay que actualizar o no
       for (var TutorDoc in queryTutores.docs) {
-        DateTime actualizarTutoresFirebase = TutorDoc.data()
-            .toString()
-            .contains('actualizartutores') ? TutorDoc.get('actualizartutores')
-            .toDate() : DateTime(2023, 1, 1, 0, 0); //Number
-        String uid = TutorDoc['uid'];
-        print("revisando $uid");
-
-        Tutores tutorEnLista = tutoresList
-            .where((tutor) => tutor.uid == uid)
-            .first;
-
-
+        DateTime actualizarTutoresFirebase = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023, 1, 1, 0, 0); //Number
+        String uidFirebase = TutorDoc['uid'];
+        print("revisando $uidFirebase");
+        Tutores tutorEnLista = tutoresList.where((tutor) => tutor.uid == uidFirebase).first;
         print("tutlro en lista $tutorEnLista");
 
-        if (tutorEnLista != null) {
+        if (localTutoresList.contains(uidFirebase)) {
           if (tutorEnLista.actualizartutores != actualizarTutoresFirebase) {
             print("se actualiza el tutor ${tutorEnLista.nombrewhatsapp}");
             //Actualizar primero fecha de actualización
@@ -50,17 +44,28 @@ class ActualizarInformacion {
             tutorEnLista.carrera = TutorDoc['carrera'];
             tutorEnLista.correogmail = TutorDoc['Correo gmail'];
             tutorEnLista.univerisdad = TutorDoc['Universidad'];
-            tutorEnLista.activo =
-            TutorDoc.data().toString().contains('activo') ? TutorDoc.get(
-                'activo') : true;
+            tutorEnLista.activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
           }
         } else {
-          // Aquí puedes manejar el caso en el que no se encontró ningún tutor.
-          print("No se encontró ningún tutor con numerowhatsapp $uid");
+          String nombrewhatsapp = TutorDoc['nombre Whatsapp'];
+          String nombrecompleto = TutorDoc['nombre completo'];
+          int numerowhatsapp = TutorDoc['numero whatsapp'];
+          String carrera = TutorDoc['carrera'];
+          String correogmail = TutorDoc['Correo gmail'];
+          String univerisdad = TutorDoc['Universidad'];
+          String uid = TutorDoc['uid'];
+          bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
+          DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
+          print("se agrega el nuevo tutor $uidFirebase");
+          List<Materia> materias = [];
+          List<CuentasBancarias> cuentas = [];
+
+          Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas, activo, actualizartutores);
+          tutoresList.add(newtutor);
         }
+
       }
-      String updatedTutoresJson = jsonEncode(
-          tutoresList.map((tutor) => tutor.toJson()).toList());
+      String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
       prefs.setString('tutores_list', updatedTutoresJson);
     }
   }

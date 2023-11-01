@@ -134,7 +134,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                                       fontWeight: FontWeight.w400))
                           ),
                           onTap: (CalendarTapDetails details) {
-                            CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context,appointmentToServicioMap);
+                            CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
                           },
                         ),
                       );

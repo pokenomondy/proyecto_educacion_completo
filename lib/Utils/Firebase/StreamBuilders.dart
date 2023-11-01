@@ -65,10 +65,8 @@ class stream_builders{
     CollectionReference refcontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Stream<QuerySnapshot> queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor).snapshots();
-
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
       List<ServicioAgendado> serviciosagendadoList = [];
-
       for (var servicio in servicioSnapshot.docs) {
         try {
           String codigo = servicio['codigo'];
@@ -87,7 +85,6 @@ class stream_builders{
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
           String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
 
-          print(idcontable);
           //Guardamos en objeto y ya lo pasamos para tutor
           ServicioAgendado newservicioagendado = ServicioAgendado(
               codigo,
@@ -110,8 +107,8 @@ class stream_builders{
           print(e);
         }
       }
-      String solicitudesJson = jsonEncode(serviciosagendadoList);
-      await prefs.setString('servicios_agendado_tutor', solicitudesJson);
+        String solicitudesJson = jsonEncode(serviciosagendadoList);
+        await prefs.setString('servicios_agendado_tutor', solicitudesJson);
       yield serviciosagendadoList;
     }
   }

@@ -20,13 +20,13 @@ class _EstadisticaState extends State<Estadistica> {
     final currentwidth = MediaQuery.of(context).size.width;
     return NavigationView(
       pane: NavigationPane(
-        selected: _selectedpage,
-        onChanged: (index) => setState(() {
-          _selectedpage = index;
-        }),
-        displayMode: PaneDisplayMode.top,
-        items: <NavigationPaneItem>[
-          /*
+          selected: _selectedpage,
+          onChanged: (index) => setState(() {
+            _selectedpage = index;
+          }),
+          displayMode: PaneDisplayMode.top,
+          items: <NavigationPaneItem>[
+            /*
           PaneItem(
             icon:  const Icon(FluentIcons.home),
             title: const Text('Ventas'),
@@ -34,31 +34,31 @@ class _EstadisticaState extends State<Estadistica> {
           ),
 
            */
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('CALENDARIO'),
-            body: CalendarioData(),
-          ),
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('Estadisticas'),
-            body: EstadisticaMain(currentwidth: currentwidth,),
-          ),
-          PaneItem(
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('CALENDARIO'),
+              body: CalendarioData(),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Estadisticas'),
+              body: EstadisticaMain(currentwidth: currentwidth,),
+            ),
+            PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Contabilidad'),
               body: CrearContabilidad(),
-          ),
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('Solicitudes'),
-            body: CrearSolciitudes(),
-          ),
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('PAGOS'),
-            body: PagosDatos(),
-          ),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Solicitudes'),
+              body: CrearSolciitudes(),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('PAGOS'),
+              body: PagosDatos(),
+            ),
           ]
       ),
     );

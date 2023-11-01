@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
@@ -8,6 +9,7 @@ import 'package:googleapis/driveactivity/v2.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 
 import '../../Config/Config.dart';
+import '../EnviarMensajesWhataspp.dart';
 
 class ResultadosUpload{
   final int numberfilesUploaded;
@@ -150,7 +152,7 @@ class DriveApiUsage {
   }
 
   //Tutores -- Tutor
-  Future<void> entregartrabajo(String codigo, List<PlatformFile>? selectedFiles,String carpetaId, BuildContext context) async {
+  Future<void> entregartrabajo(String codigo, List<PlatformFile>? selectedFiles,String carpetaId, BuildContext context, ServicioAgendado selectedServicio) async {
     try {
       print("carpeta entregas");
       final httpClient = await auth.clientViaServiceAccount(
@@ -199,17 +201,16 @@ class DriveApiUsage {
                 print('Archivo "${file
                     .name}" subido correctamente a la nueva carpeta.');
                 archivosubidos = archivosubidos + 1;
-                //modificar trabajo de tutor como entregado, toca hacerlo de forma diferente
-                Uploads().modifyServicioAgendadoEntregado(codigo);
-                Utiles().notificacion("ARCHIVO SUBIDO", context, true, "archivo subido");
+
               } else {
                 print('No se pudo subir el archivo "${file
                     .name}" a la nueva carpeta.');
                 Utiles().notificacion("ERROR", context, false, "Informa al dufy admin, hubo error");
               }
-              //Expongamos el caso de que si se subio, se debe modificar la base de datos
-
             }
+            Uploads().modifyServicioAgendadoEntregado(codigo);
+            Utiles().notificacion("ARCHIVO SUBIDO", context, true, "archivo subido");
+            enviarmensajewsp().sendMessageAvisoTrabajoEntregadoAdmin("573161585420", selectedServicio!.codigo, selectedServicio!.cliente, selectedServicio!.fechaentrega.toString(), selectedServicio!.tutor);
           }
         }
 

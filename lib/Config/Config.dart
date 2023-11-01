@@ -34,7 +34,7 @@ class Config {
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
-    LoadData().verificar_tiempos_Cache();  //Verificamos en cache, aqui designamos tiempo de actualización de variables
+    LoadData().verificar_tiempos_Cache(); //Verificamos en cache, aqui designamos tiempo de actualización de variables
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
     configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
     rol = await LoadData().verificar_rol(currentUser!);
@@ -88,7 +88,9 @@ class Config {
   String carpetapagos = "1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N";
   //Carpeta de entregas de trabajos
   String carpetaentregatutores = "1I2RvuF9pOVgN5laPkahMdBoYaAY9Ma_1";
-
+  //wsp token importante
+  String tokenwsp = "EAAOWePbAwZCcBO3qCZB9mcNoAwqBOyw5JnPxQ6K22HCkJRtyZC7m4BjnsztuIGpEEaqGim9Pi1Avtte7iq3wjxN1WmNAjWRvQaYd0HZBOlNRcZCmRZAFAG4XaudmPt1qbBznsHNNjpL2IN1MkpOHow6iw3OWYvkaeZBKeOys99E1EGNibxpI550x7OpBUmrR4JqOD3ZAaieXZCZC4WFOCn";
+  String apiurl =  "https://graph.facebook.com/v17.0/134108179779463/messages";
   //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
   //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.
   bool dufyadmon = true;

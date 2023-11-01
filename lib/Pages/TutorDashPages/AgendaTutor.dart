@@ -3,6 +3,7 @@ import 'package:dashboard_admin_flutter/Utils/Calendario/CalendarioEstilo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:flutter/services.dart';
+import 'package:googleapis/calendar/v3.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
@@ -55,20 +56,23 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   String? _subject = '',_start = '',_end = '', _notes = '';
   Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
   ServicioAgendado? servicioseleccionado;
+  bool llamarstream = false;
 
 
   @override
   void initState() {
     _calendarController.view = CalendarView.month;
     loaddata().then((_) {
-      setState(() {}); // Trigger a rebuild after data is loaded.
+      setState(() {
+        llamarstream = true;
+      }); // Trigger a rebuild after data is loaded.
     });
     super.initState();
   }
 
   Future<void> loaddata() async {
     Map<String, dynamic> datos_tutor = await LoadData().getinfotutor(currentUser!);
-    nombretutor = datos_tutor['nametutor'];
+    nombretutor = datos_tutor['nombre Whatsapp'];
   }
 
   @override
@@ -76,6 +80,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
     final currentheight = MediaQuery.of(context).size.height-80;
     return Column(
       children: [
+        if(llamarstream==true)
         StreamBuilder<List<ServicioAgendado>>(
           stream: stream_builders().getServiciosAgendadosTutor(nombretutor),
           builder: (context, snapshot){
@@ -94,7 +99,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                 endTime: CalendarioStyle().tiempotarjetaend(servicio),
                 subject: "${servicio.identificadorcodigo} - ${servicio.materia} - ${servicio.idcontable}",
                 notes: servicio.materia,
-                color: CalendarioStyle().colortarjetaAdmin(servicio),
+                color: CalendarioStyle().colortarjetaTutor(servicio),
               );
               appointmentToServicioMap[appointment] = servicio;
               return appointment;
@@ -119,14 +124,14 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                         monthFormat: 'MMMM, yyyy',
                         height: 100,
                         textAlign: TextAlign.left,
-                        backgroundColor: Colors.green,
+                        backgroundColor: dialog.Colors.green,
                         monthTextStyle: TextStyle(
-                            color: Colors.red,
+                            color: dialog.Colors.red,
                             fontSize: 25,
                             fontWeight: FontWeight.w400))
                 ),
                 onTap: (CalendarTapDetails details) {
-                  CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context,appointmentToServicioMap);
+                  CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap,"TUTOR");
                 },
               ),
             );

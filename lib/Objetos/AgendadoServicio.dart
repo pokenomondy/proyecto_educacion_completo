@@ -84,7 +84,4 @@ class ServicioAgendado{
     );
   }
 
-
-
-
 }

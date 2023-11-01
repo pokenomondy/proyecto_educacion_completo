@@ -125,20 +125,20 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
               }),
               //Solicitudes con Drive Api
               if(configuracion.SolicitudesDriveApi==true)
-              Column(
-                children: [
-                  Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
-                  Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
-                ],
-              ),
+                Column(
+                  children: [
+                    Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
+                    Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
+                  ],
+                ),
               //Pagos con Drive Api
               if(configuracion.PagosDriveApi==true)
-              Column(
-                children: [
-                  Text('------ PAGOS DRIVE API PLUGIN -----'),
-                  Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
-                ],
-              ),
+                Column(
+                  children: [
+                    Text('------ PAGOS DRIVE API PLUGIN -----'),
+                    Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
+                  ],
+                ),
               //Plugins con fechas de validez del programa
               Row(
                 children: [

@@ -51,9 +51,9 @@ class DashboardState extends State<Dashboard> {
       return Text('cargando'); // Ejemplo de indicador de carga
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
-  }else if(currentUser == null || configuracion.rol == "TUTOR" ){
+    }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
-  }else{
+    }else{
       return NavigationView(
         appBar: NavigationAppBar(
           title: Container(
@@ -70,11 +70,11 @@ class DashboardState extends State<Dashboard> {
           items: <NavigationPaneItem>[
 
             PaneItem(
-                icon: const Icon(FluentIcons.home),
-                title:  configuracion.panelnavegacion("Solicitudes",_currentPage == 0),
-                body: widget.showSolicitudesNew ?  DetallesServicio(solicitud: widget.solicitud,) : SolicitudesNew(),
-                selectedTileColor:ButtonState.all(configuracion.primaryColor),
-                key: const ValueKey('/home'),
+              icon: const Icon(FluentIcons.home),
+              title:  configuracion.panelnavegacion("Solicitudes",_currentPage == 0),
+              body: widget.showSolicitudesNew ?  DetallesServicio(solicitud: widget.solicitud,) : SolicitudesNew(),
+              selectedTileColor:ButtonState.all(configuracion.primaryColor),
+              key: const ValueKey('/home'),
             ),
             PaneItem(icon: const Icon(FluentIcons.home),
                 title: configuracion.panelnavegacion("Tutores",_currentPage==1), body: TutoresVista(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),

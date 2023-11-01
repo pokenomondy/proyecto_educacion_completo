@@ -4,11 +4,11 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
-
+import '../../Config/Config.dart';
 import '../Firebase/Uploads.dart';
 
+class CalendarioStyle {
 
-class CalendarioStyle{
 
   dialog.Color colortarjetaTutor(ServicioAgendado servicio){
     if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
@@ -74,7 +74,7 @@ class CalendarioStyle{
     }
   }
 
-  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context, Map<Appointment, ServicioAgendado> appointmentToServicioMap){
+  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context, Map<Appointment, ServicioAgendado> appointmentToServicioMap, String rol){
     ServicioAgendado? servicioseleccionado;
     if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda) {
       final Appointment appointmentdetails = details.appointments![0];
@@ -82,9 +82,7 @@ class CalendarioStyle{
       _notes = appointmentdetails.notes!;
       servicioseleccionado = appointmentToServicioMap[appointmentdetails];
     }else{
-
     }
-
     //Dialogo cargado
     dialog.showDialog(
         context: context,
@@ -93,56 +91,7 @@ class CalendarioStyle{
             title: Text('Agenda $_subject'),
             content: Column(
               children: [
-                //Matería
-                Text(servicioseleccionado!.materia),
-                //Nombre de tutor
-                Text(servicioseleccionado!.tutor),
-                //Precio del tutor
-                Text(servicioseleccionado!.preciotutor.toString()),
-                //Código
-                GestureDetector(
-                  onTap: () {
-                    final textToCopy = servicioseleccionado!.codigo
-                        .toString();
-                    Clipboard.setData(
-                        ClipboardData(text: textToCopy));
-                  },
-                  child: Text(servicioseleccionado!.codigo),
-                ),
-                //fecha de entrega
-                Text(DateFormat('dd/MM/yyyy hh:mm a').format(servicioseleccionado!.fechaentrega)),
-                //id de solicitud
-                Text(servicioseleccionado!.idsolicitud.toString()),
-                //entrega de tutor
-                Text(servicioseleccionado!.entregadotutor), //Algun color, si tiene entrega o no?
-                //Entrega de cliente con botón
-                FilledButton(child: Text('Entregar trabajo'),
-                    onPressed: (){
-                      Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
-                      Navigator.pop(context, 'User deleted file');
-                    }),
-                if(servicioseleccionado!.entregadotutor != "ENTREGADO")
-                  Column(
-                    children: [
-                      StreamBuilder<int>(
-                        stream: Stream.periodic(Duration(seconds: 1), (i) => i), // Actualiza cada minuto
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Text('sin datos'); // Manejar el caso en el que no hay datos aún
-                          }
-
-                          final now = DateTime.now();
-                          final timeRemaining = servicioseleccionado!.fechaentrega.difference(now);
-
-                          return Text(
-                            'Tiempo restante: ${timeRemaining.inDays} días, ${timeRemaining.inHours.remainder(24)} horas '
-                                ', ${timeRemaining.inMinutes.remainder(60)} minutos',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                  tarjetas(servicioseleccionado!,context,rol),
               ],
             ),
           );
@@ -150,4 +99,84 @@ class CalendarioStyle{
     );
   }
 
+  dialog.Widget tarjetas(ServicioAgendado servicioseleccionado, BuildContext context, String rol){
+    if (rol == "TUTOR" && rol  != null){
+      return calendariovistaTutor(servicioseleccionado!);
+    }else{
+      return calendariovistaAdmin(servicioseleccionado!,context);
+    }
+
+  }
+
+  Widget calendariovistaTutor(ServicioAgendado servicioseleccionado){
+    return Container(
+      child: Column(
+        children: [
+          //Matería
+          Text(servicioseleccionado!.materia),
+          //Código
+          FilledButton(
+            onPressed: () {
+              final textToCopy = servicioseleccionado!.codigo
+                  .toString();
+              Clipboard.setData(
+                  ClipboardData(text: textToCopy));
+            },
+            child: Text(servicioseleccionado!.codigo),
+          ),
+          //Precio del tutor
+          Text(servicioseleccionado!.preciotutor.toString()),
+          //Estado
+          if(servicioseleccionado!.identificadorcodigo == "T")
+            Text(servicioseleccionado!.entregadotutor),
+          //id de solicitud
+          Text(servicioseleccionado!.idsolicitud.toString()),
+          //cONTADOR DE TIEMPO
+          Text(servicioseleccionado!.identificadorcodigo),
+          if(servicioseleccionado!.entregadotutor != "ENTREGADO")
+              if(servicioseleccionado!.identificadorcodigo =="T")
+                Column(
+              children: [
+                StreamBuilder<int>(
+                  stream: Stream.periodic(Duration(seconds: 1), (i) => i), // Actualiza cada minuto
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('sin datos'); // Manejar el caso en el que no hay datos aún
+                    }
+
+                    final now = DateTime.now();
+                    final timeRemaining = servicioseleccionado!.fechaentrega.difference(now);
+
+                    return Text(
+                      'Tiempo restante: ${timeRemaining.inDays} días, ${timeRemaining.inHours.remainder(24)} horas '
+                          ', ${timeRemaining.inMinutes.remainder(60)} minutos',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    );
+                  },
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget calendariovistaAdmin(ServicioAgendado servicioseleccionado, BuildContext context){
+    return Container(
+      child: Column(
+        children: [
+          calendariovistaTutor(servicioseleccionado),
+          //Entrega cliente
+          FilledButton(child: Text('Entregar trabajo'),
+              onPressed: (){
+                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
+                Navigator.pop(context, 'User deleted file');
+              }),
+        ],
+      ),
+    );
+  }
+
 }
+
+
