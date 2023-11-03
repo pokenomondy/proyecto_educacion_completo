@@ -1,5 +1,6 @@
 import 'package:dashboard_admin_flutter/Utils/EnviarMensajesWhataspp.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:googleapis/cloudsearch/v1.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/whatsapp.dart';
 import '../../Config/Config.dart';
@@ -8,6 +9,8 @@ import '../../Objetos/Solicitud.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/StreamBuilders.dart';
+import '../../Utils/Utiles/FuncionesUtiles.dart';
+import 'package:intl/intl.dart';
 
 class EstadisticaMain extends StatefulWidget{
   final double currentwidth;
@@ -28,15 +31,18 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   bool dataloaded = false;
   bool cargueagendado = false;
   Map<DateTime, int> ventasporDia = {};
+  Map<DateTime, int> ventasPorDiaDelMes = {};
   Map<DateTime, int> GananciasporDia = {};
   Map<String, int> estadoCounts = {
-    "AGENDADO": 0,
-    "DISPONIBLE": 0,
-    "EXPIRADO": 0,
+    "AGENDADO": 0, //
+    "DISPONIBLE": 0, //
+    "EXPIRADO": 0, //
     "ESPERANDO": 0,
-    "RECHAZADO": 0,
-    'NO PODEMOS':0,
+    'NO PODEMOS':0, //
+    'NO CLASIFICADO' :0,
   };
+
+  //NO podemos
 
   int totalestado = 0;
   double percentagendado = 0;
@@ -47,15 +53,14 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   double margen_solicitud = 10;
 
   //conteos filtrados
-  DateTime fecha_actual_filtro = DateTime.now();
+  DateTime fecha_actual_filtro = DateTime(2023,10,31);
   int contesolicitudfiltro = 0;
   int conteoServiciosAgendadofiltro = 0;
-
   int ventasobtenidas = 0;
   int costotutoresobtenido = 0;
   int gananciasobtenidas = 0;
-
   double percentganacia = 0.0;
+  double percetnsolicitudes = 0.0;
 
   void initState() {
     loadDataTablasMaterias();
@@ -63,7 +68,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    //solicitudesList = await LoadData().obtenerSolicitudes();
+    solicitudesList = await LoadData().obtenerSolicitudes();
     servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
 
     for (var solicitud in solicitudesList) {
@@ -86,6 +91,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
         costotutoresobtenido = costotutoresobtenido + servicioagendado.preciotutor;
         gananciasobtenidas = ventasobtenidas - costotutoresobtenido;
         percentganacia = gananciasobtenidas/ventasobtenidas * 100;
+        percetnsolicitudes = conteoServiciosAgendadofiltro/contesolicitudfiltro * 100;
     }
     }
 
@@ -108,11 +114,12 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
         solicitud.fechasistema.day,
       );
 
-      // Procesar ventas por día
-      if (ventasporDia.containsKey(fechaSolicitud)) {
+      if (ventasporDia.containsKey(fechaSolicitud) && fechaSolicitud.month == fecha_actual_filtro.month) {
         ventasporDia[fechaSolicitud] = ventasporDia[fechaSolicitud]! + solicitud.preciocobrado;
       } else {
-        ventasporDia[fechaSolicitud] = solicitud.preciocobrado;
+        if(fechaSolicitud.month == fecha_actual_filtro.month){
+          ventasporDia[fechaSolicitud] = solicitud.preciocobrado;
+        }
       }
 
       // Procesar Ganancias por día
@@ -138,16 +145,14 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
       GananciasporDia[entry.key] = entry.value;
     }
 
-    print("Tabla de ventas por día:");
-    print(ventasporDia);
-    print("Tabla de Ganancias por día:");
-    print(GananciasporDia);
+    // Filtra las entradas del mapa ventasporDia para mostrar solo el mes actual
+    final DateTime fechaActual = DateTime.now();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
+    final currentwidth = MediaQuery.of(context).size.width;
+    final currentheight = MediaQuery.of(context).size.height;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 60,vertical: 30),
       child: SingleChildScrollView(
@@ -177,7 +182,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                                 color: Config.colorazulventas,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Center(child: Disenos().textonuevasolicitudazul("2023")),
+                              child: Center(child: Disenos().textonuevasolicitudazul(fecha_actual_filtro.year.toString())),
 
                             ),
                         ],),
@@ -197,7 +202,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                                 color: Config.colorazulventas,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Center(child: Disenos().textonuevasolicitudazul("2023")),
+                              child: Center(child: Disenos().textonuevasolicitudazul(Utiles().mes(fecha_actual_filtro.month))),
 
                             ),
                           ],),
@@ -209,7 +214,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("Escala"),
+                            Disenos().textonuevasolicitudazul("Día"),
                             Container(
                               width: 80,
                               height: 30,
@@ -217,7 +222,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                                 color: Config.colorazulventas,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Center(child: Disenos().textonuevasolicitudazul("2023")),
+                              child: Center(child: Disenos().textonuevasolicitudazul(fecha_actual_filtro.day.toString())),
 
                             ),
                           ],),
@@ -240,7 +245,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$conteoServiciosAgendadofiltro"),
+                            Disenos().textonuevasolicitudazul("$conteoServiciosAgendadofiltro'"),
                             Disenos().textonuevasolicitudazul("ventas"),
                           ],
                         ),
@@ -283,7 +288,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$gananciasobtenidas"),
+                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(gananciasobtenidas)}}"),
                             Disenos().textonuevasolicitudazul("Ganancias obtenidas"),
                           ],
                         ),
@@ -302,7 +307,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$ventasobtenidas"),
+                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(ventasobtenidas)}}"),
                             Disenos().textonuevasolicitudazul("Dinero de ventas"),
                           ],
                         ),
@@ -326,7 +331,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$costotutoresobtenido"),
+                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(costotutoresobtenido)}}"),
                             Disenos().textonuevasolicitudazul("Costos de ventas"),
                           ],
                         ),
@@ -352,64 +357,32 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                       ),
 
                     ),
+                    Container (
+                      width: 120,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: Config.colorazulventas,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Disenos().textonuevasolicitudazul("$percetnsolicitudes"),
+                            Disenos().textonuevasolicitudazul("% solicitudes agendadas"),
+                          ],
+                        ),
+                      ),
+
+                    ),
                   ],
                 ),
-                /*
-                Container(
-                    width: widget.currentwidth,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          if(carguechart==true)
-                            Column(
-                              children: [
-                                SfCartesianChart(
-                                  primaryXAxis: DateTimeAxis(
-                                    labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
-                                  ),
-                                  series: <ChartSeries>[
-                                    LineSeries<MapEntry<DateTime, int>, DateTime>(
-                                        dataSource: solicitudesPorDia.entries.toList(),
-                                        xValueMapper: (entry, _) => entry.key,
-                                        yValueMapper: (entry, _) => entry.value,
-                                        name: "Solicitudes",
-                                        width: 2,
-                                        markerSettings: const MarkerSettings(isVisible: true)
-                                    ),
-                                  ],
-                                ),
-                                SfCircularChart(
-                                  legend: Legend(isVisible: true),
-                                  series: <CircularSeries>[
-                                    PieSeries<MapEntry<String, int>, String>(
-                                      dataSource: estadoCounts.entries.toList(),
-                                      xValueMapper: (entry, _) => entry.key,
-                                      yValueMapper: (entry, _) => entry.value,
-                                      dataLabelSettings: DataLabelSettings(
-                                        isVisible: true,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Text("Agendado = ${percentagendado.toString()}"),
-                                Text(percentrechazado.toString()),
-                                Text(percenteserando.toString()),
-                                Text("Expirado = ${percenexpirado.toString()}"),
-                                Text(percendisponible.toString()),
-                              ],
-                            ),
-
-
-
-                        ],
-                      ),
-                    )),
-                 */
               ],
             ),
             //Segunda fila, gráficas
             Row(
               children: [
+                //Ventas
                 Column(
                   children: [
                     Text('Ventas',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
@@ -417,6 +390,9 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                       primaryXAxis: DateTimeAxis(
                         labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
                         intervalType: DateTimeIntervalType.days,
+                          interval: 6,
+                          minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
+                          maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
                       ),
                       series: <ChartSeries>[
                         LineSeries<MapEntry<DateTime, int>, DateTime>(
@@ -431,6 +407,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                     ),
                   ],
                 ),
+                //Ganancias
                 Column(
                   children: [
                     Text('Ganancias',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
@@ -439,6 +416,9 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
                         intervalType: DateTimeIntervalType.days,
                         edgeLabelPlacement: EdgeLabelPlacement.values.first,
+                        minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
+                        maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
+                        interval: 6,
                       ),
                       series: <ChartSeries>[
                         LineSeries<MapEntry<DateTime, int>, DateTime>(
@@ -458,7 +438,21 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                   ],
                 ),
               ],
-            )
+            ),
+            //Tercera fila
+            Row(
+              children: [
+                Column(
+                  children: [
+                    Text('# AGENDADOS ${estadoCounts["AGENDADO"]}'),
+                    Text('# DISPONIBLE ${estadoCounts["DISPONIBLE"]}'),
+                    Text('# EXPIRADO ${estadoCounts["EXPIRADO"]}'),
+                    Text('# ESPERANDO ${estadoCounts["ESPERANDO"]}'),
+                    Text('# NO PODEMOS ${estadoCounts["NO PODEMOS"]}'),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

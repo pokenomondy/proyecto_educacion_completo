@@ -878,6 +878,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
   String codigo = "";
   Config configuracion = Config();
   bool configloaded = false;
+  Tutores tutoresVacia = Tutores.empty();
 
   @override
   void initState() {
@@ -1053,7 +1054,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                                     onTap: () {
                                       print("Ver detalles");
                                       material.Navigator.push(context, material.MaterialPageRoute(
-                                        builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud),
+                                        builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud,tutor: tutoresVacia,showTutoresDetalles: false,),
                                       ));
                                     },
                                     child: Icon(FluentIcons.a_a_d_logo),
