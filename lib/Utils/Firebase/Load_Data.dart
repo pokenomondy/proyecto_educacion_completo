@@ -246,6 +246,7 @@ class LoadData {
         String uid = TutorDoc['uid'];
         bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
         DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
+        String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
 
         //Cargamos materias
         QuerySnapshot materiasDocs = await TutorDoc.reference.collection(
@@ -286,7 +287,8 @@ class LoadData {
             materiaList,
             cuentasBancariasList,
             activo,
-          actualizartutores,
+            actualizartutores,
+            rol
         );
         tutoresList.add(newTutores);
       }

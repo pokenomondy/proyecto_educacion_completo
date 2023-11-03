@@ -4,8 +4,10 @@ import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'Objetos/Solicitud.dart';
+import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/ContableDash.dart';
+import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'package:intl/intl.dart';
@@ -13,10 +15,15 @@ import 'package:intl/intl.dart';
 class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
   final Solicitud solicitud;
+  final bool showTutoresDetalles;
+  final Tutores tutor;
 
   const Dashboard({Key? key,
     required this.showSolicitudesNew,
-    required this.solicitud,}) : super(key: key);
+    required this.solicitud,
+    required this.showTutoresDetalles,
+    required this.tutor,
+  }) : super(key: key);
 
   @override
   DashboardState createState() => DashboardState();
@@ -77,7 +84,9 @@ class DashboardState extends State<Dashboard> {
               key: const ValueKey('/home'),
             ),
             PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Tutores",_currentPage==1), body: TutoresVista(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+                title: configuracion.panelnavegacion("Tutores",_currentPage==1),
+                body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
+                selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
             PaneItem(icon: const Icon(FluentIcons.home),
                 title: configuracion.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
             PaneItem(icon: const Icon(FluentIcons.home),

@@ -68,9 +68,41 @@ class Utiles{
     return label;
   }
 
+  //Copiar colores
   Color hexToColor(String hexColor) {
     hexColor = hexColor.replaceAll('#', '');
     return Color(int.parse(hexColor, radix: 16));
+  }
+
+  //LLamar mes
+  String mes(int numeromes){
+    if(numeromes == 1){
+      return "Enero";
+    }else if(numeromes == 2){
+      return "Febrero";
+    }else if(numeromes == 3){
+      return "Marzo";
+    }else if(numeromes == 4){
+      return "Abril";
+    }else if(numeromes == 5){
+      return "Mayo";
+    }else if(numeromes == 6){
+      return "Junio";
+    }else if(numeromes == 7){
+      return "Julio";
+    }else if(numeromes == 8){
+      return "Agosto";
+    }else if(numeromes == 9){
+      return "Septiembre";
+    }else if(numeromes == 10){
+      return "Octubre";
+    }else if(numeromes == 11){
+      return "Noviembre";
+    }else if(numeromes == 12){
+      return "Diciembre";
+    } else{
+      return "NO DEBERIA LLEGAR ACA";
+    }
   }
 
 }

@@ -3,6 +3,7 @@ import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
 import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/NotaTutores.dart';
@@ -10,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import '../Config/Config.dart';
+import '../Dashboard.dart';
 import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
@@ -189,47 +191,48 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                 itemBuilder: (context,index) {
                   Tutores? tutor = widget.tutoresList[index];
 
-                  return GestureDetector(
-                    onTap: (){
-                      print("te toco");
-                      TutoresDialog(tutor: tutor,materiasList: [],);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                      child: Card(
-                        child:Column(
-                          children: [
-                            //nombre y numero de wasap
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(tutor.nombrewhatsapp)),
-                                GestureDetector(
-                                  onTap: () {
-                                    final textToCopy = tutor.numerowhatsapp.toString();
-                                    Clipboard.setData(ClipboardData(text: textToCopy));
-                                  },
-                                  child:Text(tutor.numerowhatsapp.toString()),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                    child: Card(
+                      child:Column(
+                        children: [
+                          //nombre y numero de wasap
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text(tutor.nombrewhatsapp)),
+                              GestureDetector(
+                                onTap: () {
+                                  final textToCopy = tutor.numerowhatsapp.toString();
+                                  Clipboard.setData(ClipboardData(text: textToCopy));
+                                },
+                                child:Text(tutor.numerowhatsapp.toString()),
 
-                                ),
-                              ],
-                            ),
-                            TutoresDialog(tutor: tutor,materiasList: materiaList,),
-                            //# de materias manejadas
-                            Text("${tutor.materias.length.toString()} materias registradas"),
-                            //# de cuentas bancarias registradas
-                            Text("${tutor.cuentas.length.toString()} cuentas registradas"),
-                            //carrera y universidad
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(tutor.carrera)),
-                                Expanded(child: Text(tutor.univerisdad)),
-                              ],
-                            ),
-                            Text('Activo? ${tutor.activo}')
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: (){
+                              material.Navigator.push(context, material.MaterialPageRoute(
+                                builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
+                              ));
+                            },
+                            child: Text('add'),
+                          ),
+                          //# de materias manejadas
+                          Text("${tutor.materias.length.toString()} materias registradas"),
+                          //# de cuentas bancarias registradas
+                          Text("${tutor.cuentas.length.toString()} cuentas registradas"),
+                          //carrera y universidad
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text(tutor.carrera)),
+                              Expanded(child: Text(tutor.univerisdad)),
+                            ],
+                          ),
+                          Text('Activo? ${tutor.activo}')
+                        ],
                       ),
                     ),
                   );
@@ -996,19 +999,16 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         setState(() {
-          //_errorConfirmarContrasenna = "Contraseña  muy debil, debes cambiarla";
+
         });
       } else if (e.code == 'email-already-in-use') {
         setState(() {
-          //_errorcorreogmail = "Correo ya registrado";
+
         });
       }
     } catch (e) {
       print(e);
     }
-    //Aqui viene guardar base de datos, datos de usuario agendaro
-    // Empezaremos con el rol = Admin
-    //Toca meterlo a Firestore
   }
 
 }

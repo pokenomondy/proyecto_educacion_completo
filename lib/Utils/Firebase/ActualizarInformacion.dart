@@ -45,6 +45,8 @@ class ActualizarInformacion {
             tutorEnLista.correogmail = TutorDoc['Correo gmail'];
             tutorEnLista.univerisdad = TutorDoc['Universidad'];
             tutorEnLista.activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
+            tutorEnLista.rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
+
           }
         } else {
           String nombrewhatsapp = TutorDoc['nombre Whatsapp'];
@@ -59,8 +61,9 @@ class ActualizarInformacion {
           print("se agrega el nuevo tutor $uidFirebase");
           List<Materia> materias = [];
           List<CuentasBancarias> cuentas = [];
+          String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
 
-          Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas, activo, actualizartutores);
+          Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas, activo, actualizartutores,rol);
           tutoresList.add(newtutor);
         }
 

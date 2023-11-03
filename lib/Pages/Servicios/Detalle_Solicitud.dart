@@ -11,7 +11,6 @@ import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
 import '../../Utils/Drive Api/GoogleDrive.dart';
 
-
 class DetallesServicio extends StatefulWidget {
   final Solicitud solicitud;
 

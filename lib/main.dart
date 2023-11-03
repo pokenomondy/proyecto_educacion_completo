@@ -1,11 +1,18 @@
+import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Dashboard.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/ConfigInicial.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart';
+import 'package:dashboard_admin_flutter/Pages/Servicios/Detalle_Solicitud.dart';
+import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
+import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'Objetos/Solicitud.dart';
+import 'Objetos/Tutores_objet.dart';
+import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
@@ -28,18 +35,20 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key?key}):super(key:key);
 
   Solicitud solicitudVacia = Solicitud.empty();
 
+
   @override
   Widget build(BuildContext context) {
-    final GoRouter router = GoRouter(
+    final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+    final _shellNavigatorKey = GlobalKey<NavigatorState>();
+    final GoRouter _router = GoRouter(
       routes: <RouteBase>[
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return const LoginPage();
+            return LoginPage();
           },
           routes: <RouteBase>[
             ShellRoute(
@@ -50,7 +59,7 @@ class MyApp extends StatelessWidget {
                 GoRoute(
                   path: 'home',
                   builder: (BuildContext context, GoRouterState state) {
-                    return Dashboard(showSolicitudesNew: false,solicitud: solicitudVacia,);
+                    return Dashboard(showSolicitudesNew: false,solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
                   },
                   routes: <RouteBase>[
                     GoRoute(
@@ -81,7 +90,7 @@ class MyApp extends StatelessWidget {
 
 
     return FluentApp.router(
-      routerConfig: router,
+      routerConfig: _router,
     );
   }
 

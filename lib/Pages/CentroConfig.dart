@@ -5,7 +5,6 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-
 import '../Objetos/Solicitud.dart';
 import '../Utils/Drive Api/GoogleDrive.dart';
 import '../Utils/Firebase/DeleteLocalData.dart';
@@ -67,8 +66,6 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     });
     super.initState();
   }
-
-
 
   void actualizarsolicitudes() async{
     print("obtener solicitudes");
@@ -200,7 +197,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
     }
   }
 
-  Container cartaplugins(String titulo, bool activacion, DateTime fecha){
+  Widget cartaplugins(String titulo, bool activacion, DateTime fecha){
     return Container(
       width: 150,
       height: 150,
