@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
+import 'package:dashboard_admin_flutter/Config/Strings.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
+import '../../Config/theme.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -20,6 +22,7 @@ import '../../Utils/Firebase/Load_Data.dart';
 
     @override
     void initState(){
+      super.initState();
       //print("usuario ingresado $currentUser");
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid);
@@ -30,10 +33,6 @@ import '../../Utils/Firebase/Load_Data.dart';
     Widget build(BuildContext context) {
       const double widthTextBox = 350;
       const EdgeInsets marginTextBox = EdgeInsets.only(top: 10, bottom: 1);
-      const TextStyle estiloBotones = TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 13,
-      );
       return Center(
         child: Container(
           width: 500,
@@ -97,17 +96,15 @@ import '../../Utils/Firebase/Load_Data.dart';
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 8),
-                child: FilledButton(
-                    child: const Text(
-                      'Iniciar sesión',
-                      style: estiloBotones,
-                    ),
-                    onPressed: (){
-                      login();
-                    }),
+                child: Theme().primaryStyleButton(
+                login, "Iniciar Sesion")
               ),
+                Text(Strings().appVersion,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme().colorazulventas,
+                  ),),
               //Google
-
             ],
           ),
         ),

@@ -593,14 +593,14 @@ class LoadData {
         DocumentSnapshot getconfiguracioninicial = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("CONFIGURACION").get();
 
         if (getconfiguracioninicial.exists) {
-          String Primarycolor = getconfiguracioninicial.get('Primarycolor') ?? '';
+          String primaryColor = getconfiguracioninicial.get('Primarycolor') ?? '';
           String Secundarycolor = getconfiguracioninicial.get('Secundarycolor') ?? '';
           String nombre_empresa = getconfiguracioninicial.get('nombre_empresa') ?? '';
           String idcarpetaPagos = getconfiguracioninicial.get('idcarpetaPagos') ?? '';
           String idcarpetaSolicitudes = getconfiguracioninicial.get('idcarpetaSolicitudes') ?? '';
 
           Map<String, dynamic> uploadconfiguracion = {
-            'Primarycolor': Primarycolor,
+            'Primarycolor': primaryColor,
             'Secundarycolor': Secundarycolor,
             'nombre_empresa': nombre_empresa,
             'idcarpetaPagos' : idcarpetaPagos,

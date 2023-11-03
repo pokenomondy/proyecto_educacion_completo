@@ -14,7 +14,7 @@ class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
   final Solicitud solicitud;
 
-  Dashboard({Key? key,
+  const Dashboard({Key? key,
     required this.showSolicitudesNew,
     required this.solicitud,}) : super(key: key);
 

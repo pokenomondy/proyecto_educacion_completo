@@ -28,7 +28,6 @@ class Config {
   //mensajes
   String mensaje_solicitd = "";
 
-
   Config() {
     initConfig();
   } //Inicializar la configuración
