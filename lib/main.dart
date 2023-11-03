@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'Objetos/Solicitud.dart';
+import 'Objetos/Tutores_objet.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
                 GoRoute(
                   path: 'home',
                   builder: (BuildContext context, GoRouterState state) {
-                    return Dashboard(showSolicitudesNew: false,solicitud: solicitudVacia,);
+                    return Dashboard(showSolicitudesNew: false,solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
                   },
                   routes: <RouteBase>[
                     GoRoute(

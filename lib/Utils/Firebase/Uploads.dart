@@ -185,7 +185,7 @@ class Uploads{
     CollectionReference tutor = db.collection("TUTORES");
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
-    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now());
+    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR");
     await tutor.doc(uid).set(newtutor.toMap());
     print("se subio un nuevo tutor");
     print(newtutor);

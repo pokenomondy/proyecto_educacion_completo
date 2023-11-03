@@ -999,19 +999,16 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         setState(() {
-          //_errorConfirmarContrasenna = "Contraseña  muy debil, debes cambiarla";
+
         });
       } else if (e.code == 'email-already-in-use') {
         setState(() {
-          //_errorcorreogmail = "Correo ya registrado";
+
         });
       }
     } catch (e) {
       print(e);
     }
-    //Aqui viene guardar base de datos, datos de usuario agendaro
-    // Empezaremos con el rol = Admin
-    //Toca meterlo a Firestore
   }
 
 }

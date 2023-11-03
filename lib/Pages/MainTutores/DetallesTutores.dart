@@ -65,7 +65,13 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
       width: widget.currentwith,
       child: Column(
         children: [
-          textoymodificable("Nombre Whatsap", 1 , false),
+          textoymodificable("Nombre Whatsap", 0 , true),
+          textoymodificable("Nombre Completo", 1, false),
+          textoymodificable("Numero de Whatsapp", 2, false),
+          textoymodificable("Carrera", 3, false),
+          textoymodificable("Correo gmail", 4, true),
+          textoymodificable("Universidad", 5, false),
+          textoymodificable("Activo?", 6, false)
         ],
       ),
     );
@@ -80,6 +86,20 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
           Row(
           children: [
             Text(valores[index]),
+            if(!bool)
+              GestureDetector(
+                onTap: (){
+                  setState(() {
+                    editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                    if (!editarcasilla[index]) {
+                      // Si se desactiva la edición, actualiza el texto original con el texto editado
+                      editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                    }
+                  });
+                  print("oprimido para cambiar");
+                },
+                child: Icon(FluentIcons.edit),
+              )
           ],
         ),
         if (editarcasilla[index])
