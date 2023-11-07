@@ -32,15 +32,15 @@ class TutorEvaluator {
   }
   void getnotanumcotizacionesglobal(){
     //# de cotizaciones tutores Global
-    int numcotizacionesglobalmax = tutoresFiltrados.isNotEmpty
-        ? tutoresFiltrados.map((tutor) => getNumeroCotizacionesGlobal(tutor.nombrewhatsapp)).reduce((a, b) => a > b ? a : b)
-        : 0;
-    int numcotizacionesglobalmin = tutoresFiltrados.isNotEmpty
-        ? tutoresFiltrados
-        .map((tutor) => getNumeroCotizacionesGlobal(tutor.nombrewhatsapp))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
-        .reduce((a, b) => a < b ? a : b)
-        : 0;
+      int numcotizacionesglobalmax = tutoresFiltrados.isNotEmpty
+          ? tutoresFiltrados.map((tutor) => getNumeroCotizacionesGlobal(tutor.nombrewhatsapp)).reduce((a, b) => a > b ? a : b)
+          : 0;
+      int numcotizacionesglobalmin = tutoresFiltrados.isNotEmpty
+          ? tutoresFiltrados
+          .map((tutor) => getNumeroCotizacionesGlobal(tutor.nombrewhatsapp))
+          .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
+          .reduce((a, b) => a < b ? a : b)
+          : 0;
 
     int rangenumcotizacionesglobal = numcotizacionesglobalmax-numcotizacionesglobalmin;
     tutoresFiltrados.forEach((tutor) {
@@ -50,11 +50,7 @@ class TutorEvaluator {
       tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
 
       //ver si tiene < de 10 cotizaciones cotizadas
-      if(cotizaciones <= 10){
-        tutorNotas[tutor.nombrewhatsapp]?['num_materiasglobal'] = 5.0;
-      }else{
-        tutorNotas[tutor.nombrewhatsapp]?['num_materiasglobal'] = nota;
-      }
+      tutorNotas[tutor.nombrewhatsapp]?['num_materiasglobal'] = nota;
     });
   }
   //# dw cotizaciones materia
@@ -62,9 +58,12 @@ class TutorEvaluator {
     int cotizacionCount = 0;
 
     for (Solicitud solicitud in solicitudesList) {
+      if (solicitud.materia == null) {
+        // Verifica si solicitud.materia es nulo y salta esta solicitud
+        continue;
+      }
       for (Cotizacion cotizacion in solicitud.cotizaciones) {
-        if (cotizacion.nombretutor == tutorName &&
-            solicitud.materia == materia) {
+        if (cotizacion.nombretutor == tutorName && solicitud.materia == materia) {
           cotizacionCount++;
         }
       }
@@ -73,23 +72,33 @@ class TutorEvaluator {
     return cotizacionCount;
   }
   void getnotanumcotizaciones(){
+
     int numcotizacionesmateriamax = tutoresFiltrados.isNotEmpty
-        ? tutoresFiltrados.map((tutor) => getNumeroCotizaciones(tutor.nombrewhatsapp,selectedMateria!.nombremateria)).reduce((a, b) => a > b ? a : b)
+        ? tutoresFiltrados.map((tutor) => getNumeroCotizaciones(tutor.nombrewhatsapp, selectedMateria!.nombremateria)).reduce((a, b) => a > b ? a : b)
         : 0;
     int numcotizacionesmateriamin = tutoresFiltrados.isNotEmpty
         ? tutoresFiltrados
         .map((tutor) => getNumeroCotizaciones(tutor.nombrewhatsapp, selectedMateria!.nombremateria))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
+        .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
         .reduce((a, b) => a < b ? a : b)
         : 0;
+
+    print("maximo $numcotizacionesmateriamax");
+    print("minimo $numcotizacionesmateriamin");
 
     int rangenumcotizacioneslocal = numcotizacionesmateriamax-numcotizacionesmateriamin;
     tutoresFiltrados.forEach((tutor) {
       int cotizaciones = getNumeroCotizaciones(tutor.nombrewhatsapp,selectedMateria!.nombremateria);
+      if(cotizaciones == 0 && numcotizacionesmateriamin == 0 && numcotizacionesmateriamax == 0){
+        double nota = 1+ ((cotizaciones - numcotizacionesmateriamin) / rangenumcotizacioneslocal) * 4;
+        tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
+        tutorNotas[tutor.nombrewhatsapp]?['num_materiaslocal'] = 5;
+      }else{
+        double nota = 1+ ((cotizaciones - numcotizacionesmateriamin) / rangenumcotizacioneslocal) * 4;
+        tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
+        tutorNotas[tutor.nombrewhatsapp]?['num_materiaslocal'] = nota;
+      }
 
-      double nota = 1+ ((cotizaciones - numcotizacionesmateriamin) / rangenumcotizacioneslocal) * 4;
-      tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
-      tutorNotas[tutor.nombrewhatsapp]?['num_materiaslocal'] = nota;
     });
   }
   //promedio de respuesta tutor global
@@ -131,8 +140,11 @@ class TutorEvaluator {
       double nota = 0.0;
       if (cotizaciones == promrespuestaminglobal) {
         nota = 5.0;
+      } else if(getPromedioRespuesta(tutor.nombrewhatsapp)==0){
+        nota = 1.0;
       } else {
         nota = 5.0 - (4.0 * (cotizaciones / promrespuestamaxglobal));
+        print("saco ${tutor.nombrewhatsapp} tiene una nota de $nota con $cotizaciones $promrespuestamaxglobal");
       }
       tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
       tutorNotas[tutor.nombrewhatsapp]?['prom_respuestaglobal'] = nota.abs();
@@ -140,8 +152,9 @@ class TutorEvaluator {
     });
 
   }
+  /*
   //promedio de respuesta tutor local
-  double getPromedioRespuestaMateria(String tutorName, String materia) {
+  double getPromedioRespuestaMateria(String tutorName, String materia)  {
     int totalResponseTime = 0;
     int cotizacionCount = 0;
 
@@ -155,11 +168,7 @@ class TutorEvaluator {
       }
     }
 
-    if (cotizacionCount > 0) {
-      return totalResponseTime / cotizacionCount;
-    } else {
-      return 0.0;
-    }
+    return cotizacionCount > 0 ? totalResponseTime / cotizacionCount : 0.0;
   }
   void getnotapromediorespuestamateria(){
     //%respuesta de tutor materia local
@@ -298,7 +307,9 @@ class TutorEvaluator {
         ? tutoresFiltrados.map((tutor) => getNumeroCotizacionesAgendado(tutor.nombrewhatsapp)).reduce((a, b) => a > b ? a : b)
         : 0;
     int numserviciosagendadosmin = tutoresFiltrados.isNotEmpty
-        ? tutoresFiltrados.map((tutor) => getNumeroCotizacionesAgendado(tutor.nombrewhatsapp)).reduce((a, b) => a < b ? a : b)
+        ? tutoresFiltrados
+        .map((tutor) => getNumeroCotizacionesAgendado(tutor.nombrewhatsapp))
+        .reduce((a, b) => a < b ? a : b)
         : 0;
 
     int rangenumeroserviciosagendados = numserviciosagendadosmax-numserviciosagendadosmin;
@@ -421,10 +432,13 @@ class TutorEvaluator {
     });
   }
 
+   */
+
   void tutorcalificacion(){
-    getnotanumcotizaciones();
     getnotanumcotizacionesglobal();
+    getnotanumcotizaciones();
     getnotapromediorespuesta();
+    /*
     getnotapromediorespuestamateria();
     getnotapromediopreciotutroglobalsolicitudes();
     getnotapromediopreciotutormateria();
@@ -432,6 +446,8 @@ class TutorEvaluator {
     getnotanumerocotizacionesagendadoMateria();
     getnotapromedioprecioglobalagendado();
     getnotapromedioganancias();
+
+     */
     //# de servicios agendados
   }
   double retornocalificacion(Tutores tutore){
@@ -454,8 +470,10 @@ class TutorEvaluator {
     +promprecioagendado+promprecioganancias)/10;
 
     print("${tutore.nombrewhatsapp} es ${numeroglobalcotizacion}");
-    if(getNumeroCotizacionesGlobal(tutore.nombrewhatsapp) == 0){
-      return 5.0;
+
+    //Aqui tenemos <= 15 solicitudes, tambien toca meter un tiempo de pruegba de 1 mes puede ser tambien
+    if(getNumeroCotizacionesGlobal(tutore.nombrewhatsapp) <= 10){
+      return 5;
     }else{
       return notaoficial;
     }

@@ -9,6 +9,7 @@ import '../../Objetos/Solicitud.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/StreamBuilders.dart';
+import '../../Utils/FuncionesMaterial.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
 import 'package:intl/intl.dart';
 
@@ -67,7 +68,32 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
     super.initState();
   }
 
+  void reiniciarvariables(){
+    estadoCounts = {
+      "AGENDADO": 0,
+      "DISPONIBLE": 0,
+      "EXPIRADO": 0,
+      "ESPERANDO": 0,
+      'NO PODEMOS': 0,
+      'NO CLASIFICADO': 0,
+    };
+    totalestado = 0;
+    percentagendado = 0;
+    percendisponible = 0;
+    percenexpirado = 0;
+    percenteserando = 0;
+    percentrechazado = 0;
+    contesolicitudfiltro = 0;
+    conteoServiciosAgendadofiltro = 0;
+    ventasobtenidas = 0;
+    costotutoresobtenido = 0;
+    gananciasobtenidas = 0;
+    percentganacia = 0.0;
+    percetnsolicitudes = 0.0;
+  }
+
   Future<void> loadDataTablasMaterias() async {
+    reiniciarvariables();
     solicitudesList = await LoadData().obtenerSolicitudes();
     servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
 
@@ -145,8 +171,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
       GananciasporDia[entry.key] = entry.value;
     }
 
-    // Filtra las entradas del mapa ventasporDia para mostrar solo el mes actual
-    final DateTime fechaActual = DateTime.now();
+
   }
 
   @override
@@ -226,6 +251,10 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
 
                             ),
                           ],),
+                      ),
+                      Container(
+                        width: 250,
+                          child: selectfecha()
                       ),
                     ],
                   ),
@@ -458,4 +487,36 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
       ),
     );
   }
+
+  Column selectfecha(){
+    return Column(
+      children: [
+        Container(
+          child: GestureDetector(
+            onTap: () async{
+              final date = await FuncionesMaterial().pickDate(context,fecha_actual_filtro);
+              if(date == null) return;
+
+              final newDateTime = DateTime(
+                date.year,
+                date.month,
+                date.day,
+                fecha_actual_filtro.hour,
+                fecha_actual_filtro.minute,
+              );
+
+              setState( () {
+                fecha_actual_filtro = newDateTime;
+                loadDataTablasMaterias();
+                _procesarSolicitudesPorDia();
+              }
+              );
+            },
+            child: Disenos().fecha_y_entrega('${fecha_actual_filtro.day}/${fecha_actual_filtro.month}/${fecha_actual_filtro.year}',widget.currentwidth),
+          ),
+        ),
+      ],
+    );
+  }
+
 }

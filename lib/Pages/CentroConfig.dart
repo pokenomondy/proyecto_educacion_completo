@@ -190,6 +190,10 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
                   onPressed: (){
                     DeleteLocalData().eliinarTutoresLocal();
                   }),
+              FilledButton(child: Text("reiniciar clientes"),
+                  onPressed: (){
+                    DeleteLocalData().eliminarclientesLocal();
+                  }),
             ],
           ),
         ),

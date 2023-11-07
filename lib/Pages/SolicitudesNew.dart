@@ -1442,7 +1442,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                       solicitudList[indexToUpdate].estado = selectedEstado;
                     }
                     String solicitudListdos = jsonEncode(solicitudList);
-                    await prefs.setString('solicitudes_list', solicitudListdos);
+                      await prefs.setString('solicitudes_list', solicitudListdos);
                   },
                 ),
                 FilledButton(

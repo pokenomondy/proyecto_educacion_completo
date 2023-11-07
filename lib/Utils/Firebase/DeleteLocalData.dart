@@ -20,4 +20,12 @@ class DeleteLocalData{
     LoadData().obtenertutores();
   }
 
+  void eliminarclientesLocal() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('clientes_list');
+    await prefs.setBool('datos_descargados_tablaclientes', false);
+    print("eliminando clientes local");
+    LoadData().obtenerclientes();
+  }
+
 }
