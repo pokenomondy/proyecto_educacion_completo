@@ -27,17 +27,19 @@ class Config {
   final currentUser = FirebaseAuth.instance.currentUser;
   //mensajes
   String mensaje_solicitd = "";
+  //Tiempo de actualizaicón
+  Duration tiempoActualizacion = Duration.zero;
 
   Config() {
     initConfig();
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
-    LoadData().verificar_tiempos_Cache(); //Verificamos en cache, aqui designamos tiempo de actualización de variables
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
     configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
     rol = await LoadData().verificar_rol(currentUser!);
     configuracion_mensajes = await LoadData().configuracion_mensajes();
+    tiempoActualizacion = await LoadData().tiempoactualizacion();
 
     // Verificar si 'nombre_empresa' existe y no es nulo
     if (configuracion_inicial.containsKey('nombre_empresa')) {

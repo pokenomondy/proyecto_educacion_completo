@@ -1,12 +1,14 @@
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadistica.dart';
 import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/ContableDash.dart';
+import 'Pages/Login page/PageCargando.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
@@ -60,13 +62,19 @@ class DashboardState extends State<Dashboard> {
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
+    }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+      return PageCargando();
     }else{
       return NavigationView(
         appBar: NavigationAppBar(
           title: Container(
             margin:  const EdgeInsets.only(left: 20),
-            child:   Text(configuracion.nombreempresa,
-              style: TextStyle(fontSize: 32),),
+            child:   Row(
+              children: [
+                Text(configuracion.nombreempresa, style: TextStyle(fontSize: 32),),
+                Text("tiempo ${configuracion.tiempoActualizacion.inMinutes.toString()}", style: TextStyle(fontSize: 15),),
+              ],
+            ),
           ),
         ),
         pane: NavigationPane(
@@ -101,8 +109,5 @@ class DashboardState extends State<Dashboard> {
         ),
       );
     }
-
   }
-
-
 }

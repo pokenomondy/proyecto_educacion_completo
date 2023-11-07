@@ -199,11 +199,12 @@ class LoadData {
         String nombreCliente = ClienteDoc['nombreCliente'];
         int numero = ClienteDoc['numero'];
         String nombrecompletoCliente = ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
+        DateTime fechaActualizacion = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+
 
         print("$Carrera $Universidadd $nombreCliente $numero");
 
-        Clientes newClientes = Clientes(
-            Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente);
+        Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion);
         clientesList.add(newClientes);
       }
       guardardatostablaclientes(clientesList);
@@ -531,7 +532,6 @@ class LoadData {
   }
 
    */
-
   //cambios de servicios empezamos, toca pensar en como se puede realizar de mejor forma
   /*
   Future verificar_cambios() async {
@@ -770,14 +770,12 @@ class LoadData {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
     if(!datosDescargados){
-      print("descargando rol de cero");
       DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
       String rol = getutoradmin.get('rol') ?? '';
       await prefs.setString('rol_usuario', rol);
       await prefs.setBool('datos_Descargados_verificar_rol', true);
       return rol;
     }else{
-      print("rol totalmente cacheado");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String rol = prefs.getString('rol_usuario') ?? 'TUTOR';
       return rol;
@@ -785,6 +783,7 @@ class LoadData {
 
   }
 
+  /*
   Future verificar_tiempos_Cache() async{
     Map<String, dynamic> servicioData = {};
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -792,24 +791,23 @@ class LoadData {
     if (solicitudesJson.isNotEmpty) {
       Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
       //Verificador de tiempo
-      DateTime verificador = configuracion['verificador'] != null
-          ? DateTime.parse(configuracion['verificador'])
-          : DateTime.now();
+      DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
       Duration diferenciaTiempo = DateTime.now().difference(verificador);
       print("tiempo recorrido ${diferenciaTiempo.inMinutes}");
       //Reiniciar todas las variables de configuración, por si acaso
-      if(diferenciaTiempo.inMinutes >= 60){
-        CollectionReference actualizacion = db.collection("ACTUALIZACION");
-        servicioData['verificadoractualizar'] = DateTime.now();
-        await actualizacion.doc("Plugins").update(servicioData);
+      CollectionReference actualizacion = db.collection("ACTUALIZACION");
+      servicioData['verificadoractualizar'] = DateTime.now();
+      await actualizacion.doc("Plugins").update(servicioData);
+      tiempoactualizacion();
+      if(diferenciaTiempo.inMinutes >= 300){
         //Revisar clientes
-
+        ActualizarInformacion().actualizarclientes();
         //Revisar tablas de materias y carreras
 
         //Revisar solicitudes para actualización
-        ActualizarInformacion().actualizarsolicitudes();
+        //ActualizarInformacion().actualizarsolicitudes();
         //Revisar tutores ? Quiero los de tutores
-        ActualizarInformacion().actualizartutores();
+        //ActualizarInformacion().actualizartutores();
         //Revisar pagos?
 
         //Revisar plugins -- Licencias
@@ -828,7 +826,17 @@ class LoadData {
     }
   }
 
+   */
 
+  Future tiempoactualizacion()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
+    Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
+    DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
+    Duration diferenciaTiempo = DateTime.now().difference(verificador);
+    print("diferencia de tiempo $diferenciaTiempo");
+    return diferenciaTiempo;
+  }
 }
 
 

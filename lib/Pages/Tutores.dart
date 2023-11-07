@@ -114,7 +114,6 @@ class _CreartutoresrState extends State<_Creartutores> {
   Widget build(BuildContext context) {
     return Container(
       width: widget.currentwidth,
-      color: Colors.red,
       child: Column(
         children: [
           const Text('Tutores'),
@@ -184,7 +183,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
     return Column(
       children: [
         Text("hay ${widget.tutoresList.length.toString()} Tutores"),
-        SizedBox(
+        Container(
             height: currentheight-90,
             child: ListView.builder(
                 itemCount: widget.tutoresList.length,
@@ -193,46 +192,51 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                    child: Card(
-                      child:Column(
-                        children: [
-                          //nombre y numero de wasap
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(child: Text(tutor.nombrewhatsapp)),
-                              GestureDetector(
-                                onTap: () {
-                                  final textToCopy = tutor.numerowhatsapp.toString();
-                                  Clipboard.setData(ClipboardData(text: textToCopy));
-                                },
-                                child:Text(tutor.numerowhatsapp.toString()),
+                    child: material.Container(
+                      color: (tutor.activo) ? material.Colors.green : material.Colors.red,
+                      child: Card(
+                        child:Column(
+                          children: [
+                            //nombre y numero de wasap
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(tutor.nombrewhatsapp)),
+                                GestureDetector(
+                                  onTap: () {
+                                    final textToCopy = tutor.numerowhatsapp.toString();
+                                    Clipboard.setData(ClipboardData(text: textToCopy));
+                                  },
+                                  child:Text(tutor.numerowhatsapp.toString()),
 
-                              ),
-                            ],
-                          ),
-                          GestureDetector(
-                            onTap: (){
-                              material.Navigator.push(context, material.MaterialPageRoute(
-                                builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
-                              ));
-                            },
-                            child: Text('add'),
-                          ),
-                          //# de materias manejadas
-                          Text("${tutor.materias.length.toString()} materias registradas"),
-                          //# de cuentas bancarias registradas
-                          Text("${tutor.cuentas.length.toString()} cuentas registradas"),
-                          //carrera y universidad
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(child: Text(tutor.carrera)),
-                              Expanded(child: Text(tutor.univerisdad)),
-                            ],
-                          ),
-                          Text('Activo? ${tutor.activo}')
-                        ],
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: (){
+                                material.Navigator.push(context, material.MaterialPageRoute(
+                                  builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
+                                ));
+                              },
+                              child: Text('add'),
+                            ),
+                            //# de materias manejadas
+                            Text("${tutor.materias.length.toString()} materias registradas"),
+                            //# de cuentas bancarias registradas
+                            Text("${tutor.cuentas.length.toString()} cuentas registradas"),
+                            //nombre del tutor
+                            Text("${tutor.nombrecompleto}"),
+                            //carrera y universidad
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(child: Text(tutor.carrera)),
+                                Expanded(child: Text(tutor.univerisdad)),
+                              ],
+                            ),
+                            Text('Activo? ${tutor.activo}')
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -242,7 +246,6 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
       ],
     );
   }
-
 
 }
 
@@ -316,25 +319,16 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       tutoresFiltrados.clear();
     }else{
       tutoresList = await LoadData().obtenertutores();
-      // Filtrar los tutores que tienen la materia buscada
       tutoresFiltrados = tutoresList.where((tutor) {
-        return tutor.activo; // Filtrar los tutores con atributo activo en false
+        return tutor.activo;
       }).where((tutor) {
         return tutor.materias.any((materia) =>
-        materia.nombremateria == materiabusqueda ||
-            materia.nombremateria == materiabusquedados ||
-            materia.nombremateria == materiaTres ||
-            materia.nombremateria == materiaCuatro ||
-            materia.nombremateria == materiaCinco);
+        materia.nombremateria == materiabusqueda);
       }).toList();
+      print("materia buscado $materiabusqueda");
+      print("tutores filtrados $tutoresFiltrados");
 
-
-      tutorEvaluator = TutorEvaluator(
-        solicitudesList,
-        serviciosagendadosList,
-        tutoresFiltrados,
-        selectedMateria,
-      );
+      tutorEvaluator = TutorEvaluator(solicitudesList, serviciosagendadosList, tutoresFiltrados, selectedMateria,);
       tutorNotas = tutorEvaluator!.tutorNotas;
 
       // Ordenar la lista tutoresFiltrados por notaoficial de mayor a menor
@@ -729,8 +723,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
               String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
 
               busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
-              print("tutores filtrados $tutoresFiltrados");
-              print("materias: $materiaUno");
               print(materiaDos);
               loadDataTablasMaterias();
 
@@ -762,13 +754,13 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                       Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
                                       Text("# cot materia ${tutorEvaluator?.getNumeroCotizaciones(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
                                       Text("% resp global ${tutorEvaluator?.getPromedioRespuesta(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      Text("% resp materia ${tutorEvaluator?.getPromedioRespuestaMateria(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                      Text("% precio global ${tutorEvaluator?.getPromedioPrecioTutor(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                      Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                      Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      //Text("% resp materia ${tutorEvaluator?.getPromedioRespuestaMateria(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      //Text("% precio global ${tutorEvaluator?.getPromedioPrecioTutor(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      //Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      //Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      //Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      //Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      //Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
 
                                     ],
                                   ), //de materia
@@ -777,13 +769,13 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                       Text("not cot global ${tutorNotas[tutore.nombrewhatsapp]?['num_materiasglobal']?.toStringAsFixed(1)}"),
                                       Text("not cot materia ${tutorNotas[tutore.nombrewhatsapp]?['num_materiaslocal']?.toStringAsFixed(1)}"),
                                       Text("not % resp global ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestaglobal']?.toStringAsFixed(2)}"),
-                                      Text("not % resp materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestalocal']?.toStringAsFixed(1)}"),
-                                      Text("not % precio global ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobal']?.toStringAsFixed(1)}"),
-                                      Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
-                                      Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
-                                      Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
-                                      Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
-                                      Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
+                                      //Text("not % resp materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestalocal']?.toStringAsFixed(1)}"),
+                                      //Text("not % precio global ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobal']?.toStringAsFixed(1)}"),
+                                      //Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
+                                      //Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
+                                      //Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
+                                      //Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
+                                      //Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
 
                                       Text('calificación ${tutorEvaluator?.retornocalificacion(tutore).toStringAsFixed(1)}'),
                                     ],

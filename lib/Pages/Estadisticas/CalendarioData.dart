@@ -55,6 +55,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   bool datosDescargados = false;
   bool cargarinterfaz = false;
   Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
+  String motivosPagos = "ENTREGAS";
 
   @override
   void initState() {
@@ -72,10 +73,25 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
   @override
   Widget build(BuildContext context) {
+    final currentheight = MediaQuery.of(context).size.height-100;
     return Container(
-      height: 800,
+      height: currentheight,
       child: Column(
         children: [
+          Row(
+            children: [
+              FilledButton(child: Text('ENTREGAS'), onPressed: (){
+                setState(() {
+                  motivosPagos = "ENTREGAS";
+                });
+              }),
+              FilledButton(child: Text('PAGOS CLIENTES'), onPressed: (){
+                setState(() {
+                  motivosPagos = "PAGOSCLIENTES";
+                });
+              }),
+            ],
+          ),
           if(cargarinterfaz == true)
             Column(
               children: [
@@ -99,14 +115,14 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                           endTime: CalendarioStyle().tiempotarjetaend(servicio),
                           subject: "${servicio.identificadorcodigo} - ${servicio.materia} - ${servicio.idcontable}",
                           notes: servicio.materia,
-                          color: CalendarioStyle().colortarjetaAdmin(servicio),
+                          color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
                         );
                         appointmentToServicioMap[appointment] = servicio;
                         return appointment;
                       }).toList();
 
                       return Container(
-                        height: 800,
+                        height: currentheight-50,
                         child: SfCalendar(
                           controller: _calendarController,
                           showDatePickerButton: true,

@@ -6,18 +6,18 @@ import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../Objetos/Clientes.dart';
 import '../../Objetos/Cotizaciones.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Tutores_objet.dart';
 
 class ActualizarInformacion {
 
-  //Actualizar Tutores - Logrado
-  void actualizartutores() async {
+  //Actualizar Tutores
+  Future <void> actualizartutores({Function(Tutores)? onTutorAdded}) async {
     print("Actualizando información de tutores en firebase");
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ??
-        false;
+    bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (datosDescargados == true) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List tutoresList = await LoadData().obtenertutores();
@@ -29,10 +29,12 @@ class ActualizarInformacion {
         DateTime actualizarTutoresFirebase = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023, 1, 1, 0, 0); //Number
         String uidFirebase = TutorDoc['uid'];
         print("revisando $uidFirebase");
-        Tutores tutorEnLista = tutoresList.where((tutor) => tutor.uid == uidFirebase).first;
-        print("tutlro en lista $tutorEnLista");
 
-        if (localTutoresList.contains(uidFirebase)) {
+        if(localTutoresList.contains(uidFirebase)){
+          Tutores tutorEnLista = tutoresList.where((tutor) => tutor.uid == uidFirebase).first;
+          if (onTutorAdded != null) {
+            onTutorAdded(tutorEnLista);
+          }
           if (tutorEnLista.actualizartutores != actualizarTutoresFirebase) {
             print("se actualiza el tutor ${tutorEnLista.nombrewhatsapp}");
             //Actualizar primero fecha de actualización
@@ -47,8 +49,35 @@ class ActualizarInformacion {
             tutorEnLista.activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
             tutorEnLista.rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
 
+            //Mas materias
+            QuerySnapshot materiasDocs = await TutorDoc.reference.collection("MATERIA").get();
+            List<Materia> materiaList = [];
+            for (var materiaDoc in materiasDocs.docs) {
+              String nombremateria = materiaDoc['nombremateria'];
+              print(nombremateria);
+
+              Materia newmateria = Materia(nombremateria);
+              materiaList.add(newmateria);
+            }
+
+            //Cargamos cuentas Bancarias
+            QuerySnapshot cuentaDocs = await TutorDoc.reference.collection("CUENTAS").get();
+            List<CuentasBancarias> cuentasBancariasList = [];
+            for (var cuentaDoc in cuentaDocs.docs) {
+              String tipoCuenta = cuentaDoc['tipoCuenta'];
+              String numeroCuenta = cuentaDoc['numeroCuenta'];
+              String numeroCedula = cuentaDoc['numeroCedula'];
+              String nombreCuenta = cuentaDoc['nombreCuenta'];
+
+              CuentasBancarias newcuentaBancaria = CuentasBancarias(
+                  tipoCuenta, numeroCuenta, numeroCedula, nombreCuenta);
+              cuentasBancariasList.add(newcuentaBancaria);
+            }
+
+            tutorEnLista.cuentas = cuentasBancariasList;
+            tutorEnLista.materias = materiaList;
           }
-        } else {
+        }else{
           String nombrewhatsapp = TutorDoc['nombre Whatsapp'];
           String nombrecompleto = TutorDoc['nombre completo'];
           int numerowhatsapp = TutorDoc['numero whatsapp'];
@@ -59,12 +88,38 @@ class ActualizarInformacion {
           bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
           DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
           print("se agrega el nuevo tutor $uidFirebase");
-          List<Materia> materias = [];
-          List<CuentasBancarias> cuentas = [];
           String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
 
-          Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas, activo, actualizartutores,rol);
+          //Mas materias
+          QuerySnapshot materiasDocs = await TutorDoc.reference.collection("MATERIA").get();
+          List<Materia> materiaList = [];
+          for (var materiaDoc in materiasDocs.docs) {
+            String nombremateria = materiaDoc['nombremateria'];
+            print(nombremateria);
+
+            Materia newmateria = Materia(nombremateria);
+            materiaList.add(newmateria);
+          }
+
+          //Cargamos cuentas Bancarias
+          QuerySnapshot cuentaDocs = await TutorDoc.reference.collection("CUENTAS").get();
+          List<CuentasBancarias> cuentasBancariasList = [];
+          for (var cuentaDoc in cuentaDocs.docs) {
+            String tipoCuenta = cuentaDoc['tipoCuenta'];
+            String numeroCuenta = cuentaDoc['numeroCuenta'];
+            String numeroCedula = cuentaDoc['numeroCedula'];
+            String nombreCuenta = cuentaDoc['nombreCuenta'];
+
+            CuentasBancarias newcuentaBancaria = CuentasBancarias(
+                tipoCuenta, numeroCuenta, numeroCedula, nombreCuenta);
+            cuentasBancariasList.add(newcuentaBancaria);
+          }
+
+          Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materiaList, cuentasBancariasList, activo, actualizartutores,rol);
           tutoresList.add(newtutor);
+          if (onTutorAdded != null) {
+            onTutorAdded(newtutor);
+          }
         }
 
       }
@@ -74,7 +129,7 @@ class ActualizarInformacion {
   }
 
   //Actualizar solicitudes
-  void actualizarsolicitudes() async {
+  Future <void> actualizarsolicitudes({Function(Solicitud)? onSolicitudAddedd}) async {
     print("Actualizando información de solicitudes en firebase");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
@@ -82,8 +137,7 @@ class ActualizarInformacion {
     if (datosDescargados == true) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       List solicitudesList = await LoadData().obtenerSolicitudes();
-      CollectionReference referencelistasolicitudes = FirebaseFirestore.instance
-          .collection("SOLICITUDES");
+      CollectionReference referencelistasolicitudes = FirebaseFirestore.instance.collection("SOLICITUDES");
       QuerySnapshot querySolicitudes = await referencelistasolicitudes.get();
       // Encuentra el valor máximo de idcotizacion en tu lista local
       int maxIdCotizacionLocal = 0;
@@ -103,6 +157,9 @@ class ActualizarInformacion {
         print("id cotizacion a revisar $idcotizacionfirebase");
         if (localSolicitudIDs.contains(idcotizacionfirebase)) {
           Solicitud solicitudEnLista = solicitudesList.where((solicitud) => solicitud.idcotizacion == idcotizacionfirebase).first;
+          if (onSolicitudAddedd != null) {
+            onSolicitudAddedd(solicitudEnLista);
+          }
               if (solicitudEnLista.actualizarsolicitudes != actualizarsolicitudesFirebase) {
             solicitudEnLista.servicio = SolicitudDoc['Servicio'];
             solicitudEnLista.materia = SolicitudDoc['materia'];
@@ -111,6 +168,23 @@ class ActualizarInformacion {
             solicitudEnLista.infocliente = SolicitudDoc['infocliente'];
             solicitudEnLista.actualizarsolicitudes = actualizarsolicitudesFirebase;
             print("se actualizo la $idcotizacionfirebase");
+
+            QuerySnapshot cotizacionDocs = await SolicitudDoc.reference.collection("COTIZACIONES").get();
+            List<Cotizacion> cotizaciones = [];
+            for(var cotizacionDoc in cotizacionDocs.docs){
+              int cotizacionTutor = cotizacionDoc['Cotizacion'];
+              String uidtutor = cotizacionDoc['uidtutor'];
+              String nombretutor = cotizacionDoc['nombretutor'];
+              int tiempoconfirmacion = cotizacionDoc['Tiempo confirmacion'];
+              String comentariocotizacion = cotizacionDoc['Comentario Cotización'];
+              String Agenda = cotizacionDoc['Agenda'];
+              DateTime fechaconfirmacion = cotizacionDoc.data().toString().contains('fechaconfirmacion') ? cotizacionDoc.get('fechaconfirmacion').toDate() : DateTime.now(); //Number
+
+              Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
+              cotizaciones.add(newcotizacion);
+
+            }
+            solicitudEnLista.cotizaciones = cotizaciones;
           }else{
             print("no se hizo nada con $idcotizacionfirebase");
           }
@@ -128,13 +202,87 @@ class ActualizarInformacion {
           DateTime fechaactualizacion = SolicitudDoc.data().toString().contains('fechaactualizacion') ? SolicitudDoc.get('fechaactualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
           String urlarchivo = SolicitudDoc.data().toString().contains('archivos') ? SolicitudDoc.get('archivos') : 'No tiene Archivos';
           DateTime actualizarsolicitudes = SolicitudDoc.data().toString().contains('actualizarsolicitudes') ? SolicitudDoc.get('actualizarsolicitudes').toDate() : DateTime(2023,1,1,0,0); //Number
-          List<Cotizacion> cotizaciones = []; //meter cotizaciones dios mio
+          QuerySnapshot cotizacionDocs = await SolicitudDoc.reference.collection("COTIZACIONES").get();
+          List<Cotizacion> cotizaciones = [];
+          for(var cotizacionDoc in cotizacionDocs.docs){
+            int cotizacionTutor = cotizacionDoc['Cotizacion'];
+            String uidtutor = cotizacionDoc['uidtutor'];
+            String nombretutor = cotizacionDoc['nombretutor'];
+            int tiempoconfirmacion = cotizacionDoc['Tiempo confirmacion'];
+            String comentariocotizacion = cotizacionDoc['Comentario Cotización'];
+            String Agenda = cotizacionDoc['Agenda'];
+            DateTime fechaconfirmacion = cotizacionDoc.data().toString().contains('fechaconfirmacion') ? cotizacionDoc.get('fechaconfirmacion').toDate() : DateTime.now(); //Number
+
+            Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
+            cotizaciones.add(newcotizacion);
+          }
           Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones, fechaactualizacion, urlarchivo, actualizarsolicitudes);
           solicitudesList.add(newsolicitud);
+          if (onSolicitudAddedd != null) {
+            onSolicitudAddedd(newsolicitud);
+          }
         }
       }
       String updatedTutoresJson = jsonEncode(solicitudesList.map((solicitud) => solicitud.toJson()).toList());
       prefs.setString('solicitudes_list', updatedTutoresJson);
+    }
+  }
+
+  //Actualziar lista de clientes
+  Future<void> actualizarclientes({Function(Clientes)? onClienteAdded}) async{
+    print("Actualizando información de clientes en firebase");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
+    if (datosDescargados == true) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List clientList = await LoadData().obtenerclientes();
+      CollectionReference refenrecetablaClientes = await FirebaseFirestore.instance.collection("CLIENTES");
+      QuerySnapshot queryClientes = await refenrecetablaClientes.get();
+      Set<String> localClienteList = Set.from(clientList.map((cliente) => cliente.numero.toString()));
+      //Iteramos dentro de la lista de clientes de firebase para generar actualización
+      for(var ClienteDoc in queryClientes.docs){
+        DateTime fechaActualizacionfirebase = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+        int numero = ClienteDoc['numero'];
+        print("revisando tal numero $numero");
+
+        if(localClienteList.contains(numero.toString())){
+          Clientes clienteEnLista = clientList.where((cliente) => cliente.numero == numero).first;
+          if (clienteEnLista.fechaActualizacion != fechaActualizacionfirebase) {
+            print("se actualiza el tutor ${clienteEnLista.numero}");
+            clienteEnLista.fechaActualizacion = fechaActualizacionfirebase;
+            clienteEnLista.carrera = ClienteDoc['Carrera'];
+            clienteEnLista.nombreCliente = ClienteDoc['nombreCliente'];
+            clienteEnLista.nombrecompletoCliente =  ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
+            clienteEnLista.universidad = ClienteDoc['Universidadd'];
+
+            if (onClienteAdded != null) {
+              onClienteAdded(clienteEnLista);
+            }
+
+          }else{
+            print("no se hace nada con el numero $numero");
+          }
+        }else{
+          String Carreranew = ClienteDoc['Carrera'];
+          String Universidadnew = ClienteDoc['Universidadd'];
+          String nombreClientenew = ClienteDoc['nombreCliente'];
+          int numeronew = ClienteDoc['numero'];
+          String nombrecompletoClientenew = ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
+          DateTime fechaActualizacionnew = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+
+          Clientes newClientes = Clientes(Carreranew, Universidadnew, nombreClientenew, numeronew,nombrecompletoClientenew,fechaActualizacionnew);
+          clientList.add(newClientes);
+
+          print("se agrega el tutor ${numero}");
+
+          if (onClienteAdded != null) {
+            onClienteAdded(newClientes);
+          }
+
+        }
+      }
+      String updatedTutoresJson = jsonEncode(clientList.map((cliente) => cliente.toJson()).toList());
+      prefs.setString('clientes_list', updatedTutoresJson);
     }
   }
 }

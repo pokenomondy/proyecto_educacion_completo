@@ -94,7 +94,7 @@ class Uploads{
         Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
     //encontrar la solicitud
     int solicitudIndex = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idcotizacion);
-    solicitudList[solicitudIndex].cotizaciones = newcotizacion;
+    solicitudList[solicitudIndex].cotizaciones.add(newcotizacion);
     //guardar
     String solicitudesJsondos = jsonEncode(solicitudList);
     await prefs.setString('solicitudes_list', solicitudesJsondos);
@@ -200,8 +200,44 @@ class Uploads{
     await prefs.setString('tutores_list', solicitudesJsonsave);
     //Ya queda subido el nuevo tutor
   }
-  //añadir cuentas
+  //Modificar infomración de tutor
+  Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num) async{
+    String variable = "";
+    Map<String, dynamic> uploadinformacion = {};
+    if(index == 1){
+      variable = "nombre completo";
+    }else if(index == 2){
+      variable = "numero whatsapp";
+    }
 
+    if(index == 1){
+      uploadinformacion = {
+        '$variable': texto,
+      };
+    }else if(index == 2){
+      uploadinformacion = {
+        '$variable': num,
+      };
+    }
+
+    CollectionReference tutores = db.collection('TUTORES');
+    await tutores.doc(tutor.uid).update(uploadinformacion);
+
+    //Modificar
+    List<Tutores> tutoresList = [];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    tutoresList = await LoadData().obtenertutores();
+    Tutores tutorEnLista = tutoresList.where((tutore) => tutore.uid == tutor.uid).first;
+    if(index == 1){
+      tutorEnLista.nombrecompleto = texto;
+    }else if(index == 2){
+      tutorEnLista.numerowhatsapp =  num;
+    }
+    String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
+    prefs.setString('tutores_list', updatedTutoresJson);
+  }
+
+  //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
     CollectionReference cuentas = db.collection("TUTORES").doc(uidtutor.toString()).collection("CUENTAS");
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
@@ -221,7 +257,7 @@ class Uploads{
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {
     CollectionReference cliente = db.collection("CLIENTES");
-    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente);
+    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now());
     await cliente.doc(numero.toString()).set(newcliente.toMap());
     //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
     SharedPreferences prefs = await SharedPreferences.getInstance();

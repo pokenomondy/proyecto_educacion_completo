@@ -32,7 +32,18 @@ class CalendarioStyle {
   //ver entregado a cliente
   //gris significa que no aplica
 
-  dialog.Color colortarjetaAdmin(ServicioAgendado servicio){
+  dialog.Color colortarjetaAdmin(ServicioAgendado servicio, String motivosPagos){
+    if(motivosPagos == "ENTREGAS"){
+      return colortarjetaAdminENTREGAS(servicio);
+    }else if (motivosPagos == "PAGOSCLIENTES"){
+      return colortarjetaAdminPAGOS(servicio);
+    }else{
+      return colortarjetaAdminPAGOS(servicio);
+    }
+
+  }
+
+  dialog.Color colortarjetaAdminENTREGAS(ServicioAgendado servicio){
     if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
       return dialog.Colors.yellow;
     }else if(servicio.identificadorcodigo == "A" || servicio.identificadorcodigo == "P" || servicio.identificadorcodigo == "Q"){
@@ -42,7 +53,15 @@ class CalendarioStyle {
     }else if(servicio.entregadotutor=="ENTREGADO"){
       return dialog.Colors.orange;
     }else{
-    return dialog.Colors.red;
+      return dialog.Colors.red;
+    }
+  }
+
+  dialog.Color colortarjetaAdminPAGOS(ServicioAgendado servicio){
+    if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
+      return dialog.Colors.black;
+    } else{
+      return dialog.Colors.yellow;
     }
   }
 

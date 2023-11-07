@@ -135,7 +135,12 @@ class PrimaryColumnState extends State<PrimaryColumn> {
             padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
-                Text("$text : $valor"),
+                Container(
+                    width: widget.currentwith-60,
+                    padding: EdgeInsets.only(
+                        bottom: 15, right: 10, top: 5),
+                    margin: EdgeInsets.only(left: 10),
+                    child: Text("$text : $valor",)),
                 if(!bool)
                   GestureDetector(
                     onTap: (){

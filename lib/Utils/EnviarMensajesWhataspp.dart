@@ -107,6 +107,13 @@ class enviarmensajewsp{
     }
 
   }
+
+  //Envíar mensaje a el tutor y adicional enviar mensaje a administrador, para confirmar que se envio
+  void sendMessageAvisoConfirmacionTutor(String phoneNumber,String tipoServicio,String materia,String nombretutor, String preciotutor,String fechaentrega, String codigoconfirmacion, String idsolicitudconfirmada) async{
+
+}
+
+
 }
 
 
