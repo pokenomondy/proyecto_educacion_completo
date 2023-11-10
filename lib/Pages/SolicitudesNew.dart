@@ -854,7 +854,6 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     'EXPIRADO',
     'ESPERANDO',
     'AGENDADO',
-    'NO PODEMOS'
   ];
   String? selectedEstado = "";
   final db = FirebaseFirestore.instance;
@@ -1613,7 +1612,9 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
       selectedIdentificador = "P";
     }else if(servicio == "QUIZ"){
       selectedIdentificador = "Q";
-    } else{
+    }else if(servicio == "ASESORIAS"){
+      selectedIdentificador = "A";
+    }else{
       selectedIdentificador = "NO PROGRAMADO";
     }
     return Text(selectedIdentificador);
@@ -1669,6 +1670,9 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
       servicio = "PARCIALES";
     }else if(solicitud.servicio == "QUIZ"){
       servicio = "QUICES";
+      fechita = "${DateFormat("dd/MM").format(solicitud.fechaentrega)} ${DateFormat('hh:mma').format(solicitud.fechaentrega)}";
+    }else if(solicitud.servicio == "ASESORIAS"){
+      servicio = "ASESORIAS";
       fechita = "${DateFormat("dd/MM").format(solicitud.fechaentrega)} ${DateFormat('hh:mma').format(solicitud.fechaentrega)}";
     }
 

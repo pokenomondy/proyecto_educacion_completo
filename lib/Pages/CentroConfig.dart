@@ -163,7 +163,7 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
                   FilledButton(child: Text('Subir'), onPressed: (){
                     Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
                   }),
-                  Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                  Text("Mensajes de Confirmaciones = ${configuracion.mensaje_confirmacionCliente}"),
                   Container(
                     width: 200,
                     child: TextBox(

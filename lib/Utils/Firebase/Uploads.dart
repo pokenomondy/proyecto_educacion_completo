@@ -244,15 +244,38 @@ class Uploads{
     print("Subido nueva cuenta bancaria");
     await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].cuentas.add(newcuenta);
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Subir materia de tutor
-  void addMateriaTutor(String uidtutor,String nombremateria,) async{
+  void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
     CollectionReference materias = db.collection("TUTORES").doc(uidtutor.toString()).collection("MATERIA");
     Materia newmateria = Materia(nombremateria);
     await materias.doc(nombremateria).set(newmateria.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].materias.add(newmateria);
+      if (onMateriaAdded != null) {
+        onMateriaAdded(newmateria);
+      }
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {

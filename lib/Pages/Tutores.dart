@@ -17,14 +17,31 @@ import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/Solicitud.dart';
 import '../Utils/Firebase/Uploads.dart';
+import 'MainTutores/DetallesTutores.dart';
 
 class TutoresVista extends StatefulWidget {
   @override
-  _TutoresVistaVistaState createState() => _TutoresVistaVistaState();
+  TutoresVistaVistaState createState() => TutoresVistaVistaState();
 }
 
-class _TutoresVistaVistaState extends State<TutoresVista> {
+class TutoresVistaVistaState extends State<TutoresVista> {
+  final GlobalKey<SecundaryColumnTutoresState> materiasdeTutoresVista = GlobalKey<SecundaryColumnTutoresState>();
   Config configuracion = Config();
+  List<Tutores> tutoresList = [];
+  bool cargadodata = false;
+
+  @override
+  void initState() {
+    loadtablas();
+    super.initState();
+  }
+
+  Future<void> loadtablas() async {
+    tutoresList = await LoadData().obtenertutores();
+    setState(() {
+      cargadodata=true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,19 +51,20 @@ class _TutoresVistaVistaState extends State<TutoresVista> {
       content: Row(
         children: [
           if(currentwidth>=configuracion.computador)
-            Row(children: [
-              _Creartutores(currentwidth: tamanowidth,),
-              _BusquedaTutor(currentwidth: tamanowidth,),
-              _CrearTutorNuevo(currentwidth: tamanowidth),
-            ],),
+            if(cargadodata==true)
+              Row(children: [
+                _Creartutores(currentwidth: tamanowidth,tutoresList: tutoresList,),
+                _BusquedaTutor(currentwidth: tamanowidth,),
+                _CrearTutorNuevo(currentwidth: tamanowidth),
+              ],),
           if(currentwidth < 1200 && currentwidth > 620)
             Container(
                 width: currentwidth,
-                child: TutoresResponsiveVista()),
+                child: TutoresResponsiveVista(tutoresList: tutoresList,)),
           if(currentwidth <= 620)
             Container(
                 width: currentwidth,
-                child: TutoresResponsiveVista()),
+                child: TutoresResponsiveVista(tutoresList: tutoresList,)),
 
         ],
       ),
@@ -55,6 +73,11 @@ class _TutoresVistaVistaState extends State<TutoresVista> {
 }
 
 class TutoresResponsiveVista extends StatefulWidget {
+  final List<Tutores> tutoresList;
+
+  const TutoresResponsiveVista({Key?key,
+    required this.tutoresList,
+  }) :super(key: key);
   @override
   _TutoresResponsiveVistaState createState() => _TutoresResponsiveVistaState();
 }
@@ -77,7 +100,7 @@ class _TutoresResponsiveVistaState extends State<TutoresResponsiveVista> {
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Tutores'),
-              body:  _Creartutores(currentwidth: currentwidth,),
+              body:  _Creartutores(currentwidth: currentwidth,tutoresList: widget.tutoresList,),
             ),
             PaneItem(
               icon:  const Icon(FluentIcons.home),
@@ -98,9 +121,11 @@ class _TutoresResponsiveVistaState extends State<TutoresResponsiveVista> {
 
 class _Creartutores extends StatefulWidget{
   final double currentwidth;
+  final List<Tutores> tutoresList;
 
   const _Creartutores({Key?key,
     required this.currentwidth,
+    required this.tutoresList,
   }) :super(key: key);
 
   @override
@@ -117,25 +142,7 @@ class _CreartutoresrState extends State<_Creartutores> {
       child: Column(
         children: [
           const Text('Tutores'),
-          FutureBuilder(
-              future: LoadData().obtenertutores(),
-              builder: (context,snapshot){
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Mientras se espera, mostrar un mensaje de carga
-                  return const Center(
-                    child: Text('cargando'), // O cualquier otro widget de carga
-                  );
-                } else if (snapshot.hasError) {
-                  // Si ocurre un error en el Future, mostrar un mensaje de error
-                  return const Center(
-                    child: Text("Error al cargar los datos"),
-                  );
-                } else {
-                  List<Tutores> tutoreslist = snapshot.data;
-
-                  return _TarjetaTutores(tutoresList: tutoreslist);
-                }
-              }),
+         _TarjetaTutores(tutoresList: widget.tutoresList),
         ],
       ),
     );

@@ -9,10 +9,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
+import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
@@ -31,7 +33,15 @@ void main() async {
           measurementId: "G-MH2TEMC9DB"
       )
   );
-  runApp(MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MateriasProvider()),
+        ChangeNotifierProvider(create: (context) => CuentasProvider()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
