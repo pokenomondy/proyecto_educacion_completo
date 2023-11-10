@@ -4,6 +4,7 @@ import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
@@ -32,6 +33,7 @@ class Dashboard extends StatefulWidget {
 }
 
 class DashboardState extends State<Dashboard> {
+  bool entraprimeravez = false;
   int _currentPage = 0;
   Config configuracion = Config();
   bool configloaded = false;
@@ -43,14 +45,22 @@ class DashboardState extends State<Dashboard> {
   @override
   void initState() {
     super.initState();
+    cargarprimeravez();
     // Mover la lógica de inicialización aquí
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     configuracion.initConfig().then((_) {
-      setState(() {
+      setState((){
         configloaded = true;
       }); // Actualiza el estado para reconstruir el widget
     });
   }
+
+  void cargarprimeravez() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? false;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +72,9 @@ class DashboardState extends State<Dashboard> {
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
-    }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+    }else if(entraprimeravez == false){
+      return PageCargando();
+    }else if(configuracion.tiempoActualizacion.inMinutes >= 5){
       return PageCargando();
     }else{
       return NavigationView(
