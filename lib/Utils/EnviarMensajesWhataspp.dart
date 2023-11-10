@@ -69,7 +69,7 @@ class enviarmensajewsp{
 
   //Notificación cuando un trabajo esta entregado a admin
   void sendMessageAvisoTrabajoEntregadoAdmin(String phoneNumber,String codigo,String cliente,String fechaentrega,String nombretutor) async{
-    String templateName = "trabajoentregadoadmon";
+    String templateName = "trabajoentregadoadminaviso";
     final payload = {
       'messaging_product': 'whatsapp',
       'to': phoneNumber,

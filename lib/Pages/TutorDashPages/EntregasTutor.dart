@@ -223,6 +223,11 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                   cargandoentrega = false;
                 });
               }),
+              FilledButton(
+                  style: Disenos().boton_estilo(),
+                  child: Text('PRUEBA'), onPressed:() async{
+                enviarmensajewsp().sendMessageAvisoTrabajoEntregadoAdmin("573161585420", selectedServicio!.codigo, selectedServicio!.cliente, selectedServicio!.fechaentrega.toString(), selectedServicio!.tutor);
+              }),
               //Tiempo restante de entrega
               if(selectedServicio != null)
                 Column(

@@ -247,6 +247,9 @@ class ActualizarInformacion {
 
         if(localClienteList.contains(numero.toString())){
           Clientes clienteEnLista = clientList.where((cliente) => cliente.numero == numero).first;
+          if (onClienteAdded != null) {
+            onClienteAdded(clienteEnLista);
+          }
           if (clienteEnLista.fechaActualizacion != fechaActualizacionfirebase) {
             print("se actualiza el tutor ${clienteEnLista.numero}");
             clienteEnLista.fechaActualizacion = fechaActualizacionfirebase;
@@ -254,10 +257,6 @@ class ActualizarInformacion {
             clienteEnLista.nombreCliente = ClienteDoc['nombreCliente'];
             clienteEnLista.nombrecompletoCliente =  ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
             clienteEnLista.universidad = ClienteDoc['Universidadd'];
-
-            if (onClienteAdded != null) {
-              onClienteAdded(clienteEnLista);
-            }
 
           }else{
             print("no se hace nada con el numero $numero");
@@ -274,7 +273,6 @@ class ActualizarInformacion {
           clientList.add(newClientes);
 
           print("se agrega el tutor ${numero}");
-
           if (onClienteAdded != null) {
             onClienteAdded(newClientes);
           }

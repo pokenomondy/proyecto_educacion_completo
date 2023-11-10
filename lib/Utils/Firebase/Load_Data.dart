@@ -182,10 +182,9 @@ class LoadData {
   }
 
   //Clientes, revisar
-  Future obtenerclientes() async {
+  Future obtenerclientes({Function(Clientes)? onClienteAdded}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ??
-        false;
+    bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
       print("a descargar clientes por primera vez");
       CollectionReference referencetablaclientes = await FirebaseFirestore
@@ -206,6 +205,9 @@ class LoadData {
 
         Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion);
         clientesList.add(newClientes);
+        if (onClienteAdded != null) {
+          onClienteAdded(newClientes);
+        }
       }
       guardardatostablaclientes(clientesList);
       return clientesList;
@@ -227,7 +229,7 @@ class LoadData {
   }
 
   //Tutores, guardar
-  Future obtenertutores() async {
+  Future obtenertutores({Function(Tutores)? onTutorAdded}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
@@ -292,6 +294,9 @@ class LoadData {
             rol
         );
         tutoresList.add(newTutores);
+        if (onTutorAdded != null) {
+          onTutorAdded(newTutores);
+        }
       }
       guardardatostablatutores(tutoresList);
       return tutoresList;
@@ -703,9 +708,12 @@ class LoadData {
 
         if (getconfiguracioninicial.exists) {
           String msjsolicitudes = getconfiguracioninicial.get('SOLICITUD') ?? '';
+          String msjconfirmacion_cliente = getconfiguracioninicial.get('CONFIRMACION_CLIENTE') ?? '';
+
 
           Map<String, dynamic> uploadconfiguracion = {
             'SOLICITUDES': msjsolicitudes,
+            'CONFIRMACION_CLIENTE' : msjconfirmacion_cliente,
           };
 
           String solicitudesJson = jsonEncode(uploadconfiguracion);

@@ -10,9 +10,12 @@ import 'package:flutter/material.dart' as material;
 import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Firebase/ActualizarInformacion.dart';
+import '../../Utils/Firebase/DeleteLocalData.dart';
 
 class PageCargando extends StatefulWidget {
-  const PageCargando({super.key});
+
+  const PageCargando({Key? key,
+  }) : super(key: key);
 
   @override
   PageCargandoState createState() => PageCargandoState();
@@ -37,45 +40,45 @@ class PageCargandoState extends State<PageCargando> {
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
-    loadconfiguraciones().then((_) {
-      setState(() {
-        print("cargado todo");
-        cargacompleta = true;
-      });
-    });
+    loadconfiguraciones();
     super.initState();
   }
 
   Future loadconfiguraciones() async{
+    cargaregular();
+  }
+
+  //Load datos regularmente
+  Future <void> cargaregular() async{
     //Actualizamos clientes
     await ActualizarInformacion().actualizarclientes(
-      onClienteAdded: (Clientes clienteactualizacion){
-        setState(() {
-          cliente_actual = clienteactualizacion.nombreCliente;
-          cliente_List.add(clienteactualizacion);
-          cliente_numerocargado = cliente_List.length;
-        });
-      }
+        onClienteAdded: (Clientes clienteactualizacion){
+          setState(() {
+            cliente_actual = clienteactualizacion.nombreCliente;
+            cliente_List.add(clienteactualizacion);
+            cliente_numerocargado = cliente_List.length;
+          });
+        }
     );
     //Actualizamos solicitudes
     await ActualizarInformacion().actualizarsolicitudes(
-      onSolicitudAddedd: (Solicitud solicitudactualizaicon){
-        setState(() {
-          solicitud_actual = solicitudactualizaicon.idcotizacion.toString();
-          solicitud_list.add(solicitudactualizaicon);
-          solicitudes_numerocargado = solicitud_list.length + 471;
-        });
-      }
+        onSolicitudAddedd: (Solicitud solicitudactualizaicon){
+          setState(() {
+            solicitud_actual = solicitudactualizaicon.idcotizacion.toString();
+            solicitud_list.add(solicitudactualizaicon);
+            solicitudes_numerocargado = solicitud_list.length + 471;
+          });
+        }
     );
     //Actualizar tutores
     await ActualizarInformacion().actualizartutores(
-      onTutorAdded: (Tutores tutoractualizacion){
-        setState(() {
-          tutor_actual = tutoractualizacion.nombrewhatsapp;
-          tutor_List.add(tutoractualizacion);
-          tutores_numerocargado = tutor_List.length;
-        });
-      }
+        onTutorAdded: (Tutores tutoractualizacion){
+          setState(() {
+            tutor_actual = tutoractualizacion.nombrewhatsapp;
+            tutor_List.add(tutoractualizacion);
+            tutores_numerocargado = tutor_List.length;
+          });
+        }
     );
 
     //actualizar tabla de materias
@@ -88,27 +91,46 @@ class PageCargandoState extends State<PageCargando> {
     //Comprobemos que salio good?
     comporbaciondescargacorrecta();
   }
-
   Future <void> comporbaciondescargacorrecta() async{
-    if(cliente_numerocargado==0){
+    if(solicitudes_numerocargado==0){
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('solicitudes_list');
       await LoadData().obtenerSolicitudes(
         onSolicitudAdded: (Solicitud nuevaSolicitud) {
           setState(() {
+            solicitud_actual = nuevaSolicitud.idcotizacion.toString();
             solicitud_list.add(nuevaSolicitud);
             solicitudes_numerocargado = solicitud_list.length + 471;
           });
         },
       );
     }
-    if(tutores_numerocargado==0){
+    if(cliente_numerocargado==0){
+      await LoadData().obtenerclientes(
+        onClienteAdded: (Clientes clienteactualizacion){
+          setState(() {
+            cliente_actual = clienteactualizacion.nombreCliente;
+            cliente_List.add(clienteactualizacion);
+            cliente_numerocargado = cliente_List.length;
+          });
+        }
+      );
       print("esto no va a pasar");
     }
-    if(solicitudes_numerocargado==0){
-      print("no programado aun");
+    if(tutores_numerocargado==0){
+      await LoadData().obtenertutores(
+        onTutorAdded: (Tutores nuevotutor){
+          tutor_actual = nuevotutor.nombrewhatsapp;
+          tutor_List.add(nuevotutor);
+          tutores_numerocargado = tutor_List.length;
+        }
+      );
     }
-
-      //reiniciar licencias y plugins
-      reiniciarcontador();
+    setState(() {
+      cargacompleta = true;
+    });
+    //reiniciar licencias y plugins
+    reiniciarcontador();
   }
 
   Future <void> reiniciarcontador()async{
@@ -132,13 +154,20 @@ class PageCargandoState extends State<PageCargando> {
         Text("Cargando clientes $cliente_actual , numero $cliente_numerocargado cargados"),
         Text("cargando solicitudes $solicitud_actual, numero $solicitudes_numerocargado cargados"),
         Text("cargando tutores $tutor_actual, numero $tutores_numerocargado cargados"),
+        Text("Cargando materias, cargando carreras, cargando universidades,plugins y licencias y mensajes"),
         ProgressBar(),
         if(cargacompleta==true)
           FilledButton(child: Text("cargado todo"), onPressed: (){
             material.Navigator.push(context, material.MaterialPageRoute(
               builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(), showTutoresDetalles: false, tutor: Tutores.empty())
             ));
-          })
+          }),
+        FilledButton(child: Text("reiniciar solicitudesList"),
+            onPressed: ()async{
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.remove('solicitudes_list');
+              cargaregular();
+            }),
       ],
     );
   }
