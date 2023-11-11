@@ -68,14 +68,14 @@ class DashboardState extends State<Dashboard> {
       print("Cargando configuración inicial");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
       return Text('cargando'); // Ejemplo de indicador de carga
+    }else if(entraprimeravez == false){
+      return PageCargando();
+    }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+      return PageCargando();
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
-    }else if(entraprimeravez == false){
-      return PageCargando();
-    }else if(configuracion.tiempoActualizacion.inMinutes >= 5){
-      return PageCargando();
     }else{
       return NavigationView(
         appBar: NavigationAppBar(

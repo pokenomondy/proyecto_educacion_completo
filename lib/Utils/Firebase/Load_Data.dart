@@ -842,7 +842,6 @@ class LoadData {
     Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
     DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
     Duration diferenciaTiempo = DateTime.now().difference(verificador);
-    print("diferencia de tiempo $diferenciaTiempo");
     return diferenciaTiempo;
   }
 }

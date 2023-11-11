@@ -158,6 +158,8 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   ),
                   PrimaryStyleButton(function: (){
                     Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
+                  }),
+                  Text("Mensajes de Confirmaciones = ${configuracion.mensaje_confirmacionCliente}"),
                   }, text: "Subir mensaje solicitud"),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
