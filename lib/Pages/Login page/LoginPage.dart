@@ -96,8 +96,7 @@ import '../../Utils/Firebase/Load_Data.dart';
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 20, bottom: 8),
-                child: Theme().primaryStyleButton(
-                login, "Iniciar Sesion")
+                child: PrimaryStyleButton(function: login, text: "Iniciar Sesion",)
               ),
                 Text(Strings().appVersion,
                   style: TextStyle(
