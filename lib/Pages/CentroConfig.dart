@@ -90,12 +90,12 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text('Nombre de la empresa : ${configuracion.nombreempresa}',
-                style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
+                  style: Theme().styleText(16, true, Theme().primaryColor),),
               ),
               //Primary Color
-              ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
+              Theme().colorRow(configuracion.primaryColor, "Primary Color: "),
               //Secundary Color
-              ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
+              Theme().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
               //Solicitudes con Drive Api
               if(configuracion.SolicitudesDriveApi==true)
                 Column(
@@ -126,9 +126,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CartaPlugin(function: (){
-                      print("Sistema basico");
-                    }, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
+                    CartaPlugin(function: (){}, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
                     CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: configuracion.SolicitudesDriveApi, fecha: configuracion.SolicitudesDriveApiFecha),
                     CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: configuracion.PagosDriveApi, fecha: configuracion.PagosDriveApiFecha),
                   ],
@@ -139,7 +137,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   const Padding(
                     padding: EdgeInsets.only(top: 10),
                     child: Text('------ MENSAJES PERSONALIZADOS -----',
-                    style: TextStyle(fontWeight: FontWeight.bold),),
+                      style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
@@ -212,4 +210,3 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
     }
   }
 }
-
