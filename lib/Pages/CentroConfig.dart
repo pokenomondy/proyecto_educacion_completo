@@ -1,54 +1,49 @@
 import 'package:dashboard_admin_flutter/Config/Config.dart';
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../Objetos/Solicitud.dart';
-import '../Utils/Drive Api/GoogleDrive.dart';
 import '../Utils/Firebase/DeleteLocalData.dart';
 import '../Utils/Firebase/Uploads.dart';
-import '../Utils/Utiles/FuncionesUtiles.dart';
 
 class ConfiguracionDatos extends StatefulWidget {
+  const ConfiguracionDatos({super.key});
+
   @override
-  _ConfiguracionDatosState createState() => _ConfiguracionDatosState();
+  ConfiguracionDatosState createState() => ConfiguracionDatosState();
 }
 
-class _ConfiguracionDatosState extends State<ConfiguracionDatos> {
+class ConfiguracionDatosState extends State<ConfiguracionDatos> {
 
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final currentheight = MediaQuery.of(context).size.height-140;
-    final tamanowidth = (currentwidth/3)-30;
+    final tamanowidth = (currentwidth/1.5)-30;
     print("se dibuja la solicitud");
     return NavigationView(
       content: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 12),
-        child: Row(
-          children: [
-            PrimaryColumnDatos(currentwidth: tamanowidth,),
-          ],
-        ),
+        child: _PrimaryColumnDatos(currentwidth: tamanowidth,),
       ),
     );
   }
 }
 
-class PrimaryColumnDatos extends StatefulWidget {
+class _PrimaryColumnDatos extends StatefulWidget {
 
   final double currentwidth;
 
-  const PrimaryColumnDatos({Key?key,
+  const _PrimaryColumnDatos({Key?key,
     required this.currentwidth,
   }) :super(key: key);
   @override
   _PrimaryColumnDatosState createState() => _PrimaryColumnDatosState();
 }
 
-class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
+class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
   List<Solicitud> solicitudesList = [];
   int numsolicitudes = 0;
   Config configuracion = Config();
@@ -82,49 +77,34 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
   @override
   Widget build(BuildContext context) {
     if (!configloaded) {
-      return Text('cargando'); // Ejemplo de indicador de carga
+      return const Text('cargando'); // Ejemplo de indicador de carga
     }else{
-      return Container(
+      return SizedBox(
         width: widget.currentwidth+400,
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              //Primary Color
-              Row(
-                children: [
-                  Text('Primary Color: '),
-                  Container(
-                    height: 20,
-                    width: 20,
-                    color: configuracion.primaryColor,
-                    child: Text('A'),
-                  ),
-                ],
-              ),
-              //Secundary Color
-              Row(
-                children: [
-                  Text('Secundary Color: '),
-                  Container(
-                    height: 20,
-                    width: 20,
-                    color: configuracion.Secundarycolor,
-                    child: Text('A'),
-                  ),
-                ],
-              ),
               //Nombre de la empresa
-              Text('Nombre de la empresa : ${configuracion.nombreempresa}'),
-              //Cerrar sesión
-              FilledButton(child: Text('Cerrar sesión'), onPressed: (){
-                signOut();
-              }),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text('Nombre de la empresa : ${configuracion.nombreempresa}',
+                style: Theme().styleText(16, true, Theme().primaryColor),),
+              ),
+              //Primary Color
+              Theme().colorRow(configuracion.primaryColor, "Primary Color: "),
+              //Secundary Color
+              Theme().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
               //Solicitudes con Drive Api
               if(configuracion.SolicitudesDriveApi==true)
                 Column(
                   children: [
-                    Text('------ SOLICITUDES DRIVE API PLUGIN -----'),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text('------ SOLICITUDES DRIVE API PLUGIN -----',
+                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    ),
                     Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
                   ],
                 ),
@@ -132,25 +112,41 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
               if(configuracion.PagosDriveApi==true)
                 Column(
                   children: [
-                    Text('------ PAGOS DRIVE API PLUGIN -----'),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text('------ PAGOS DRIVE API PLUGIN -----',
+                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    ),
                     Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
                   ],
                 ),
               //Plugins con fechas de validez del programa
-              Row(
-                children: [
-                  cartaplugins("Sistema Básico",configuracion.basicoNormal,configuracion.basicofecha),
-                  cartaplugins("Solicitudes Drive Api",configuracion.SolicitudesDriveApi,configuracion.SolicitudesDriveApiFecha),
-                  cartaplugins("Pagos Drive Api",configuracion.PagosDriveApi,configuracion.PagosDriveApiFecha),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CartaPlugin(function: (){}, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
+                    CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: configuracion.SolicitudesDriveApi, fecha: configuracion.SolicitudesDriveApiFecha),
+                    CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: configuracion.PagosDriveApi, fecha: configuracion.PagosDriveApiFecha),
+                  ],
+                ),
               ),
               Column(
                 children: [
-                  Text('------ MENSAJES PERSONALIZADOS -----'),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 10),
+                    child: Text('------ MENSAJES PERSONALIZADOS -----',
+                    style: TextStyle(fontWeight: FontWeight.bold),),
+                  ),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
                     width: 200,
                     child: TextBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                       placeholder: 'Mensaje solicitdes',
                       onChanged: (value){
                         setState(() {
@@ -160,13 +156,17 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
                       maxLines: null,
                     ),
                   ),
-                  FilledButton(child: Text('Subir'), onPressed: (){
+                  PrimaryStyleButton(function: (){
                     Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
-                  }),
+                  }, text: "Subir mensaje solicitud"),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8),
                     width: 200,
                     child: TextBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                       placeholder: 'Mensaje Confirmaciones clientes',
                       onChanged: (value){
                         setState(() {
@@ -176,45 +176,28 @@ class _PrimaryColumnDatosState extends State<PrimaryColumnDatos> {
                       maxLines: null,
                     ),
                   ),
-                  FilledButton(child: Text('Subir mensaje confirmación'), onPressed: (){
+                  PrimaryStyleButton(function: (){
                     Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
-                  }),
+                  }, text: "Subir mensaje confirmacion"),
                 ],
               ),
               //Eliminar base de datos de solicitudesList
-              FilledButton(child: Text("reiniciar solicitudesList"),
-                  onPressed: (){
-                    DeleteLocalData().eliminarsolicitudesLocal();
-                  }),
-              FilledButton(child: Text("reiniciar Tutores"),
-                  onPressed: (){
-                    DeleteLocalData().eliinarTutoresLocal();
-                  }),
-              FilledButton(child: Text("reiniciar clientes"),
-                  onPressed: (){
-                    DeleteLocalData().eliminarclientesLocal();
-                  }),
+              PrimaryStyleButton(function: (){
+                DeleteLocalData().eliminarsolicitudesLocal();
+              }, text: "Reiniciar las solicitudes"),
+              PrimaryStyleButton(function: (){
+                DeleteLocalData().eliinarTutoresLocal();
+              }, text: "Reiniciar Tutores"),
+              PrimaryStyleButton(function: (){
+                DeleteLocalData().eliminarclientesLocal();
+              }, text: "Reiniciar Clientes"),
+              //Cerrar sesión
+              PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
             ],
           ),
         ),
       );
     }
-  }
-
-  Widget cartaplugins(String titulo, bool activacion, DateTime fecha){
-    return Container(
-      width: 150,
-      height: 150,
-      color: Colors.blue,
-      child: Column(
-        children: [
-          Text(titulo),
-          Text(activacion.toString()),
-          Text("fecha de expiración:"),
-          Text(DateFormat('dd/MM/yyyy hh:mma').format(fecha)),
-        ],
-      ),
-    );
   }
 
   void signOut() async {
