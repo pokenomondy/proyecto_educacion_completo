@@ -90,7 +90,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text('Nombre de la empresa : ${configuracion.nombreempresa}',
-                style: Theme().styleText(16, true, Theme().primaryColor),),
+                  style: Theme().styleText(16, true, Theme().primaryColor),),
               ),
               //Primary Color
               Theme().colorRow(configuracion.primaryColor, "Primary Color: "),
@@ -137,7 +137,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   const Padding(
                     padding: EdgeInsets.only(top: 10),
                     child: Text('------ MENSAJES PERSONALIZADOS -----',
-                    style: TextStyle(fontWeight: FontWeight.bold),),
+                      style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
@@ -158,8 +158,6 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   ),
                   PrimaryStyleButton(function: (){
                     Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
-                  }),
-                  Text("Mensajes de Confirmaciones = ${configuracion.mensaje_confirmacionCliente}"),
                   }, text: "Subir mensaje solicitud"),
                   Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
                   Container(
@@ -212,4 +210,3 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
     }
   }
 }
-
