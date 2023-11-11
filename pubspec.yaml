@@ -36,6 +36,7 @@ dependencies:
   syncfusion_flutter_calendar: ^23.1.38
   flutter_colorpicker: ^1.0.3
   provider: ^6.0.5
+  rxdart: ^0.27.7
 
 
 

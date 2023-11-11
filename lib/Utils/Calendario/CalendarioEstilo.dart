@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
 import '../../Config/Config.dart';
+import '../../Objetos/RegistrarPago.dart';
 import '../Firebase/Uploads.dart';
 
 class CalendarioStyle {
@@ -191,10 +193,12 @@ class CalendarioStyle {
                 Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
                 Navigator.pop(context, 'User deleted file');
               }),
+          //Esccuhar numero pagos
         ],
       ),
     );
   }
+
 
 }
 

@@ -854,6 +854,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     'EXPIRADO',
     'ESPERANDO',
     'AGENDADO',
+    'NO PODEMOS'
   ];
   String? selectedEstado = "";
   final db = FirebaseFirestore.instance;
@@ -1676,17 +1677,17 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
       fechita = "${DateFormat("dd/MM").format(solicitud.fechaentrega)} ${DateFormat('hh:mma').format(solicitud.fechaentrega)}";
     }
 
-    String confirmacion = '*CONFIRMACIÓN DE $servicio DUFY ASESORÍAS*'
-        '\n'
-        '\n${solicitud.servicio} CONFIRMADO'
-        '\n'
-        '\nMatería: ${solicitud.materia}'
-        '\n$tutorcliente: ${nombreusuario}'
-        '\nPrecio: ${NumberFormat("#,###", "es_ES").format(preciousuario)}'
-        '\nFecha de entrega: $fechita'
-        '\nCódigo de confirmación: $codigo'
-        '\nID solicitud confirmada: ${solicitud.idcotizacion}';
-    '\nCualquier duda o inconveniente, comunícate con nosotros!! 📝';
+    String confirmacion = configuracion.mensaje_confirmacionCliente;
+
+    confirmacion = confirmacion.replaceAll("/servicioplural/", servicio);
+    confirmacion = confirmacion.replaceAll("/servicio/", solicitud.servicio);
+    confirmacion = confirmacion.replaceAll("/materia/", solicitud.materia);
+    confirmacion = confirmacion.replaceAll("/rolusuario/", tutorcliente);
+    confirmacion = confirmacion.replaceAll("/nombreusuario/", nombreusuario);
+    confirmacion = confirmacion.replaceAll("/preciousuario/", preciousuario.toString());
+    confirmacion = confirmacion.replaceAll("/fecha de entrega/", fechita);
+    confirmacion = confirmacion.replaceAll("/codigo/", codigo);
+    confirmacion = confirmacion.replaceAll("/idsolicitud/", solicitud.idcotizacion.toString());
 
     Clipboard.setData(ClipboardData(text: confirmacion));
   }

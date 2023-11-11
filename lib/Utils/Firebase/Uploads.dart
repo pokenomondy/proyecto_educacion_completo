@@ -17,6 +17,8 @@ import '../../Objetos/Tutores_objet.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
 
+import 'StreamBuilders.dart';
+
 class Uploads{
   final db = FirebaseFirestore.instance; //inicializar firebase
 
@@ -328,13 +330,10 @@ class Uploads{
     await pago.doc("$numeropagosregistrados-$referencia").set(newpago.toMap());
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('contabilidad_list') ?? '';
-    List<dynamic> ServicioAgendadoData = jsonDecode(solicitudesJson);
-    List serviciosagendadoList = ServicioAgendadoData.map((tutorData) =>
-        ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
+    List<ServicioAgendado>? serviciosagendadoList = await stream_builders().cargarserviciosagendados();
 
     // Encontrar la solicitud
-    int solicitudIndex = serviciosagendadoList.indexWhere((solicitud) => solicitud.codigo == codigo);
+    int solicitudIndex = serviciosagendadoList!.indexWhere((solicitud) => solicitud.codigo == codigo);
 
     if (solicitudIndex != -1) {
       // Agregar el nuevo pago a la lista existente
@@ -342,7 +341,7 @@ class Uploads{
 
       // Guardar la lista actualizada en SharedPreferences
       String solicitudesJsondos = jsonEncode(serviciosagendadoList);
-      await prefs.setString('contabilidad_list', solicitudesJsondos);
+      await prefs.setString('servicios_agendados_list_stream', solicitudesJsondos);
     }
   }
   Future<int> obtenerNumeroDePagosRegistrados(int idConfirmacion) async {
