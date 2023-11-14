@@ -36,16 +36,19 @@ class CalendarioStyle {
 
   dialog.Color colortarjetaAdmin(ServicioAgendado servicio, String motivosPagos){
     if(motivosPagos == "ENTREGAS"){
-      return colortarjetaAdminENTREGAS(servicio);
+      return colortarjetaAdminEntregas(servicio);
     }else if (motivosPagos == "PAGOSCLIENTES"){
-      return colortarjetaAdminPAGOS(servicio);
-    }else{
-      return colortarjetaAdminPAGOS(servicio);
+      return colortarjetaAdminPagos(servicio);
+    }else if(motivosPagos == "PAGOSTUTORES"){
+      return colortarjetaAdminPagosTutores(servicio);
+    }
+    else{
+      return colortarjetaAdminPagos(servicio);
     }
 
   }
 
-  dialog.Color colortarjetaAdminENTREGAS(ServicioAgendado servicio){
+  dialog.Color colortarjetaAdminEntregas(ServicioAgendado servicio){
     if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
       return dialog.Colors.yellow;
     }else if(servicio.identificadorcodigo == "A" || servicio.identificadorcodigo == "P" || servicio.identificadorcodigo == "Q"){
@@ -59,13 +62,50 @@ class CalendarioStyle {
     }
   }
 
-  dialog.Color colortarjetaAdminPAGOS(ServicioAgendado servicio){
-    if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
+  dialog.Color colortarjetaAdminPagos(ServicioAgendado servicio) {
+    // Calcular la suma de los pagos con motivo "CLIENTES"
+    int totalPagosClientes = servicio.pagos
+        .where((pago) => pago.tipopago == "CLIENTES")
+        .fold(0, (sum, pago) => sum + pago.valor);
+    int totalPagoReembolsoCliente = servicio.pagos
+        .where((pago) => pago.tipopago == "REEMBOLSOCLIENTE")
+        .fold(0, (sum, pago) => sum + pago.valor);
+
+
+    // Verificar si la suma de los pagos con motivo "CLIENTES" es igual al precio cobrado
+    if (totalPagosClientes-totalPagoReembolsoCliente == servicio.preciocobrado) {
+      return dialog.Colors.green; // Pintar de color verde si la condición es verdadera
+    } else if (totalPagosClientes-totalPagoReembolsoCliente > servicio.preciocobrado) {
+      return dialog.Colors.red; // Pintar de color rojo si la suma es mayor al precio cobrado
+    } else if (servicio.fechasistema.isBefore(DateTime(2023, 9, 30))) {
       return dialog.Colors.black;
-    } else{
+    } else {
       return dialog.Colors.yellow;
     }
   }
+
+  dialog.Color colortarjetaAdminPagosTutores(ServicioAgendado servicio) {
+    // Calcular la suma de los pagos con motivo "CLIENTES"
+    int totalPagosTutores = servicio.pagos
+        .where((pago) => pago.tipopago == "TUTOR")
+        .fold(0, (sum, pago) => sum + pago.valor);
+
+    int totalPagosReembolsoTutores = servicio.pagos
+        .where((pago) => pago.tipopago == "REEMBOLSOTUTOR")
+        .fold(0, (sum, pago) => sum + pago.valor);
+
+    // Verificar si la suma de los pagos con motivo "CLIENTES" es igual al precio cobrado
+    if (totalPagosTutores-totalPagosReembolsoTutores == servicio.preciotutor) {
+      return dialog.Colors.green; // Pintar de color verde si la condición es verdadera
+    } else if (totalPagosTutores-totalPagosReembolsoTutores > servicio.preciotutor) {
+      return dialog.Colors.red; // Pintar de color rojo si la suma es mayor al precio cobrado
+    } else if (servicio.fechasistema.isBefore(DateTime(2023, 9, 30))) {
+      return dialog.Colors.black;
+    } else {
+      return dialog.Colors.yellow;
+    }
+  }
+
 
   DateTime tiempotarjetastart(ServicioAgendado servicio){
     if(servicio.identificadorcodigo == "T"){
@@ -194,6 +234,7 @@ class CalendarioStyle {
                 Navigator.pop(context, 'User deleted file');
               }),
           //Esccuhar numero pagos
+          Text(servicioseleccionado.pagos.length.toString()),
         ],
       ),
     );

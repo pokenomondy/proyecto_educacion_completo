@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
+import 'Pages/Contabilidad/Pagos.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
@@ -34,6 +35,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => MateriasProvider()),
         ChangeNotifierProvider(create: (context) => CuentasProvider()),
+        ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
+        ChangeNotifierProvider(create: (_) => HistorialProvider()),
       ],
       child: MyApp(),
     ),

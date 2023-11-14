@@ -446,15 +446,19 @@ class LoadData {
     }else{
       print("ya descargadas");
       String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
-      List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-      List solicitudList = CarreraData.map((tutorData) =>
-          Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
-      return solicitudList;
+      if (solicitudesJson.isNotEmpty) {
+        List<dynamic> solicitud = jsonDecode(solicitudesJson);
+        List solicitudList = solicitud.map((solicitudData) => Solicitud.fromJson(solicitudData as Map<String, dynamic>)).toList();
+        return solicitudList;
+      }else{
+        print('Los datos JSON están vacíos.');
+        return []; // O maneja este caso según tus requisitos
+      }
+
     }
   }
-
-
   Future guardaDatosSolicitudes(List<Solicitud> solicitudList) async {
+    print("solicitudes guardandose correctamente");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = jsonEncode(solicitudList);
     await prefs.setString('solicitudes_list', solicitudesJson);

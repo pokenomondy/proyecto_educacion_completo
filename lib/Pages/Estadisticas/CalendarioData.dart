@@ -61,6 +61,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   final db = FirebaseFirestore.instance;
   int numpagos = 0;
 
+
   @override
   void initState() {
     loadchecks();
@@ -70,19 +71,6 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
   void loadchecks() async {
     datosDescargados = false;
-    servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
-    meetings = servicioagendadoList
-        ?.map((servicio) {
-      final appointment = Appointment(
-        startTime: CalendarioStyle().tiempotarjetastart(servicio),
-        endTime: CalendarioStyle().tiempotarjetaend(servicio),
-        subject: "${servicio.identificadorcodigo} - ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
-        notes: servicio.materia,
-        color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
-      );
-      appointmentToServicioMap[appointment] = servicio;
-      return appointment;
-    }).toList();
     setState(() {
       cargarinterfaz = true;
     });
@@ -107,15 +95,43 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                   motivosPagos = "PAGOSCLIENTES";
                 });
               }),
+              FilledButton(child: Text('PAGOS TUTORES'), onPressed: (){
+                setState(() {
+                  motivosPagos = "PAGOSTUTORES";
+                });
+              }),
             ],
           ),
           if(cargarinterfaz == true)
             Column(
               children: [
                 if(datosDescargados == false)
-                  Column(
-                    children: [
-                      Container(
+                  StreamBuilder<List<ServicioAgendado>>(
+                    stream: stream_builders().getServiciosAgendados(),
+                    builder: (context, snapshot) {
+                      List<ServicioAgendado>? servicioagendadoList = [];
+                      if (snapshot.hasError) {
+                        return Center(
+                            child: Text('Error al cargar las solicitudes'));
+                      }
+                      if (!snapshot.hasData) {
+                        return Center(child: Text('cargando'));
+                      }
+                      servicioagendadoList = snapshot.data;
+                      List<Appointment>? meetings = servicioagendadoList
+                          ?.map((servicio) {
+                        final appointment = Appointment(
+                          startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                          endTime: CalendarioStyle().tiempotarjetaend(servicio),
+                          subject: "${servicio.identificadorcodigo} ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
+                          notes: servicio.materia,
+                          color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
+                        );
+                        appointmentToServicioMap[appointment] = servicio;
+                        return appointment;
+                      }).toList();
+
+                      return Container(
                         height: currentheight-50,
                         child: SfCalendar(
                           controller: _calendarController,
@@ -142,8 +158,8 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                             CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
                           },
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 if(datosDescargados == true)
                   Text('Descargados'),
@@ -155,6 +171,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
     );
   }
 
+  Widget numerodepagos(String codigo){
+    return Text('Hola ${escucharnumerodepagos(codigo)}');
+  }
 
   void calendario_oprimido(CalendarTapDetails details) {
     if (details.targetElement == CalendarElement.appointment ||
@@ -180,6 +199,28 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
     );
   }
 
+  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> escucharnumerodepagos(String codigo){
+    return StreamBuilder(
+        stream: db.collection("CONTABILIDAD").doc(codigo).collection("PAGOS").snapshots(),
+        builder: (context,snapshot){
+          if(!snapshot.hasData) return Text('CARGANDO NO HAY NADA');
+          List<RegistrarPago> pagos = [];
+          for(var pagoDoc in snapshot.data!.docs){
+            RegistrarPago newpago = RegistrarPago(
+              pagoDoc['codigo'],
+              pagoDoc['tipopago'],
+              pagoDoc['valor'],
+              pagoDoc['referencia'],
+              pagoDoc['fechapago'].toDate(),
+              pagoDoc['metodopago'],
+              pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID',
+            );
+            pagos.add(newpago);
+          }
+          return Text(pagos.length.toString());
+        }
+    );
+  }
 
 }
 

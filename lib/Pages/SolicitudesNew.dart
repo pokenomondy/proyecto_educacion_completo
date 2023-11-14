@@ -1243,7 +1243,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
             onPressed: () {
               final DateTime ahora = DateTime.now();
               final Duration duration = ahora.difference(fechasistema);
-              Uploads().addCotizacion(idcotizacion, precio, selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, 'Comentario', '', fechaconfirmacion);
+              Uploads().addCotizacion(idcotizacion, precio, selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, comentario, '', fechaconfirmacion);
               Navigator.pop(context, 'User deleted file');},
           ),
           FilledButton(
@@ -1330,7 +1330,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                           Cotizacion cotizacion = cotizaciones[subIndex];
 
                           return Container(
-                            height: 120,
+                            height: 150,
                             child: Card(
                               child:
                               Column(
@@ -1359,7 +1359,8 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                                         },
                                       )
                                     ],
-                                  )
+                                  ),
+                                  Text(cotizacion.comentariocotizacion!),
                                 ],
                               ),
 

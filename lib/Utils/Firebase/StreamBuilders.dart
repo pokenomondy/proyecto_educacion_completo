@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/RegistrarPago.dart';
@@ -15,9 +16,11 @@ class stream_builders{
 
     Stream<QuerySnapshot> queryContabilidad = refcontabilidad.snapshots();
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
-      List<ServicioAgendado> serviciosagendadoList = [];
+      List<ServicioAgendado> serviciosAgendadosList = [];
 
       print("llamando contabilidad desde stream");
+
+      // First, load the basic information without payments
       for (var servicio in servicioSnapshot.docs) {
         try {
           String codigo = servicio['codigo'];
@@ -34,48 +37,81 @@ class stream_builders{
           int idcontable = servicio['idcontable'];
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
           String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
-          // Get payments as a stream
-          Stream<List<RegistrarPago>> pagosStream =
-          getRegistrarPagosContabilidadStream(codigo);
+          // Obtener los pagos directamente del documento
+          List<RegistrarPago> pagos = [];
+          if (servicio.data() != null && servicio.data().toString().contains('pagos')) {
+            var pagosData = servicio['pagos'] as List<dynamic>;
+            pagos = pagosData.map((pagoData) {
+              DateTime fechaPago = pagoData['fechapago'] != null ? RegistrarPago.convertirTimestamp(pagoData['fechapago']) : DateTime.now();
+              String codigo = pagoData['codigo'] ?? '';
+              String tipopago = pagoData['tipopago'] ?? '';
+              int valor = pagoData['valor'] ?? 0;
+              String referencia = pagoData['referencia'] ?? '';
+              String metodopago = pagoData['metodopago'] ?? '';
+              String id = pagoData['id'] ?? '';
 
-          print(codigo);
+              RegistrarPago nuevoPago = RegistrarPago(codigo, tipopago, valor, referencia, fechaPago, metodopago, id);
+              return nuevoPago;
+            }).toList();
+          }
+          //Obtener el historial del documento
+          List<HistorialAgendado> historial = [];
+          if (servicio.data() != null && servicio.data().toString().contains('historial')) {
+            var historialData = servicio['historial'] as List<dynamic>;
+            historial = historialData.map((historialItem) {
+              DateTime fechacambio = historialItem['fechacambio'] != null
+                  ? HistorialAgendado.convertirTimestamp(historialItem['fechacambio'])
+                  : DateTime.now();
+              String cambioant = historialItem['cambioant'] ?? '';
+              String cambionew = historialItem['cambionew'] ?? '';
+              String motivocambio = historialItem['motivocambio'] ?? '';
+              String codigo = historialItem['codigo'] ?? '';
 
-          await for (List<RegistrarPago> pagosList in pagosStream) {
-            // Utilize the stream in your ServicioAgendado object
-            ServicioAgendado newservicioagendado = ServicioAgendado(
-              codigo,
-              sistema,
-              materia,
-              fechasistema,
-              cliente,
-              preciocobrado,
-              fechaentrega,
-              tutor,
-              preciotutor,
-              identificadorcodigo,
-              idsolicitud,
-              idcontable,
-              pagosList,
-              entregado,
-              entregadocliente,
-            );
-            serviciosagendadoList.add(newservicioagendado);
-
-            // Optional: If you only want to process the first value and then break the loop
-            break;
+              HistorialAgendado nuevoHistorial = HistorialAgendado(
+                fechacambio,
+                cambioant,
+                cambionew,
+                motivocambio,
+                codigo,
+              );
+              return nuevoHistorial;
+            }).toList();
           }
 
-        }catch (e) {
+
+          // Create ServicioAgendado without payments
+          ServicioAgendado newservicioagendado = ServicioAgendado(
+            codigo,
+            sistema,
+            materia,
+            fechasistema,
+            cliente,
+            preciocobrado,
+            fechaentrega,
+            tutor,
+            preciotutor,
+            identificadorcodigo,
+            idsolicitud,
+            idcontable,
+            pagos, // Empty payments list initially
+            entregado,
+            entregadocliente,
+            historial,
+          );
+
+          serviciosAgendadosList.add(newservicioagendado);
+        } catch (e) {
           print(e);
         }
       }
-      String solicitudesJson = jsonEncode(serviciosagendadoList);
+
+      String solicitudesJson = jsonEncode(serviciosAgendadosList);
       await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
       await prefs.setBool('checked_serviciosAgendados', true);
 
-      yield serviciosagendadoList;
-    }
+      yield serviciosAgendadosList;
 
+    }
   }
   Future<List<ServicioAgendado>?> cargarserviciosagendados() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -86,40 +122,6 @@ class stream_builders{
     return clientesList;
   }
 
-  //Obtener lista de pagos en solicitudes
-  Stream<List<RegistrarPago>> getRegistrarPagosContabilidadStream(String codigo) {
-    CollectionReference refPagos =
-    FirebaseFirestore.instance.collection("CONTABILIDAD").doc(codigo).collection("PAGOS");
-
-    return refPagos.snapshots().map((querySnapshot) {
-      List<RegistrarPago> pagosList = [];
-
-      try {
-        for (var pagoDoc in querySnapshot.docs) {
-          // ... (existing code)
-
-          String pagoCodigo = pagoDoc['codigo'];
-          String tipopago = pagoDoc['tipopago'];
-          int valor = pagoDoc['valor'];
-          String metodopago = pagoDoc['metodopago'];
-          String referencia = pagoDoc['referencia'];
-          DateTime fechapago = pagoDoc['fechapago'].toDate();
-          String id = pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID';
-
-          print(valor);
-          print(tipopago);
-
-          RegistrarPago newpago = RegistrarPago(
-              pagoCodigo, tipopago, valor, referencia, fechapago, metodopago, id);
-          pagosList.add(newpago);
-        }
-      } catch (e) {
-        print(e);
-      }
-
-      return pagosList;
-    });
-  }
 
   //Obtener contabilidad en stream, servicios AGENDADOA
   Stream<List<ServicioAgendado>> getServiciosAgendadosTutor(String nombretutor) async* {
@@ -162,7 +164,8 @@ class stream_builders{
               idcontable,
               pagos,
               entregado,
-              entregadocliente);
+              entregadocliente,
+              []);
           serviciosagendadoList.add(newservicioagendado);
         } catch (e) {
           print(e);
@@ -181,7 +184,6 @@ class stream_builders{
         ServicioAgendado.fromJson(clienteData as Map<String, dynamic>)).toList();
     return clientesList;
   }
-
 
 }
 

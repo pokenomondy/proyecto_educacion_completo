@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+
 class RegistrarPago{
   String id = "";
   String codigo = "";//Codigo
@@ -20,6 +23,11 @@ class RegistrarPago{
       'fechapago' :fechapago,
       'id':id,
     };
+  }
+
+  // Método para convertir Timestamp a DateTime y luego a String
+  static DateTime convertirTimestamp(Timestamp timestamp) {
+    return timestamp.toDate();
   }
 
   Map<String, dynamic> toJson() {
