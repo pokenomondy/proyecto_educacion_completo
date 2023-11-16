@@ -101,7 +101,7 @@ import '../../Utils/Firebase/Load_Data.dart';
                 Text(Strings().appVersion,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme().colorazulventas,
+                    color: ThemeApp().colorazulventas,
                   ),),
               //Google
             ],

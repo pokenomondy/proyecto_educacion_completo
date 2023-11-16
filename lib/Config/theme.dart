@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:googleapis/drive/v2.dart';
 import 'package:intl/intl.dart';
 import 'Config.dart';
 
-class Theme{
+class ThemeApp{
   Color primaryColor = const Color(0x1A000000);
   Color secundaryColor = const Color(0xFFF0F2F2);
   Color buttoncolor = const Color(0xFF1E1E1E);
@@ -11,11 +12,11 @@ class Theme{
   Color colorazulventas = const Color(0xFFB7DAFB);
   Color whitecolor = Colors.white;
 
-  Theme () {
+  ThemeApp () {
     Config config = Config();
     config.initConfig();
     primaryColor = config.primaryColor;
-
+    secundaryColor = config.Secundarycolor;
   }
 
   Widget colorRow(Color color, String text){
@@ -74,7 +75,7 @@ class PrimaryStyleButton extends StatefulWidget{
 }
 
 class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
-  late Color buttonColor = !widget.invert ? Theme().buttonSecundaryColor : Theme().whitecolor;
+  late Color buttonColor = !widget.invert ? ThemeApp().buttonSecundaryColor : ThemeApp().whitecolor;
 
   @override
   Widget build(BuildContext context) {
@@ -86,12 +87,12 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
       child: GestureDetector(
         onTapDown: (_) {
           setState(() {
-            buttonColor = Theme().buttoncolor;
+            buttonColor = ThemeApp().buttoncolor;
           });
         },
         onTapUp: (_) {
           setState(() {
-            buttonColor = !widget.invert ? Theme().whitecolor : Theme().buttoncolor;
+            buttonColor = !widget.invert ? ThemeApp().whitecolor : ThemeApp().buttoncolor;
           });
         },
         onTap: () {
@@ -108,7 +109,7 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
           child: Center(
             child: Text(
               widget.text,
-              style: Theme().styleText(widget.tamanio, true, !widget.invert? Theme().whitecolor: Theme().buttonSecundaryColor ),
+              style: ThemeApp().styleText(widget.tamanio, true, !widget.invert? ThemeApp().whitecolor: ThemeApp().buttonSecundaryColor ),
             ),
           ),
         ),
@@ -140,21 +141,21 @@ class CartaPluginState extends State<CartaPlugin>{
 
   @override
   Widget build(BuildContext context){
-    TextStyle subtitulos = Theme().styleText(12, false, Theme().whitecolor);
+    TextStyle subtitulos = ThemeApp().styleText(12, false, ThemeApp().whitecolor);
     return Container(
       width: 150,
       height: 120,
       margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: widget.activacion? Theme().buttonSecundaryColor: Theme().redColor,
+        color: widget.activacion? ThemeApp().buttonSecundaryColor: ThemeApp().redColor,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
               widget.titulo,
-            style: Theme().styleText(15, true, Theme().whitecolor),
+            style: ThemeApp().styleText(15, true, ThemeApp().whitecolor),
           ),
           Text(
               widget.activacion? "Activo": "Inactivo",
@@ -162,7 +163,7 @@ class CartaPluginState extends State<CartaPlugin>{
           ),
           Text(
               "fecha de expiración:",
-              style: Theme().styleText(12, true, Theme().whitecolor)
+              style: ThemeApp().styleText(12, true, ThemeApp().whitecolor)
           ),
           Text(
               DateFormat('dd/MM/yyyy hh:mma').format(widget.fecha),
@@ -183,3 +184,106 @@ class CartaPluginState extends State<CartaPlugin>{
   }
 }
 
+class CircularLogo extends StatefulWidget{
+
+  final String asset;
+  final double width;
+  final double height;
+  final Color containerColor;
+  final double border;
+  final bool shadow;
+
+  const CircularLogo({
+    Key?key,
+    required this.asset,
+    this.width = 100,
+    this.height = 100,
+    this.containerColor = Colors.white,
+    this.border = -1,
+    this.shadow = false,
+  }):super(key: key);
+
+  @override
+  CircularLogoState createState() => CircularLogoState();
+
+}
+
+class CircularLogoState extends State<CircularLogo>{
+
+  @override
+  Widget build(BuildContext context){
+    final double border = widget.border == -1 ? (widget.width + widget.height)/4 : widget.border;
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(border),
+        color: widget.containerColor,
+        boxShadow: widget.shadow ? [BoxShadow(
+          blurRadius: 7,
+          spreadRadius: 2,
+          offset: const Offset(0, 4),
+          color: Colors.black.withOpacity(0.20),
+        )] : null,
+      ),
+      child:  Center(
+        child: Image.asset(
+          widget.asset,
+          width: widget.width*0.75,
+          height: widget.height*0.75,
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+}
+
+class ItemsCard extends StatelessWidget{
+  final List<Widget> children;
+  final double width;
+  final double height;
+  final double margin;
+  final MainAxisAlignment alignementColumn;
+  final Color cardColor;
+  final double border;
+  final bool shadow;
+  final Color shadowColor;
+
+  const ItemsCard({
+    Key?key,
+    required this.children,
+    this.alignementColumn = MainAxisAlignment.center,
+    this.width = -1,
+    this.height = -1,
+    this.margin = 5,
+    this.border = 20,
+    this.cardColor = Colors.white,
+    this.shadow = true,
+    this.shadowColor = Colors.black
+  }):super(key:key);
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      margin: EdgeInsets.all(margin),
+      width: width != -1 ? width : null,
+      height: height != -1 ? height: null,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(border),
+        color: cardColor,
+        boxShadow: shadow ? [BoxShadow(
+          color: shadowColor.withOpacity(0.2),
+          offset: const Offset(0, 4),
+          blurRadius: 7,
+          spreadRadius: 2,
+        )] : null,
+      ),
+      child: Column(
+        mainAxisAlignment: alignementColumn,
+        children: children,
+      ),
+    );
+  }
+
+}
