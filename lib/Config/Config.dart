@@ -27,6 +27,7 @@ class Config {
   final currentUser = FirebaseAuth.instance.currentUser;
   //mensajes
   String mensaje_solicitd = "";
+  String mensaje_confirmacionCliente = "";
   //Tiempo de actualizaicón
   Duration tiempoActualizacion = Duration.zero;
 
@@ -69,6 +70,7 @@ class Config {
 
     if(configuracion_mensajes.containsKey('SOLICITUDES')){
       mensaje_solicitd = configuracion_mensajes['SOLICITUDES'];
+      mensaje_confirmacionCliente = configuracion_mensajes['CONFIRMACION_CLIENTE'];
     }
   }
 

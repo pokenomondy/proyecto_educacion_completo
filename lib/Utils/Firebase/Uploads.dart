@@ -17,6 +17,8 @@ import '../../Objetos/Tutores_objet.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
 
+import 'StreamBuilders.dart';
+
 class Uploads{
   final db = FirebaseFirestore.instance; //inicializar firebase
 
@@ -244,15 +246,38 @@ class Uploads{
     print("Subido nueva cuenta bancaria");
     await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].cuentas.add(newcuenta);
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Subir materia de tutor
-  void addMateriaTutor(String uidtutor,String nombremateria,) async{
+  void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
     CollectionReference materias = db.collection("TUTORES").doc(uidtutor.toString()).collection("MATERIA");
     Materia newmateria = Materia(nombremateria);
     await materias.doc(nombremateria).set(newmateria.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].materias.add(newmateria);
+      if (onMateriaAdded != null) {
+        onMateriaAdded(newmateria);
+      }
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {
@@ -305,13 +330,10 @@ class Uploads{
     await pago.doc("$numeropagosregistrados-$referencia").set(newpago.toMap());
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('contabilidad_list') ?? '';
-    List<dynamic> ServicioAgendadoData = jsonDecode(solicitudesJson);
-    List serviciosagendadoList = ServicioAgendadoData.map((tutorData) =>
-        ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
+    List<ServicioAgendado>? serviciosagendadoList = await stream_builders().cargarserviciosagendados();
 
     // Encontrar la solicitud
-    int solicitudIndex = serviciosagendadoList.indexWhere((solicitud) => solicitud.codigo == codigo);
+    int solicitudIndex = serviciosagendadoList!.indexWhere((solicitud) => solicitud.codigo == codigo);
 
     if (solicitudIndex != -1) {
       // Agregar el nuevo pago a la lista existente
@@ -319,7 +341,7 @@ class Uploads{
 
       // Guardar la lista actualizada en SharedPreferences
       String solicitudesJsondos = jsonEncode(serviciosagendadoList);
-      await prefs.setString('contabilidad_list', solicitudesJsondos);
+      await prefs.setString('servicios_agendados_list_stream', solicitudesJsondos);
     }
   }
   Future<int> obtenerNumeroDePagosRegistrados(int idConfirmacion) async {

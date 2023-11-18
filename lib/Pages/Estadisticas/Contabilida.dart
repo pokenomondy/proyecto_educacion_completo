@@ -1,10 +1,12 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:html';
+import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:excel/excel.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/RegistrarPago.dart';
@@ -33,7 +35,6 @@ class _CrearContainerState extends State<CrearContabilidad> {
     serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       carguelistas = true;
-      print("cargadas las listas");
     });
   }
 
@@ -282,7 +283,6 @@ class _CrearSolicitudesState extends State<CrearSolciitudes> {
     solicitudesList = await LoadData().obtenerSolicitudes();
     setState(() {
       carguelistas = true;
-      print("cargadas las listas");
     });
   }
 
@@ -456,6 +456,7 @@ class _CrearSolicitudesState extends State<CrearSolciitudes> {
     // Revoca la URL para liberar recursos
     Url.revokeObjectUrl(url);
   }
+
 }
 
 class SolicitudesDataSource extends DataGridSource {
@@ -517,15 +518,12 @@ class _PagosDatosState extends State<PagosDatos> {
 
   Future<void> loadpagos() async {
     contabilidadList = (await stream_builders().cargarserviciosagendados())!;
-    pagosList.clear();
 // Recorre la lista de contabilidadList
     contabilidadList.forEach((servicioAgendado) {
       print(servicioAgendado.codigo);
       pagosList.addAll(servicioAgendado.pagos);
     });
-
     setState(() {});
-
   }
 
 
@@ -707,6 +705,7 @@ class PagosDataSource extends DataGridSource {
         }).toList());
   }
 }
+
 
 
 
