@@ -7,6 +7,7 @@ import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
 
 class ConfiguracionTutor extends StatefulWidget{
+  const ConfiguracionTutor({super.key});
 
   @override
   _ConfiguracionTutorState createState() => _ConfiguracionTutorState();
@@ -20,25 +21,25 @@ class _ConfiguracionTutorState extends State<ConfiguracionTutor> {
     final currentwidth = MediaQuery.of(context).size.width;
     return Column(
       children: [
-        PrimaryColumn(currentwidth: currentwidth),
+        PrimaryColumnTutorConfig(currentwidth: currentwidth),
       ],
     );
   }
 
 }
 
-class PrimaryColumn extends StatefulWidget{
+class PrimaryColumnTutorConfig extends StatefulWidget{
   final double currentwidth;
 
-  const PrimaryColumn({Key?key,
+  const PrimaryColumnTutorConfig({Key?key,
     required this.currentwidth,
   }) :super(key: key);
   @override
-  _PrimaryColumnState createState() => _PrimaryColumnState();
+  _PrimaryColumnTutorConfigState createState() => _PrimaryColumnTutorConfigState();
 
 }
 
-class _PrimaryColumnState extends State<PrimaryColumn> {
+class _PrimaryColumnTutorConfigState extends State<PrimaryColumnTutorConfig> {
   final currentUser = FirebaseAuth.instance.currentUser;
   String nombretutor = "";
   String Correo_gmail = "";
