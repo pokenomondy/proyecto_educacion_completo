@@ -5,6 +5,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../Objetos/Solicitud.dart';
 import '../Utils/Firebase/Load_Data.dart';
+import 'Estadisticas/AuxiliarContabilidad.dart';
 import 'Estadisticas/CalendarioData.dart';
 
 class Estadistica extends StatefulWidget {
@@ -36,6 +37,11 @@ class _EstadisticaState extends State<Estadistica> {
            */
             PaneItem(
               icon:  const Icon(FluentIcons.home),
+              title: const Text('Contabilidad completa'),
+              body: ContabilidadCompleta(),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
               title: const Text('CALENDARIO'),
               body: CalendarioData(),
             ),
@@ -59,6 +65,7 @@ class _EstadisticaState extends State<Estadistica> {
               title: const Text('PAGOS'),
               body: PagosDatos(),
             ),
+
           ]
       ),
     );

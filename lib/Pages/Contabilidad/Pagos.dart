@@ -68,7 +68,7 @@ class ContablePagosState extends State<ContablePagos> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/2)-100;
+    final tamanowidth = (currentwidth/2)-30;
     return Container(
       child: Row(
         children: [
@@ -227,113 +227,117 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                   },
                 ),
               ),
-            // tipo de pago ?,
-            AutoSuggestBox<String>(
-              items: tipodepagos.map((tipopago) {
-                return AutoSuggestBoxItem<String>(
-                    value: tipopago,
-                    label: tipopago,
-                    onFocusChange: (focused) {
-                      if (focused) {
-                        debugPrint('Focused $tipopago');
-                      }
-                    }
-                );
-              }).toList(),
-              onSelected: (item) {
-                setState(() {
-                  selectedtipopago = item.value!;
-                  disabledbutton = false;
-                }
-                );
-
-              },
-              decoration: Disenos().decoracionbuscador(),
-              placeholder: 'Selecciona tu tipo pago',
-            ),
-            //Valor de pago
-            TextBox(
-              placeholder: 'Valor de pago',
-              onChanged: (value){
-                setState(() {
-                  valordepago = int.parse(value);
-                });
-              },
-              maxLines: null,
-            ),
-            //Cliente - nombre cliente
             if(selectedservicio!=null)
-            Column(
-              children: [
-                textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
-              ],
-            ),
-            //metodo de pago
-            AutoSuggestBox<String>(
-              items: metodopagos.map((metodopago) {
-                return AutoSuggestBoxItem<String>(
-                    value: metodopago,
-                    label: metodopago,
-                    onFocusChange: (focused) {
-                      if (focused) {
-                        debugPrint('Focused $metodopago');
-                      }
-                    }
-                );
-              }).toList(),
-              onSelected: (item) {
-                setState(() => selectedmetodopago = item.value!);
-              },
-              decoration: Disenos().decoracionbuscador(),
-              placeholder: 'Selecciona tu tipo pago',
-            ),
-            //Referencia
-            TextBox(
-              placeholder: 'Referencia',
-              onChanged: (value){
-                setState(() {
-                  referenciapago = value;
-                });
-              },
-              maxLines: null,
-            ),
-            //fecha de pago
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DatePicker(
-                  header: 'Seleccionar fecha de registro de pago',
-                  selected: fecharegistropago,
-                  showYear: false,
-                  onChanged: (time){
-                    setState((){
-                      fecharegistropago = time.toUtc();
-                    },
-                    );
-                  },
-                ),
-              ],
-            ),
-            //Seleccionar archivo de pago, aun no hay archivos
-            FilledButton(child: Text('Seleccionar archivos'), onPressed: (){
-              selectFile();
-            }),
-            if(selectedFiles  != null)
               Column(
-                children: selectedFiles!.map((file) {
-                  return Container(
-                    color: Colors.blue,
-                    child: Text(file.name),
-                  );
-                }).toList(),
-              ),
-            //Registrar pago
-            FilledButton(
-                child: Text('Registrar pago'),
-                onPressed: disabledbutton ? null : ()async{
-                  comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
+              children: [
+                // tipo de pago ?,
+                AutoSuggestBox<String>(
+                  items: tipodepagos.map((tipopago) {
+                    return AutoSuggestBoxItem<String>(
+                        value: tipopago,
+                        label: tipopago,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused $tipopago');
+                          }
+                        }
+                    );
+                  }).toList(),
+                  onSelected: (item) {
+                    setState(() {
+                      selectedtipopago = item.value!;
+                      disabledbutton = false;
+                    }
+                    );
+
+                  },
+                  decoration: Disenos().decoracionbuscador(),
+                  placeholder: 'Selecciona tu tipo pago',
+                ),
+                //Valor de pago
+                TextBox(
+                  placeholder: 'Valor de pago',
+                  onChanged: (value){
+                    setState(() {
+                      valordepago = int.parse(value);
+                    });
+                  },
+                  maxLines: null,
+                ),
+                //Cliente - nombre cliente
+                if(selectedservicio!=null)
+                  Column(
+                    children: [
+                      textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
+                    ],
+                  ),
+                //metodo de pago
+                AutoSuggestBox<String>(
+                  items: metodopagos.map((metodopago) {
+                    return AutoSuggestBoxItem<String>(
+                        value: metodopago,
+                        label: metodopago,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused $metodopago');
+                          }
+                        }
+                    );
+                  }).toList(),
+                  onSelected: (item) {
+                    setState(() => selectedmetodopago = item.value!);
+                  },
+                  decoration: Disenos().decoracionbuscador(),
+                  placeholder: 'Selecciona tu tipo pago',
+                ),
+                //Referencia
+                TextBox(
+                  placeholder: 'Referencia',
+                  onChanged: (value){
+                    setState(() {
+                      referenciapago = value;
+                    });
+                  },
+                  maxLines: null,
+                ),
+                //fecha de pago
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    DatePicker(
+                      header: 'Seleccionar fecha de registro de pago',
+                      selected: fecharegistropago,
+                      showYear: false,
+                      onChanged: (time){
+                        setState((){
+                          fecharegistropago = time.toUtc();
+                        },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                //Seleccionar archivo de pago, aun no hay archivos
+                FilledButton(child: Text('Seleccionar archivos'), onPressed: (){
+                  selectFile();
                 }),
-            //subir archivos de pagos, las imagenes y anidarlas
+                if(selectedFiles  != null)
+                  Column(
+                    children: selectedFiles!.map((file) {
+                      return Container(
+                        color: Colors.blue,
+                        child: Text(file.name),
+                      );
+                    }).toList(),
+                  ),
+                //Registrar pago
+                FilledButton(
+                    child: Text('Registrar pago'),
+                    onPressed: disabledbutton ? null : ()async{
+                      comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
+                    }),
+              ],
+            ),
           ],
         ),
       ),
@@ -400,7 +404,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     DriveApiUsage().subirPago('1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N', selectedFiles,referenciapago);
     //Borrar todas las variables anteriores
     setState(() {
-      selectedservicio==null;
+      selectedservicio=null;
       selectedFiles=null;
       selectedtipopago="";
       selectedmetodopago ="";
@@ -430,8 +434,6 @@ class _ContainerPagosState extends State<_ContainerPagos> {
         return Text('No se puede cancelar,hay pagos');
       }else{
         return Text("SE PUEDE CANCELAR ${selectedservicio!.idcontable}");
-
-
       }
     }else if(selectedtipopago =="REEMBOLSOCLIENTE"){
       if(sumaPagosClientes-sumaPagosReembolsoCliente==0){
