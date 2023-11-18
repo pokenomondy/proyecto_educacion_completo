@@ -1,23 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:googleapis/drive/v2.dart';
 import 'package:intl/intl.dart';
-import 'Config.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 
 class ThemeApp{
-  Color primaryColor = const Color(0x1A000000);
-  Color secundaryColor = const Color(0xFFF0F2F2);
+  Color primaryColor = const Color(0xFF235FD9);
+  Color secundaryColor = const Color(0xFF235FD9);
   Color buttoncolor = const Color(0xFF1E1E1E);
   Color buttonSecundaryColor = const Color(0xFF0A76FC);
-  Color redColor = Colors.redAccent;
+  Color redColor = const Color(0xFFF83636);
   Color colorazulventas = const Color(0xFFB7DAFB);
-  Color whitecolor = Colors.white;
-
-  ThemeApp () {
-    Config config = Config();
-    config.initConfig();
-    primaryColor = config.primaryColor;
-    secundaryColor = config.Secundarycolor;
-  }
+  Color whitecolor = const Color(0xFFFFFFFF);
+  Color blackColor = const Color(0xFF000000);
+  Color grayColor = const Color(0xFF444444);
 
   Widget colorRow(Color color, String text){
     return Padding(
@@ -92,12 +85,10 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
         },
         onTapUp: (_) {
           setState(() {
-            buttonColor = !widget.invert ? ThemeApp().whitecolor : ThemeApp().buttoncolor;
+            buttonColor = widget.invert ? ThemeApp().whitecolor : ThemeApp().primaryColor;
           });
         },
-        onTap: () {
-          widget.function();
-        },
+        onTap: widget.function,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           width: widthCalculate,
@@ -141,21 +132,22 @@ class CartaPluginState extends State<CartaPlugin>{
 
   @override
   Widget build(BuildContext context){
-    TextStyle subtitulos = ThemeApp().styleText(12, false, ThemeApp().whitecolor);
+    final ThemeApp theme = ThemeApp();
+    TextStyle subtitulos = theme.styleText(12, false, theme.whitecolor);
     return Container(
       width: 150,
       height: 120,
       margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: widget.activacion? ThemeApp().buttonSecundaryColor: ThemeApp().redColor,
+        color: widget.activacion? theme.buttonSecundaryColor: theme.redColor,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
               widget.titulo,
-            style: ThemeApp().styleText(15, true, ThemeApp().whitecolor),
+            style: theme.styleText(15, true, theme.whitecolor),
           ),
           Text(
               widget.activacion? "Activo": "Inactivo",
@@ -163,7 +155,7 @@ class CartaPluginState extends State<CartaPlugin>{
           ),
           Text(
               "fecha de expiración:",
-              style: ThemeApp().styleText(12, true, ThemeApp().whitecolor)
+              style: theme.styleText(12, true, theme.whitecolor)
           ),
           Text(
               DateFormat('dd/MM/yyyy hh:mma').format(widget.fecha),
@@ -198,7 +190,7 @@ class CircularLogo extends StatefulWidget{
     required this.asset,
     this.width = 100,
     this.height = 100,
-    this.containerColor = Colors.white,
+    this.containerColor = const Color(0xFFFFFFFF),
     this.border = -1,
     this.shadow = false,
   }):super(key: key);
@@ -213,6 +205,7 @@ class CircularLogoState extends State<CircularLogo>{
   @override
   Widget build(BuildContext context){
     final double border = widget.border == -1 ? (widget.width + widget.height)/4 : widget.border;
+    final ThemeApp theme = ThemeApp();
     return Container(
       width: widget.width,
       height: widget.height,
@@ -223,7 +216,7 @@ class CircularLogoState extends State<CircularLogo>{
           blurRadius: 7,
           spreadRadius: 2,
           offset: const Offset(0, 4),
-          color: Colors.black.withOpacity(0.20),
+          color: theme.blackColor.withOpacity(0.20),
         )] : null,
       ),
       child:  Center(
@@ -258,9 +251,9 @@ class ItemsCard extends StatelessWidget{
     this.height = -1,
     this.margin = 5,
     this.border = 20,
-    this.cardColor = Colors.white,
+    this.cardColor = const Color(0xFFFFFFFF),
     this.shadow = true,
-    this.shadowColor = Colors.black
+    this.shadowColor = const Color(0xFF030303),
   }):super(key:key);
 
   @override
@@ -268,7 +261,7 @@ class ItemsCard extends StatelessWidget{
     return Container(
       margin: EdgeInsets.all(margin),
       width: width != -1 ? width : null,
-      height: height != -1 ? height: null,
+      height: height != -1 ? height : null,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(border),
         color: cardColor,
@@ -282,6 +275,83 @@ class ItemsCard extends StatelessWidget{
       child: Column(
         mainAxisAlignment: alignementColumn,
         children: children,
+      ),
+    );
+  }
+
+}
+
+class RoundedTextField extends StatefulWidget{
+  final TextEditingController controller;
+  final String placeholder;
+  final double width;
+  final double height;
+  final double border;
+  final TextAlign textAlign;
+  final bool obscureText;
+  final double topMargin;
+  final double leftMargin;
+  final double bottomMargin;
+  final double rightMargin;
+  final double textSize;
+  final bool textWeight;
+  final Color textColor;
+  final Color textboxColor;
+  const RoundedTextField({
+    Key?key,
+    required this.controller,
+    required this.placeholder,
+    this.width = -1,
+    this.height = -1,
+    this.border = 20,
+    this.textAlign = TextAlign.center,
+    this.obscureText = false,
+    this.topMargin = 10,
+    this.leftMargin = 10,
+    this.bottomMargin = 10,
+    this.rightMargin = 10,
+    this.textSize = 14,
+    this.textColor = const Color(0xFF030303),
+    this.textWeight = false,
+    this.textboxColor = const Color(0xFFFFFFFF),
+  }):super(key: key);
+
+  @override
+  RoundedTextFieldState createState() => RoundedTextFieldState();
+
+}
+
+class RoundedTextFieldState extends State<RoundedTextField>{
+
+  @override
+  Widget build(BuildContext context){
+    final ThemeApp theme = ThemeApp();
+    return Container(
+      margin: EdgeInsets.only(top: widget.topMargin, bottom: widget.bottomMargin, left: widget.leftMargin, right: widget.rightMargin),
+      width: widget.width != -1 ? widget.width : null,
+      height: widget.height != -1 ? widget.height : null,
+      child: TextBox(
+        decoration: BoxDecoration(
+          color: widget.textboxColor,
+          borderRadius: BorderRadius.circular(widget.border),
+          boxShadow: [BoxShadow(
+            color: theme.blackColor.withOpacity(0.3),
+            blurRadius: 7,
+            spreadRadius: 2,
+            offset: const Offset(0, 3)
+          )]
+        ),
+        style: theme.styleText(
+            widget.textSize,
+            widget.textWeight,
+            widget.textColor
+        ),
+        textAlign: widget.textAlign,
+        placeholder: widget.placeholder,
+        onChanged: (value){
+          widget.controller.text = value;
+        },
+        obscureText: widget.obscureText,
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:dashboard_admin_flutter/Config/Strings.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../Config/theme.dart';
 import '../../Utils/Firebase/Load_Data.dart';
@@ -38,7 +39,7 @@ import '../../Utils/Firebase/Load_Data.dart';
           width: 500,
           height: 450,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: ThemeApp().whitecolor,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [BoxShadow(
               color: Config.buttoncolor.withOpacity(0.08),

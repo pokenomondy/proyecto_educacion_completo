@@ -3,6 +3,7 @@ import 'package:dashboard_admin_flutter/Pages/Login%20page/ConfigInicial.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'Pages/pages.dart';
@@ -71,7 +72,7 @@ class MyApp extends StatelessWidget {
               },),
             GoRoute(path: 'ConfiguracionTutor',
               builder: (BuildContext context, GoRouterState state) {
-                return ConfiguracionTutor();
+                return const ConfiguracionTutor();
               },)
           ],
         ),
@@ -83,7 +84,5 @@ class MyApp extends StatelessWidget {
       routerConfig: _router,
     );
   }
-
-
 
 }
