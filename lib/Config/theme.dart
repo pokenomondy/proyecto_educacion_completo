@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 
@@ -238,15 +239,19 @@ class ItemsCard extends StatelessWidget{
   final double height;
   final double margin;
   final MainAxisAlignment alignementColumn;
+  final CrossAxisAlignment alignementCrossColumn;
   final Color cardColor;
   final double border;
   final bool shadow;
   final Color shadowColor;
+  final double verticalPadding;
+  final double horizontalPadding;
 
   const ItemsCard({
     Key?key,
     required this.children,
     this.alignementColumn = MainAxisAlignment.center,
+    this.alignementCrossColumn = CrossAxisAlignment.center,
     this.width = -1,
     this.height = -1,
     this.margin = 5,
@@ -254,6 +259,8 @@ class ItemsCard extends StatelessWidget{
     this.cardColor = const Color(0xFFFFFFFF),
     this.shadow = true,
     this.shadowColor = const Color(0xFF030303),
+    this.verticalPadding = 0,
+    this.horizontalPadding = 0,
   }):super(key:key);
 
   @override
@@ -272,9 +279,13 @@ class ItemsCard extends StatelessWidget{
           spreadRadius: 2,
         )] : null,
       ),
-      child: Column(
-        mainAxisAlignment: alignementColumn,
-        children: children,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: horizontalPadding),
+        child: Column(
+          mainAxisAlignment: alignementColumn,
+          crossAxisAlignment: alignementCrossColumn,
+          children: children,
+        ),
       ),
     );
   }
@@ -366,15 +377,17 @@ class BarraCarga extends StatefulWidget{
   final int cargados;
   final Color barColor;
   final Color backColor;
+  final String title;
 
   const BarraCarga({
     Key?key,
+    required this.title,
     required this.total,
     required this.cargados,
     this.width = 200,
-    this.heigth = 15,
+    this.heigth = 12,
     this.barColor = const Color(0xFF235FD9),
-    this.backColor = const Color(0xFFD2D2D2),
+    this.backColor = const Color(0xFFFFFFFF),
     this.border = 80,
   }):super(key:key);
 
@@ -387,30 +400,69 @@ class BarraCargaState extends State<BarraCarga>{
   @override
   Widget build(BuildContext context){
     final double carga = widget.cargados >= widget.total ? 1 : widget.cargados / widget.total;
-    return Column(
-      children: [AnimatedContainer(
-        width: widget.width,
-        height: widget.heigth,
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.border),
-            color: widget.backColor
-        ),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Container(
-              width: widget.width * carga,
-              height: widget.heigth,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(widget.border),
-                  color: widget.barColor
-              ),
+    final double horizontalPadding = widget.width < 200 ? (12 * widget.width) / 200 : 12;
+    final double itemCardWidth = widget.width + widget.heigth * 5 + horizontalPadding;
+    return ItemsCard(
+      width: itemCardWidth,
+      height: widget.heigth * 5,
+      alignementCrossColumn: CrossAxisAlignment.start,
+      border: 15,
+      cardColor: const Color(0xFFE0E0E0),
+      shadow: false,
+      horizontalPadding: horizontalPadding,
+      children: [
+        Row(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(widget.title)
+                ),
+                Container(
+                  width: widget.width - horizontalPadding,
+                  height: widget.heigth,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(widget.border),
+                      color: widget.backColor
+                  ),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [AnimatedContainer(
+                        width: (widget.width - horizontalPadding) * carga,
+                        height: widget.heigth,
+                        duration: const Duration(milliseconds: 200),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(widget.border),
+                            color: widget.barColor
+                        ),
+                      ),
+                      ]
+                  ),
+                ),
+              ],
             ),
-            ]
-        ),
-      ),
-        Text("Carga: ${(carga*100) as int}%"),
+          //////// Insertar Imagen
+          AnimatedContainer(
+            margin: const EdgeInsets.only(left: 8),
+            width: widget.heigth*4,
+            height: widget.heigth*4,
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(360),
+              color: const Color(0xFFFFFFFF)
+            ),
+            child: Icon(
+              widget.cargados >= widget.total ? Icons.done_outline_rounded : Icons.cookie,
+              weight: 300,
+              size: widget.heigth * 2.8,
+              color: widget.barColor,
+            ),
+          )
+          ],
+        )
       ],
     );
   }

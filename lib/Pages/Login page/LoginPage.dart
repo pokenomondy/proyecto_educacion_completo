@@ -106,8 +106,10 @@ import '../../Utils/Firebase/Load_Data.dart';
                   color: theme.colorazulventas,
                 ),),
               BarraCarga(
+                title: "Cargando solicitudes",
                 cargados: cliente_numerocargado,
-                total: 2000,
+                total: 1300,
+                width: 200,
               ),
               //Google
             ],
