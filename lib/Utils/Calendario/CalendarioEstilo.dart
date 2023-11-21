@@ -73,7 +73,9 @@ class CalendarioStyle {
 
 
     // Verificar si la suma de los pagos con motivo "CLIENTES" es igual al precio cobrado
-    if (totalPagosClientes-totalPagoReembolsoCliente == servicio.preciocobrado) {
+    if(servicio.preciocobrado==0){
+      return dialog.Colors.pink; // Pintar de color verde si la condición es verdadera
+    } else if (totalPagosClientes-totalPagoReembolsoCliente == servicio.preciocobrado) {
       return dialog.Colors.green; // Pintar de color verde si la condición es verdadera
     } else if (totalPagosClientes-totalPagoReembolsoCliente > servicio.preciocobrado) {
       return dialog.Colors.red; // Pintar de color rojo si la suma es mayor al precio cobrado
@@ -95,7 +97,9 @@ class CalendarioStyle {
         .fold(0, (sum, pago) => sum + pago.valor);
 
     // Verificar si la suma de los pagos con motivo "CLIENTES" es igual al precio cobrado
-    if (totalPagosTutores-totalPagosReembolsoTutores == servicio.preciotutor) {
+    if(servicio.preciotutor==0){
+      return dialog.Colors.pink; // Pintar de color verde si la condición es verdadera
+    }else if (totalPagosTutores-totalPagosReembolsoTutores == servicio.preciotutor) {
       return dialog.Colors.green; // Pintar de color verde si la condición es verdadera
     } else if (totalPagosTutores-totalPagosReembolsoTutores > servicio.preciotutor) {
       return dialog.Colors.red; // Pintar de color rojo si la suma es mayor al precio cobrado

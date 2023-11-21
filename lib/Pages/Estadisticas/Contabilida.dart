@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:html';
+import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as cloud;
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:excel/excel.dart';
@@ -187,10 +188,10 @@ class _CrearContainerState extends State<CrearContabilidad> {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1)).value = servicio.sistema;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1)).value = servicio.idcontable;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1)).value = servicio.materia;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1)).value = servicio.fechasistema;
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1)).value = DateFormat('dd/MM/yyyy').format(servicio.fechasistema);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1)).value = servicio.cliente;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1)).value = servicio.preciocobrado;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1)).value = servicio.fechaentrega;
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1)).value = DateFormat('dd/MM/yyyy').format(servicio.fechaentrega);
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i + 1)).value = servicio.tutor;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: i + 1)).value = servicio.preciotutor;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: i + 1)).value = servicio.idsolicitud;
