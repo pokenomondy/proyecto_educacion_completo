@@ -6,8 +6,13 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-
+import 'Objetos/Solicitud.dart';
+import 'Objetos/Tutores_objet.dart';
+import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
+import 'Pages/TutorDashPages/EntregasTutor.dart';
+import 'Pages/TutorDashPages/MainTutoresDash.dart';
+import 'Pages/TutorDashPages/TutorConfiguracion.dart';
 import 'Pages/pages.dart';
 
 void main() async {
@@ -49,7 +54,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return const LoginPage();
+            return InitPage();//LoginPage();
           },
           routes: <RouteBase>[
             ShellRoute(
@@ -82,7 +87,7 @@ class MyApp extends StatelessWidget {
               },),
             GoRoute(path: 'ConfiguracionTutor',
               builder: (BuildContext context, GoRouterState state) {
-                return ConfiguracionTutor();
+                return const ConfiguracionTutor();
               },)
           ],
         ),
@@ -94,7 +99,5 @@ class MyApp extends StatelessWidget {
       routerConfig: _router,
     );
   }
-
-
 
 }
