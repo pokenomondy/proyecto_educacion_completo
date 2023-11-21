@@ -1,12 +1,15 @@
+import 'package:googleapis/driveactivity/v2.dart';
+
 class Clientes{
   String carrera = "";
   String universidad = "";
   String nombreCliente = "";
   int numero = 0;
   String nombrecompletoCliente = "";
+  DateTime fechaActualizacion = DateTime.now();
 
 
-  Clientes(this.carrera,this.universidad,this.nombreCliente,this.numero,this.nombrecompletoCliente);
+  Clientes(this.carrera,this.universidad,this.nombreCliente,this.numero,this.nombrecompletoCliente, this.fechaActualizacion);
 
   Map<String,dynamic> toMap(){
     return{
@@ -15,6 +18,7 @@ class Clientes{
       "nombreCliente":nombreCliente,
       'numero': numero,
       'nombrecompletoCliente': nombrecompletoCliente,
+      'fechaActualizacion' : fechaActualizacion,
     };
   }
 
@@ -25,6 +29,7 @@ class Clientes{
       'nombreCliente': nombreCliente,
       'numero': numero,
       'nombrecompletoCliente': nombrecompletoCliente,
+      'fechaActualizacion' : fechaActualizacion.toIso8601String(),
     };
   }
 
@@ -35,6 +40,7 @@ class Clientes{
       json['nombreCliente'],
       json['numero'],
       json['nombrecompletoCliente'],
+      DateTime.parse(json['fechaActualizacion']),
     );
   }
 }

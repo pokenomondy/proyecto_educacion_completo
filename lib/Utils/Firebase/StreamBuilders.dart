@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,7 @@ import '../../Objetos/RegistrarPago.dart';
 class stream_builders{
 
   //Streambuilders de servicios agendados
-  Stream<List<ServicioAgendado>> getServiciosAgendados() async*   {
+  Stream<List<ServicioAgendado>> getServiciosAgendados() async* {
     CollectionReference refcontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
@@ -33,13 +34,38 @@ class stream_builders{
           int idcontable = servicio['idcontable'];
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
           String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
-          // Obtener pagos en primera descarga
-          List<RegistrarPago> pagos = [];
+          // Get payments as a stream
+          Stream<List<RegistrarPago>> pagosStream =
+          getRegistrarPagosContabilidadStream(codigo);
 
-          //Guardamos en objeto y ya lo pasamos para tutor
-          ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos, entregado,entregadocliente);
-          serviciosagendadoList.add(newservicioagendado);
-        } catch (e) {
+          print(codigo);
+
+          await for (List<RegistrarPago> pagosList in pagosStream) {
+            // Utilize the stream in your ServicioAgendado object
+            ServicioAgendado newservicioagendado = ServicioAgendado(
+              codigo,
+              sistema,
+              materia,
+              fechasistema,
+              cliente,
+              preciocobrado,
+              fechaentrega,
+              tutor,
+              preciotutor,
+              identificadorcodigo,
+              idsolicitud,
+              idcontable,
+              pagosList,
+              entregado,
+              entregadocliente,
+            );
+            serviciosagendadoList.add(newservicioagendado);
+
+            // Optional: If you only want to process the first value and then break the loop
+            break;
+          }
+
+        }catch (e) {
           print(e);
         }
       }
@@ -58,6 +84,41 @@ class stream_builders{
     List<ServicioAgendado> clientesList = clienteData.map((clienteData) =>
         ServicioAgendado.fromJson(clienteData as Map<String, dynamic>)).toList();
     return clientesList;
+  }
+
+  //Obtener lista de pagos en solicitudes
+  Stream<List<RegistrarPago>> getRegistrarPagosContabilidadStream(String codigo) {
+    CollectionReference refPagos =
+    FirebaseFirestore.instance.collection("CONTABILIDAD").doc(codigo).collection("PAGOS");
+
+    return refPagos.snapshots().map((querySnapshot) {
+      List<RegistrarPago> pagosList = [];
+
+      try {
+        for (var pagoDoc in querySnapshot.docs) {
+          // ... (existing code)
+
+          String pagoCodigo = pagoDoc['codigo'];
+          String tipopago = pagoDoc['tipopago'];
+          int valor = pagoDoc['valor'];
+          String metodopago = pagoDoc['metodopago'];
+          String referencia = pagoDoc['referencia'];
+          DateTime fechapago = pagoDoc['fechapago'].toDate();
+          String id = pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID';
+
+          print(valor);
+          print(tipopago);
+
+          RegistrarPago newpago = RegistrarPago(
+              pagoCodigo, tipopago, valor, referencia, fechapago, metodopago, id);
+          pagosList.add(newpago);
+        }
+      } catch (e) {
+        print(e);
+      }
+
+      return pagosList;
+    });
   }
 
   //Obtener contabilidad en stream, servicios AGENDADOA
@@ -107,8 +168,8 @@ class stream_builders{
           print(e);
         }
       }
-        String solicitudesJson = jsonEncode(serviciosagendadoList);
-        await prefs.setString('servicios_agendado_tutor', solicitudesJson);
+      String solicitudesJson = jsonEncode(serviciosagendadoList);
+      await prefs.setString('servicios_agendado_tutor', solicitudesJson);
       yield serviciosagendadoList;
     }
   }
@@ -120,6 +181,7 @@ class stream_builders{
         ServicioAgendado.fromJson(clienteData as Map<String, dynamic>)).toList();
     return clientesList;
   }
+
 
 }
 

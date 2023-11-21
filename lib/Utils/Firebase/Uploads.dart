@@ -17,6 +17,8 @@ import '../../Objetos/Tutores_objet.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
 
+import 'StreamBuilders.dart';
+
 class Uploads{
   final db = FirebaseFirestore.instance; //inicializar firebase
 
@@ -94,7 +96,7 @@ class Uploads{
         Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
     //encontrar la solicitud
     int solicitudIndex = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idcotizacion);
-    solicitudList[solicitudIndex].cotizaciones = newcotizacion;
+    solicitudList[solicitudIndex].cotizaciones.add(newcotizacion);
     //guardar
     String solicitudesJsondos = jsonEncode(solicitudList);
     await prefs.setString('solicitudes_list', solicitudesJsondos);
@@ -185,7 +187,7 @@ class Uploads{
     CollectionReference tutor = db.collection("TUTORES");
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
-    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now());
+    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR");
     await tutor.doc(uid).set(newtutor.toMap());
     print("se subio un nuevo tutor");
     print(newtutor);
@@ -200,28 +202,87 @@ class Uploads{
     await prefs.setString('tutores_list', solicitudesJsonsave);
     //Ya queda subido el nuevo tutor
   }
-  //añadir cuentas
+  //Modificar infomración de tutor
+  Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num) async{
+    String variable = "";
+    Map<String, dynamic> uploadinformacion = {};
+    if(index == 1){
+      variable = "nombre completo";
+    }else if(index == 2){
+      variable = "numero whatsapp";
+    }
 
+    if(index == 1){
+      uploadinformacion = {
+        '$variable': texto,
+      };
+    }else if(index == 2){
+      uploadinformacion = {
+        '$variable': num,
+      };
+    }
+
+    CollectionReference tutores = db.collection('TUTORES');
+    await tutores.doc(tutor.uid).update(uploadinformacion);
+
+    //Modificar
+    List<Tutores> tutoresList = [];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    tutoresList = await LoadData().obtenertutores();
+    Tutores tutorEnLista = tutoresList.where((tutore) => tutore.uid == tutor.uid).first;
+    if(index == 1){
+      tutorEnLista.nombrecompleto = texto;
+    }else if(index == 2){
+      tutorEnLista.numerowhatsapp =  num;
+    }
+    String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
+    prefs.setString('tutores_list', updatedTutoresJson);
+  }
+
+  //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
     CollectionReference cuentas = db.collection("TUTORES").doc(uidtutor.toString()).collection("CUENTAS");
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
     print("Subido nueva cuenta bancaria");
     await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].cuentas.add(newcuenta);
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Subir materia de tutor
-  void addMateriaTutor(String uidtutor,String nombremateria,) async{
+  void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
     CollectionReference materias = db.collection("TUTORES").doc(uidtutor.toString()).collection("MATERIA");
     Materia newmateria = Materia(nombremateria);
     await materias.doc(nombremateria).set(newmateria.toMap());
     //Actualizar de forma local
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Tutores> tutoresList = await LoadData().obtenertutores();
+    // Encontrar al tutor
+    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
+    if (tutorIndex != -1) {
+      // Agregar el nuevo pago a la lista existente
+      tutoresList[tutorIndex].materias.add(newmateria);
+      if (onMateriaAdded != null) {
+        onMateriaAdded(newmateria);
+      }
+      // Guardar la lista actualizada en SharedPreferences
+      String solicitudesJsondos = jsonEncode(tutoresList);
+      await prefs.setString('tutores_list', solicitudesJsondos);
+    }
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {
     CollectionReference cliente = db.collection("CLIENTES");
-    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente);
+    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now());
     await cliente.doc(numero.toString()).set(newcliente.toMap());
     //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -269,13 +330,10 @@ class Uploads{
     await pago.doc("$numeropagosregistrados-$referencia").set(newpago.toMap());
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('contabilidad_list') ?? '';
-    List<dynamic> ServicioAgendadoData = jsonDecode(solicitudesJson);
-    List serviciosagendadoList = ServicioAgendadoData.map((tutorData) =>
-        ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
+    List<ServicioAgendado>? serviciosagendadoList = await stream_builders().cargarserviciosagendados();
 
     // Encontrar la solicitud
-    int solicitudIndex = serviciosagendadoList.indexWhere((solicitud) => solicitud.codigo == codigo);
+    int solicitudIndex = serviciosagendadoList!.indexWhere((solicitud) => solicitud.codigo == codigo);
 
     if (solicitudIndex != -1) {
       // Agregar el nuevo pago a la lista existente
@@ -283,7 +341,7 @@ class Uploads{
 
       // Guardar la lista actualizada en SharedPreferences
       String solicitudesJsondos = jsonEncode(serviciosagendadoList);
-      await prefs.setString('contabilidad_list', solicitudesJsondos);
+      await prefs.setString('servicios_agendados_list_stream', solicitudesJsondos);
     }
   }
   Future<int> obtenerNumeroDePagosRegistrados(int idConfirmacion) async {

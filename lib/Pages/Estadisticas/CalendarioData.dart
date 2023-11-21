@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView,Colors;
@@ -55,6 +57,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   bool datosDescargados = false;
   bool cargarinterfaz = false;
   Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
+  String motivosPagos = "ENTREGAS";
+  final db = FirebaseFirestore.instance;
+  int numpagos = 0;
 
   @override
   void initState() {
@@ -65,6 +70,19 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
   void loadchecks() async {
     datosDescargados = false;
+    servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
+    meetings = servicioagendadoList
+        ?.map((servicio) {
+      final appointment = Appointment(
+        startTime: CalendarioStyle().tiempotarjetastart(servicio),
+        endTime: CalendarioStyle().tiempotarjetaend(servicio),
+        subject: "${servicio.identificadorcodigo} - ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
+        notes: servicio.materia,
+        color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
+      );
+      appointmentToServicioMap[appointment] = servicio;
+      return appointment;
+    }).toList();
     setState(() {
       cargarinterfaz = true;
     });
@@ -72,55 +90,42 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
   @override
   Widget build(BuildContext context) {
+    final currentheight = MediaQuery.of(context).size.height-100;
     return Container(
-      height: 800,
+      height: currentheight,
       child: Column(
         children: [
+          Row(
+            children: [
+              FilledButton(child: Text('ENTREGAS'), onPressed: (){
+                setState(() {
+                  motivosPagos = "ENTREGAS";
+                });
+              }),
+              FilledButton(child: Text('PAGOS CLIENTES'), onPressed: (){
+                setState(() {
+                  motivosPagos = "PAGOSCLIENTES";
+                });
+              }),
+            ],
+          ),
           if(cargarinterfaz == true)
             Column(
               children: [
                 if(datosDescargados == false)
-                  StreamBuilder<List<ServicioAgendado>>(
-                    stream: stream_builders().getServiciosAgendados(),
-                    builder: (context, snapshot) {
-                      List<ServicioAgendado>? servicioagendadoList = [];
-                      if (snapshot.hasError) {
-                        return Center(
-                            child: Text('Error al cargar las solicitudes'));
-                      }
-                      if (!snapshot.hasData) {
-                        return Center(child: Text('cargando'));
-                      }
-                      servicioagendadoList = snapshot.data;
-                      List<Appointment>? meetings = servicioagendadoList
-                          ?.map((servicio) {
-                        final appointment = Appointment(
-                          startTime: CalendarioStyle().tiempotarjetastart(servicio),
-                          endTime: CalendarioStyle().tiempotarjetaend(servicio),
-                          subject: "${servicio.identificadorcodigo} - ${servicio.materia} - ${servicio.idcontable}",
-                          notes: servicio.materia,
-                          color: CalendarioStyle().colortarjetaAdmin(servicio),
-                        );
-                        appointmentToServicioMap[appointment] = servicio;
-                        return appointment;
-                      }).toList();
-
-                      return Container(
-                        height: 800,
+                  Column(
+                    children: [
+                      Container(
+                        height: currentheight-50,
                         child: SfCalendar(
                           controller: _calendarController,
                           showDatePickerButton: true,
                           allowedViews: _vistascalendario,
-                          dataSource: meetings != null
-                              ? _DataSource(meetings!)
-                              : null,
+                          dataSource: meetings != null ? _DataSource(meetings!) : null,
                           initialDisplayDate: DateTime.now(),
                           initialSelectedDate: DateTime.now(),
                           showNavigationArrow: true,
-                          monthViewSettings: MonthViewSettings(
-                              appointmentDisplayMode: MonthAppointmentDisplayMode
-                                  .appointment
-                          ),
+                          monthViewSettings: MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
                           scheduleViewSettings: ScheduleViewSettings(
                               appointmentItemHeight: 70,
                               monthHeaderSettings: MonthHeaderSettings(
@@ -137,8 +142,8 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                             CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
                           },
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 if(datosDescargados == true)
                   Text('Descargados'),
@@ -149,6 +154,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
       ),
     );
   }
+
 
   void calendario_oprimido(CalendarTapDetails details) {
     if (details.targetElement == CalendarElement.appointment ||
@@ -173,6 +179,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
         }
     );
   }
+
 
 }
 

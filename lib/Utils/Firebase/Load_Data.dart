@@ -182,10 +182,9 @@ class LoadData {
   }
 
   //Clientes, revisar
-  Future obtenerclientes() async {
+  Future obtenerclientes({Function(Clientes)? onClienteAdded}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ??
-        false;
+    bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
       print("a descargar clientes por primera vez");
       CollectionReference referencetablaclientes = await FirebaseFirestore
@@ -199,12 +198,16 @@ class LoadData {
         String nombreCliente = ClienteDoc['nombreCliente'];
         int numero = ClienteDoc['numero'];
         String nombrecompletoCliente = ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
+        DateTime fechaActualizacion = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+
 
         print("$Carrera $Universidadd $nombreCliente $numero");
 
-        Clientes newClientes = Clientes(
-            Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente);
+        Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion);
         clientesList.add(newClientes);
+        if (onClienteAdded != null) {
+          onClienteAdded(newClientes);
+        }
       }
       guardardatostablaclientes(clientesList);
       return clientesList;
@@ -226,7 +229,7 @@ class LoadData {
   }
 
   //Tutores, guardar
-  Future obtenertutores() async {
+  Future obtenertutores({Function(Tutores)? onTutorAdded}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
@@ -246,6 +249,7 @@ class LoadData {
         String uid = TutorDoc['uid'];
         bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
         DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
+        String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
 
         //Cargamos materias
         QuerySnapshot materiasDocs = await TutorDoc.reference.collection(
@@ -286,9 +290,13 @@ class LoadData {
             materiaList,
             cuentasBancariasList,
             activo,
-          actualizartutores,
+            actualizartutores,
+            rol
         );
         tutoresList.add(newTutores);
+        if (onTutorAdded != null) {
+          onTutorAdded(newTutores);
+        }
       }
       guardardatostablatutores(tutoresList);
       return tutoresList;
@@ -529,7 +537,6 @@ class LoadData {
   }
 
    */
-
   //cambios de servicios empezamos, toca pensar en como se puede realizar de mejor forma
   /*
   Future verificar_cambios() async {
@@ -701,9 +708,12 @@ class LoadData {
 
         if (getconfiguracioninicial.exists) {
           String msjsolicitudes = getconfiguracioninicial.get('SOLICITUD') ?? '';
+          String msjconfirmacion_cliente = getconfiguracioninicial.get('CONFIRMACION_CLIENTE') ?? '';
+
 
           Map<String, dynamic> uploadconfiguracion = {
             'SOLICITUDES': msjsolicitudes,
+            'CONFIRMACION_CLIENTE' : msjconfirmacion_cliente,
           };
 
           String solicitudesJson = jsonEncode(uploadconfiguracion);
@@ -768,14 +778,12 @@ class LoadData {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
     if(!datosDescargados){
-      print("descargando rol de cero");
       DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
       String rol = getutoradmin.get('rol') ?? '';
       await prefs.setString('rol_usuario', rol);
       await prefs.setBool('datos_Descargados_verificar_rol', true);
       return rol;
     }else{
-      print("rol totalmente cacheado");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String rol = prefs.getString('rol_usuario') ?? 'TUTOR';
       return rol;
@@ -783,6 +791,7 @@ class LoadData {
 
   }
 
+  /*
   Future verificar_tiempos_Cache() async{
     Map<String, dynamic> servicioData = {};
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -790,24 +799,23 @@ class LoadData {
     if (solicitudesJson.isNotEmpty) {
       Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
       //Verificador de tiempo
-      DateTime verificador = configuracion['verificador'] != null
-          ? DateTime.parse(configuracion['verificador'])
-          : DateTime.now();
+      DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
       Duration diferenciaTiempo = DateTime.now().difference(verificador);
       print("tiempo recorrido ${diferenciaTiempo.inMinutes}");
       //Reiniciar todas las variables de configuración, por si acaso
-      if(diferenciaTiempo.inMinutes >= 60){
-        CollectionReference actualizacion = db.collection("ACTUALIZACION");
-        servicioData['verificadoractualizar'] = DateTime.now();
-        await actualizacion.doc("Plugins").update(servicioData);
+      CollectionReference actualizacion = db.collection("ACTUALIZACION");
+      servicioData['verificadoractualizar'] = DateTime.now();
+      await actualizacion.doc("Plugins").update(servicioData);
+      tiempoactualizacion();
+      if(diferenciaTiempo.inMinutes >= 300){
         //Revisar clientes
-
+        ActualizarInformacion().actualizarclientes();
         //Revisar tablas de materias y carreras
 
         //Revisar solicitudes para actualización
-        ActualizarInformacion().actualizarsolicitudes();
+        //ActualizarInformacion().actualizarsolicitudes();
         //Revisar tutores ? Quiero los de tutores
-        ActualizarInformacion().actualizartutores();
+        //ActualizarInformacion().actualizartutores();
         //Revisar pagos?
 
         //Revisar plugins -- Licencias
@@ -826,7 +834,16 @@ class LoadData {
     }
   }
 
+   */
 
+  Future tiempoactualizacion()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
+    Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
+    DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
+    Duration diferenciaTiempo = DateTime.now().difference(verificador);
+    return diferenciaTiempo;
+  }
 }
 
 

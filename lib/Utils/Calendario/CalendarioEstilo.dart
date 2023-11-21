@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
 import '../../Config/Config.dart';
+import '../../Objetos/RegistrarPago.dart';
 import '../Firebase/Uploads.dart';
 
 class CalendarioStyle {
@@ -32,7 +34,18 @@ class CalendarioStyle {
   //ver entregado a cliente
   //gris significa que no aplica
 
-  dialog.Color colortarjetaAdmin(ServicioAgendado servicio){
+  dialog.Color colortarjetaAdmin(ServicioAgendado servicio, String motivosPagos){
+    if(motivosPagos == "ENTREGAS"){
+      return colortarjetaAdminENTREGAS(servicio);
+    }else if (motivosPagos == "PAGOSCLIENTES"){
+      return colortarjetaAdminPAGOS(servicio);
+    }else{
+      return colortarjetaAdminPAGOS(servicio);
+    }
+
+  }
+
+  dialog.Color colortarjetaAdminENTREGAS(ServicioAgendado servicio){
     if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
       return dialog.Colors.yellow;
     }else if(servicio.identificadorcodigo == "A" || servicio.identificadorcodigo == "P" || servicio.identificadorcodigo == "Q"){
@@ -42,7 +55,15 @@ class CalendarioStyle {
     }else if(servicio.entregadotutor=="ENTREGADO"){
       return dialog.Colors.orange;
     }else{
-    return dialog.Colors.red;
+      return dialog.Colors.red;
+    }
+  }
+
+  dialog.Color colortarjetaAdminPAGOS(ServicioAgendado servicio){
+    if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
+      return dialog.Colors.black;
+    } else{
+      return dialog.Colors.yellow;
     }
   }
 
@@ -172,10 +193,12 @@ class CalendarioStyle {
                 Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
                 Navigator.pop(context, 'User deleted file');
               }),
+          //Esccuhar numero pagos
         ],
       ),
     );
   }
+
 
 }
 
