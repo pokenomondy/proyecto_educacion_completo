@@ -357,3 +357,63 @@ class RoundedTextFieldState extends State<RoundedTextField>{
   }
 
 }
+
+class BarraCarga extends StatefulWidget{
+  final int total;
+  final double width;
+  final double heigth;
+  final double border;
+  final int cargados;
+  final Color barColor;
+  final Color backColor;
+
+  const BarraCarga({
+    Key?key,
+    required this.total,
+    required this.cargados,
+    this.width = 200,
+    this.heigth = 15,
+    this.barColor = const Color(0xFF235FD9),
+    this.backColor = const Color(0xFFD2D2D2),
+    this.border = 80,
+  }):super(key:key);
+
+  @override
+  BarraCargaState createState() => BarraCargaState();
+}
+
+class BarraCargaState extends State<BarraCarga>{
+
+  @override
+  Widget build(BuildContext context){
+    final double carga = widget.cargados >= widget.total ? 1 : widget.cargados / widget.total;
+    return Column(
+      children: [AnimatedContainer(
+        width: widget.width,
+        height: widget.heigth,
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.border),
+            color: widget.backColor
+        ),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [Container(
+              width: widget.width * carga,
+              height: widget.heigth,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.border),
+                  color: widget.barColor
+              ),
+            ),
+            ]
+        ),
+      ),
+        Text("Carga: ${(carga*100) as int}%"),
+      ],
+    );
+  }
+
+
+}

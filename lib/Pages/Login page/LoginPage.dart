@@ -1,12 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Config/Strings.dart';
+import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/theme.dart';
+
+
+import '../../Objetos/Clientes.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -17,96 +21,96 @@ import '../../Utils/Firebase/Load_Data.dart';
   }
 
   class LoginPageState extends State<LoginPage> {
-    String correo = "";
-    String contrasena = "";
+    final TextEditingController correo = TextEditingController();
+    final TextEditingController contrasena = TextEditingController();
     final currentUser = FirebaseAuth.instance.currentUser;
 
     @override
     void initState(){
       super.initState();
-      //print("usuario ingresado $currentUser");
+      cargaregular();
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid);
       }
       }
 
+    String cliente_actual = "";
+    List<Solicitud> cliente_List = [];
+    int cliente_numerocargado = 0;
+    final db = FirebaseFirestore.instance;
+    Future <void> cargaregular() async{
+      if(cliente_numerocargado==0){
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.remove('solicitudes_list');
+        await LoadData().obtenerSolicitudes(
+          onSolicitudAdded: (Solicitud nuevaSolicitud) {
+            setState(() {
+              cliente_actual = nuevaSolicitud.idcotizacion.toString();
+              cliente_List.add(nuevaSolicitud);
+              cliente_numerocargado = cliente_List.length + 471;
+            });
+          },
+        );
+      }
+    }
+
     @override
     Widget build(BuildContext context) {
+      final ThemeApp theme = ThemeApp();
       const double widthTextBox = 350;
-      const EdgeInsets marginTextBox = EdgeInsets.only(top: 10, bottom: 1);
+      const double heigthTextBox = 40;
       return Center(
-        child: Container(
-          width: 500,
-          height: 450,
-          decoration: BoxDecoration(
-            color: ThemeApp().whitecolor,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(
-              color: Config.buttoncolor.withOpacity(0.08),
-              offset: const Offset(0, 3),
-              blurRadius: 8,
-              spreadRadius: 3
-            )],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: Text(
-                    'Inicio de Sesion',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18
-                  ),
-                ),
-              ),
-              Container(
-                width: widthTextBox,
-                margin: marginTextBox,
-                child: TextBox(
-                  decoration: BoxDecoration(
-                    color: Config.secundaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  placeholder: 'Correo electronico para acceder',
-                  onChanged: (value){
-                    setState(() {
-                      correo = value;
-                    });
-                  },
-                  maxLines: null,
-                ),
-              ),
-              Container(
-                width: widthTextBox,
-                margin: marginTextBox,
-                child: TextBox(
-                  decoration: BoxDecoration(
-                    color: Config.secundaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  placeholder: 'Contraseña',
-                  onChanged: (value){
-                    setState(() {
-                      contrasena = value;
-                    });
-                  },
-                  obscureText: true,
-                ),
+        child: ItemsCard(
+          width: 450,
+          height: 500,
+          children: [
+              CircularLogo(
+                asset: "logo.png",
+                containerColor: theme.primaryColor,
+                width: 150,
+                height: 150,
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 8),
-                child: PrimaryStyleButton(function: login, text: "Iniciar Sesion",)
+                padding: const EdgeInsets.only(top: 25),
+                child: Text(
+                  'Inicio de Sesion',
+                  style: theme.styleText(18, true, theme.grayColor),
+                ),
               ),
-                Text(Strings().appVersion,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: ThemeApp().colorazulventas,
-                  ),),
+              RoundedTextField(
+                textAlign: TextAlign.start,
+                topMargin: 5,
+                bottomMargin: 5,
+                height: heigthTextBox,
+                width: widthTextBox,
+                controller: correo,
+                placeholder: "Correo electronico para acceder"
+              ),
+              RoundedTextField(
+                textAlign: TextAlign.start,
+                topMargin: 5,
+                bottomMargin: 20,
+                obscureText: true,
+                width: widthTextBox,
+                height: heigthTextBox,
+                controller: contrasena,
+                placeholder: "Contraseña",
+              ),
+              PrimaryStyleButton(
+                function: login,
+                text: "Iniciar Sesion",
+              ),
+              Text(Strings().appVersion,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.colorazulventas,
+                ),),
+              BarraCarga(
+                cargados: cliente_numerocargado,
+                total: 2000,
+              ),
               //Google
             ],
-          ),
         ),
       );
     }
@@ -115,8 +119,8 @@ import '../../Utils/Firebase/Load_Data.dart';
       //print('presionado login');
       try {
         final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-            email: correo,
-            password: contrasena
+            email: correo.text,
+            password: contrasena.text
         );
         final User? user = credential.user;
         String? uid = user?.uid;
@@ -179,5 +183,4 @@ import '../../Utils/Firebase/Load_Data.dart';
         print("vos no estas ni creado ome");
       }
     }
-
   }

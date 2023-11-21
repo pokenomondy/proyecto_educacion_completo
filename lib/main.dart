@@ -1,23 +1,14 @@
-import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Dashboard.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/ConfigInicial.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart';
-import 'package:dashboard_admin_flutter/Pages/Servicios/Detalle_Solicitud.dart';
-import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
-import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'Objetos/Solicitud.dart';
-import 'Objetos/Tutores_objet.dart';
-import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
-import 'Pages/TutorDashPages/EntregasTutor.dart';
-import 'Pages/TutorDashPages/MainTutoresDash.dart';
-import 'Pages/TutorDashPages/TutorConfiguracion.dart';
+import 'Pages/pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +49,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return LoginPage();
+            return const LoginPage();
           },
           routes: <RouteBase>[
             ShellRoute(
