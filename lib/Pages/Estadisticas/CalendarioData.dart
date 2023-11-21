@@ -214,6 +214,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
               pagoDoc['fechapago'].toDate(),
               pagoDoc['metodopago'],
               pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID',
+              pagoDoc['fecharegistro'],
             );
             pagos.add(newpago);
           }

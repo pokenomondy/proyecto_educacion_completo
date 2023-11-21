@@ -49,8 +49,10 @@ class stream_builders{
               String referencia = pagoData['referencia'] ?? '';
               String metodopago = pagoData['metodopago'] ?? '';
               String id = pagoData['id'] ?? '';
+              DateTime fecharegistro = pagoData['fecharegistro'] != null ? RegistrarPago.convertirTimestamp(pagoData['fecharegistro']) : DateTime(2023,11,1);
 
-              RegistrarPago nuevoPago = RegistrarPago(codigo, tipopago, valor, referencia, fechaPago, metodopago, id);
+
+              RegistrarPago nuevoPago = RegistrarPago(codigo, tipopago, valor, referencia, fechaPago, metodopago, id,fecharegistro);
               return nuevoPago;
             }).toList();
           }

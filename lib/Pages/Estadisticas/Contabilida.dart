@@ -611,6 +611,14 @@ class _PagosDatosState extends State<PagosDatos> {
               child: Text(
                 'fechapago',
               ))),
+      GridColumn(
+          columnName: 'fecharegistro',
+          label: Container(
+              padding: EdgeInsets.all(16.0),
+              alignment: Alignment.center,
+              child: Text(
+                'fecharegistro',
+              ))),
     ];
   }
 
@@ -627,6 +635,7 @@ class _PagosDatosState extends State<PagosDatos> {
       'METODO PAGO',
       'REFERENCIA',
       'FECHA PAGO',
+      'FECHA REGISTRO',
     ];
     for (var i = 0; i < headers.length; i++) {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0)).value = headers[i];
@@ -641,7 +650,8 @@ class _PagosDatosState extends State<PagosDatos> {
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1)).value = solicitud.valor;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1)).value = solicitud.metodopago;
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1)).value = solicitud.referencia;
-      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1)).value = solicitud.fechapago;
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1)).value = DateFormat('dd/MM/yyyy').format(solicitud.fechapago);
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1)).value = DateFormat('dd/MM/yyyy').format(solicitud.fecharegistro);
 
     }
 
@@ -682,6 +692,7 @@ class PagosDataSource extends DataGridSource {
       DataGridCell<String>(columnName: 'metodopago', value: e.metodopago),
       DataGridCell<String>(columnName: 'referencia', value: e.referencia),
       DataGridCell<DateTime>(columnName: 'fechapago', value: e.fechapago),
+      DataGridCell<DateTime>(columnName: 'fecharegistro', value: e.fecharegistro),
 
       //Falta poner la lista de cotizaciones, podría ser interesante
 

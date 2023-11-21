@@ -9,9 +9,10 @@ class RegistrarPago{
   String metodopago = "";
   String referencia = "";
   DateTime fechapago = DateTime.now();
+  DateTime fecharegistro = DateTime.now();
 
 
-  RegistrarPago(this.codigo,this.tipopago,this.valor,this.referencia,this.fechapago,this.metodopago,this.id);
+  RegistrarPago(this.codigo,this.tipopago,this.valor,this.referencia,this.fechapago,this.metodopago,this.id,this.fecharegistro);
 
   Map<String,dynamic> toMap(){
     return{
@@ -22,6 +23,7 @@ class RegistrarPago{
       'referencia' :referencia,
       'fechapago' :fechapago,
       'id':id,
+      'fecharegistro' : fecharegistro,
     };
   }
 
@@ -39,6 +41,7 @@ class RegistrarPago{
       'fechapago': fechapago.toIso8601String(),
       'metodopago': metodopago,
        'id' : id,
+      'fecharegistro' : fecharegistro.toIso8601String(),
     };
   }
 
@@ -51,6 +54,7 @@ class RegistrarPago{
       DateTime.parse(json['fechapago']),
       json['metodopago'],
       json['id'],
+      DateTime.parse(json['fecharegistro']),
     );
   }
 

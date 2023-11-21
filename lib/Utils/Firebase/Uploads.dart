@@ -330,7 +330,7 @@ class Uploads{
     List<RegistrarPago> pagos = [];
     int numeropagosregistrados = await obtenerNumeroDePagosRegistrados(idconfirmacion);
     DocumentReference pagoReference = db.collection("CONTABILIDAD").doc(servicio.codigo);
-    RegistrarPago newpago = RegistrarPago(servicio.codigo, tipopago, valor, referencia, fechapago, metodopago, "$numeropagosregistrados-$referencia");
+    RegistrarPago newpago = RegistrarPago(servicio.codigo, tipopago, valor, referencia, fechapago, metodopago, "$numeropagosregistrados-$referencia",DateTime.now());
     // Actualizar la lista de pagos en el documento del servicio agendado
     if(tipopago == "REEMBOLSOCLIENTE"){
       int nuevosaldocliente = servicio.preciocobrado - valor;
