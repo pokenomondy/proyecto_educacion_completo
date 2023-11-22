@@ -4,3 +4,4 @@ export 'TutorDashPages/EntregasTutor.dart';
 export 'TutorDashPages/MainTutoresDash.dart';
 export 'TutorDashPages/TutorConfiguracion.dart';
 export 'init.dart';
+export 'creacionWidgets.dart';
