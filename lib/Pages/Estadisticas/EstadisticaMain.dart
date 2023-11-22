@@ -54,7 +54,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   double margen_solicitud = 10;
 
   //conteos filtrados
-  DateTime fecha_actual_filtro = DateTime(2023,10,31);
+  DateTime fecha_actual_filtro = DateTime.now();
   int contesolicitudfiltro = 0;
   int conteoServiciosAgendadofiltro = 0;
   int ventasobtenidas = 0;
@@ -62,8 +62,11 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   int gananciasobtenidas = 0;
   double percentganacia = 0.0;
   double percetnsolicitudes = 0.0;
+  late TooltipBehavior _tooltipBehavior; //Top sf chart
+
 
   void initState() {
+    _tooltipBehavior =  TooltipBehavior(enable: true);
     loadDataTablasMaterias();
     super.initState();
   }
@@ -447,8 +450,11 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         edgeLabelPlacement: EdgeLabelPlacement.values.first,
                         minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
                         maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
-                        interval: 6,
+                        interval: 4,
+                        rangePadding: ChartRangePadding.auto,
                       ),
+                      title: ChartTitle(text: 'Gráfico de ganancias'),
+                      tooltipBehavior: _tooltipBehavior,
                       series: <ChartSeries>[
                         LineSeries<MapEntry<DateTime, int>, DateTime>(
                             dataSource: GananciasporDia.entries.toList(),

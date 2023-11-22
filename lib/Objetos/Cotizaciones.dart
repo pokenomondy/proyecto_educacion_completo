@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Cotizacion{
   int cotizacion = 0; //preciocotización
   String uidtutor = ""; //uidtutor
@@ -21,6 +23,12 @@ class Cotizacion{
       "fechaconfirmacion":fechaconfirmacion,
     };
   }
+
+  // Método para convertir Timestamp a DateTime y luego a String
+  static DateTime convertirTimestamp(Timestamp timestamp) {
+    return timestamp.toDate();
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'cotizacion': cotizacion,

@@ -1,9 +1,10 @@
 import 'dart:html';
-
-import 'package:dashboard_admin_flutter/Utils/Firebase/Search_Data.dart';
+import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Tutores_objet.dart';
@@ -20,12 +21,40 @@ class ContaDash extends StatefulWidget {
 }
 
 class ContaDashState extends State<ContaDash> {
+
+
+  @override
+  Widget build(BuildContext context) {
+    final currentwidth = MediaQuery.of(context).size.width;
+    final tamanowidth = (currentwidth/2)-30;
+    return Container(
+      child: Row(
+        children: [
+          PrimaryColumnContaDash(currentwidth: tamanowidth,),
+          SecundaryColumnContaDash(currentwidth: tamanowidth,),
+        ],
+      ),
+    );
+  }
+}
+
+class PrimaryColumnContaDash extends StatefulWidget {
+  final double currentwidth;
+
+  const PrimaryColumnContaDash({Key?key,
+    required this.currentwidth,
+  }) :super(key: key);
+
+  @override
+  PrimaryColumnContaDashState createState() => PrimaryColumnContaDashState();
+
+}
+
+class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
   List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false,false];
   List<Materia> materiaList = [];
   List<String> valores = [];
-  String codigobuscar = "";
   bool buscador = false;
-  ServicioAgendado? servicioAgendado;
   String datoscambiostext = "";
   Materia? selectedMateria;
   Tutores? selectedTutor;
@@ -34,6 +63,9 @@ class ContaDashState extends State<ContaDash> {
   DateTime cambiarfecha = DateTime.now();
   List<Tutores> tutoresList = [];
   int valorcambio = 0;
+  List<ServicioAgendado> servicioagendadList = [];
+  ServicioAgendado? servicioAgendado;
+  bool dataloaded = false;
 
   @override
   void initState() {
@@ -41,7 +73,24 @@ class ContaDashState extends State<ContaDash> {
     super.initState();
   }
 
+  Future actualizarHistorialporcodigo(String codigo) async{
+    print("actualizamos historial por codigo");
+    servicioagendadList.clear();
+    servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
+    final historialProvider = Provider.of<HistorialProvider>(context, listen: false);
+    // Actualizar todos los pagos en el provider
+    historialProvider.clearHistorial();
+    historialProvider.cargarTodosLosHistorial(servicioagendadList.expand((servicio) => servicio.historial).toList());
+    //actualizar pagos segun codigo
+    historialProvider.actualizarHistorialPorCodigo(codigo);
+  }
+
+
   Future loadtablas() async{
+    servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
+    setState(() {
+      dataloaded = true;
+    });
     materiaList = await LoadData().tablasmateria();
     tutoresList = await LoadData().obtenertutores();
   }
@@ -67,47 +116,69 @@ class ContaDashState extends State<ContaDash> {
     return Column(
       children: [
         //TextBox buscador y icono de buscar
-        Row(
-          children: [
-            Container(
-              width: 100,
-              child: TextBox(
-                placeholder: 'Código a buscar',
-                onChanged: (value){
-                  setState(() {
-                    codigobuscar = value;
-                  });
-                },
-                maxLines: null,
+        if(dataloaded==true)
+          Row(
+            children: [
+              Container(
+                height: 30,
+                width: 200,
+                child: AutoSuggestBox<ServicioAgendado>(
+                  items: servicioagendadList.map<AutoSuggestBoxItem<ServicioAgendado>>(
+                        (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
+                      value: servicioagendado,
+                      label: servicioagendado.codigo,
+                      onFocusChange: (focused) {
+                        if (focused) {
+                          debugPrint('Focused #${servicioagendado.codigo} - ');
+                        }
+                      },
+                    ),
+                  )
+                      .toList(),
+                  decoration: Disenos().decoracionbuscador(),
+                  onSelected: (item) {
+                    setState(() {
+                      servicioAgendado = item.value;
+                      actualizarvalores();
+                      actualizarHistorialporcodigo(servicioAgendado!.codigo);
+                    });
+                  },
+                  onChanged: (text, reason) {
+                    if (text.isEmpty ) {
+                      setState(() {
+                        servicioAgendado = null; // Limpiar la selección cuando se borra el texto
+                      });
+                    }
+                  },
+                ),
               ),
-            ),
-            FilledButton(child: Text('Buscard'), onPressed: ()async{
-              print("buscar servicio $codigobuscar");
-              servicioAgendado = await Buscador().buscaragendado(codigobuscar);
-              actualizarvalores();
-              setState(() {
-                buscador = true;
-              });
-            }),
-            if(buscador==true)
-              Column(
-                children: [
-                  textoymodificable("Sistema", servicioAgendado!, 0, true),
-                  textoymodificable("Matería", servicioAgendado!, 1, false),
-                  textoymodificable("Fecha sistema", servicioAgendado!, 2, true),
-                  textoymodificable("Número de cliente", servicioAgendado!, 3, true),
-                  textoymodificable("Preció cobrado ", servicioAgendado!, 4, false),
-                  textoymodificable("Fecha entrega ", servicioAgendado!, 5, false),
-                  textoymodificable("Tutor ", servicioAgendado!, 6, false),
-                  textoymodificable("Precio tutor ", servicioAgendado!, 7, false),
-                  textoymodificable("Identificador código ", servicioAgendado!, 8, false),
-                  textoymodificable("ID solicitud ", servicioAgendado!, 9, true),
-                  textoymodificable("ID contable ", servicioAgendado!, 10, true),
-                  textoymodificable("Entregado tutor ", servicioAgendado!, 11, true),
-                ],
-              ),
-          ],
-        ),
+
+              FilledButton(child: Text('Buscard'), onPressed: ()async{
+                actualizarvalores();
+                actualizarHistorialporcodigo(servicioAgendado!.codigo);
+                setState(() {
+                  buscador = true;
+                });
+              }),
+              if(buscador==true)
+                Column(
+                  children: [
+                    textoymodificable("Sistema", servicioAgendado!, 0, true),
+                    textoymodificable("Matería", servicioAgendado!, 1, false),
+                    textoymodificable("Fecha sistema", servicioAgendado!, 2, true),
+                    textoymodificable("Número de cliente", servicioAgendado!, 3, true),
+                    textoymodificable("Preció cobrado ", servicioAgendado!, 4, false),
+                    textoymodificable("Fecha entrega ", servicioAgendado!, 5, false),
+                    textoymodificable("Tutor ", servicioAgendado!, 6, false),
+                    textoymodificable("Precio tutor ", servicioAgendado!, 7, false),
+                    textoymodificable("Identificador código ", servicioAgendado!, 8, false),
+                    textoymodificable("ID solicitud ", servicioAgendado!, 9, true),
+                    textoymodificable("ID contable ", servicioAgendado!, 10, true),
+                    textoymodificable("Entregado tutor ", servicioAgendado!, 11, true),
+                  ],
+                ),
+            ],
+          ),
       ],
     );
   }
@@ -276,7 +347,8 @@ class ContaDashState extends State<ContaDash> {
               GestureDetector(
                 onTap: () async{
                   print("texto a cambiar = ${servicioAgendado!.codigo} cambio = ${cambio!} textoanterior = ${valor}");
-                  await Uploads().modifyServicioAgendado(index, codigobuscar, cambio!,valor!,valorcambio,cambiarfecha);
+                  await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
+                  actualizarHistorialporcodigo(servicioAgendado!.codigo);
                   setState(() {
                     valores[index] = cambio!;
                     editarcasilla[index] = false;  // Desactiva el modo de edición
@@ -363,3 +435,88 @@ class ContaDashState extends State<ContaDash> {
   }
 
 }
+
+class SecundaryColumnContaDash extends StatefulWidget {
+  final double currentwidth;
+
+  const SecundaryColumnContaDash({Key?key,
+    required this.currentwidth,
+  }) :super(key: key);
+
+  @override
+  SecundaryColumnContaDashState createState() => SecundaryColumnContaDashState();
+
+}
+
+class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<HistorialProvider>(
+        builder: (context, historialProvider, child) {
+          List<HistorialAgendado> historialDelServicioSeleccionado = historialProvider.historialDelServicioSeleccionado;
+          return Container(
+            color: Colors.green,
+            width: widget.currentwidth,
+            child: Column(
+              children: [
+                Text('Aquí tenemos historial'),
+                  Column(
+                    children: [
+                      Container(
+                        height: 800,
+                        child: ListView.builder(
+                          itemCount: historialDelServicioSeleccionado.length,
+                          itemBuilder: (context, index) {
+                            HistorialAgendado historialcod = historialDelServicioSeleccionado[index];
+
+                            return Container(
+                              height: 100,
+                              child: Card(
+                                child: Column(
+                                  children: [
+                                    Text(historialcod.codigo),
+                                    Text("CAMBIO DE ${historialcod.motivocambio} ${historialcod.cambioant} por ${historialcod.cambionew}")
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          );
+        }
+    );
+  }
+}
+
+class HistorialProvider extends ChangeNotifier {
+  List<HistorialAgendado> _todosElHistorial = [];
+  List<HistorialAgendado> _historialDelServicioSeleccionado = [];
+  List<HistorialAgendado> get historialDelServicioSeleccionado => _historialDelServicioSeleccionado;
+
+  void cargarTodosLosHistorial(List<HistorialAgendado> historial) {
+    _todosElHistorial = historial;
+  }
+
+  void actualizarHistorialPorCodigo(String codigo) {
+    _historialDelServicioSeleccionado = _todosElHistorial
+        .where((historial) => historial.codigo == codigo)
+        .toList();
+    notifyListeners();
+  }
+
+  // Método para eliminar todas las pagos
+  void clearHistorial() {
+    _todosElHistorial.clear();
+    historialDelServicioSeleccionado.clear();
+    notifyListeners();
+  }
+
+}
+
+

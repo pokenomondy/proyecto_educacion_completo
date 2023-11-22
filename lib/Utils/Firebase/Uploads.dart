@@ -10,12 +10,16 @@ import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.da
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
-import 'package:googleapis/driveactivity/v2.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:googleapis/driveactivity/v2.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
+import '../../Pages/Contabilidad/Pagos.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
 
 import 'StreamBuilders.dart';
 
@@ -85,9 +89,12 @@ class Uploads{
 
 //añadir cotización
   Future<void> addCotizacion(int idcotizacion,int cotizacion,String uidtutor,String nombretutor,int tiempoconfirmacion, String comentariocotizacion, String Agenda, DateTime fechaconfirmacion) async {
-    CollectionReference cotizacionadd = db.collection('SOLICITUDES').doc(idcotizacion.toString()).collection("COTIZACIONES");
+    List<Cotizacion> cotizaciones = [];
+    DocumentReference cotizacionReference = db.collection("SOLICITUDES").doc(idcotizacion.toString());
     Cotizacion newcotizacion = Cotizacion(cotizacion, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
-    await cotizacionadd.doc(uidtutor).set(newcotizacion.toMap());
+    await cotizacionReference.update({
+      'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
+    });
     //cargar las solitiudes y añadir esta nueva cotización
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
@@ -107,7 +114,7 @@ class Uploads{
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = db.collection('CONTABILIDAD');
     List<RegistrarPago> pagos = [];
-    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO");
+    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[]);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
     //Llamar servicios ya agendados y guardar el nuevo
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -158,9 +165,10 @@ class Uploads{
     String fecha = DateFormat('dd-MM-yyyy-hh:mm:ssa').format(DateTime.now());
     await contabilidad.doc(codigo).update(uploadinformacion);
     //Guardamos el historial del cambio
-    HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable);
-    CollectionReference refhistorial = db.collection("CONTABILIDAD").doc(codigo).collection("HISTORIAL");
-    await refhistorial.doc(fecha).set(newhistorial.toMap());
+    HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable,codigo);
+    await contabilidad.doc(codigo).update({
+      'historial' : FieldValue.arrayUnion([newhistorial.toMap()]),
+    });
   }
   //Entregar trabajos tutores
   Future<void> modifyServicioAgendadoEntregado(String codigo)async {
@@ -321,35 +329,48 @@ class Uploads{
     await prefs.setString('clientes_list', clientesJson);
   }
   //Registramos un nuevo pago a servicio
-  Future<void> addPago(int idconfirmacion, String codigo, String tipopago, int valor, String referencia, DateTime fechapago, String metodopago) async {
-    List<RegistrarPago> pagoaregistrar = [];
+  Future<void> addPago(int idconfirmacion, ServicioAgendado servicio, String tipopago, int valor, String referencia, DateTime fechapago, String metodopago, BuildContext context) async {
+    List<RegistrarPago> pagos = [];
     int numeropagosregistrados = await obtenerNumeroDePagosRegistrados(idconfirmacion);
-    CollectionReference pago = db.collection("CONTABILIDAD").doc(codigo).collection("PAGOS");
-    RegistrarPago newpago = RegistrarPago(codigo, tipopago, valor, referencia, fechapago, metodopago, "$numeropagosregistrados-$referencia");
-    pagoaregistrar.add(newpago);
-    await pago.doc("$numeropagosregistrados-$referencia").set(newpago.toMap());
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<ServicioAgendado>? serviciosagendadoList = await stream_builders().cargarserviciosagendados();
-
-    // Encontrar la solicitud
-    int solicitudIndex = serviciosagendadoList!.indexWhere((solicitud) => solicitud.codigo == codigo);
-
-    if (solicitudIndex != -1) {
-      // Agregar el nuevo pago a la lista existente
-      serviciosagendadoList[solicitudIndex].pagos.add(newpago);
-
-      // Guardar la lista actualizada en SharedPreferences
-      String solicitudesJsondos = jsonEncode(serviciosagendadoList);
-      await prefs.setString('servicios_agendados_list_stream', solicitudesJsondos);
+    DocumentReference pagoReference = db.collection("CONTABILIDAD").doc(servicio.codigo);
+    RegistrarPago newpago = RegistrarPago(servicio.codigo, tipopago, valor, referencia, fechapago, metodopago, "$numeropagosregistrados-$referencia",DateTime.now());
+    // Actualizar la lista de pagos en el documento del servicio agendado
+    if(tipopago == "REEMBOLSOCLIENTE"){
+      int nuevosaldocliente = servicio.preciocobrado - valor;
+      await pagoReference.update({
+        'pagos': FieldValue.arrayUnion([newpago.toMap()]),
+        'preciocobrado' : nuevosaldocliente,
+      });
+    }else if(tipopago == "REEMBOLSOTUTOR"){
+      int nuevosaldocliente = servicio.preciotutor - valor;
+      await pagoReference.update({
+        'pagos': FieldValue.arrayUnion([newpago.toMap()]),
+        'preciotutor' : nuevosaldocliente,
+      });
+    }else{
+      await pagoReference.update({
+        'pagos': FieldValue.arrayUnion([newpago.toMap()]),
+      });
     }
   }
-  Future<int> obtenerNumeroDePagosRegistrados(int idConfirmacion) async {
-    CollectionReference pagosCollection = db.collection("CONTABILIDAD").doc(idConfirmacion.toString()).collection("PAGOS");
-    QuerySnapshot querySnapshot = await pagosCollection.get();
-    // Obtén la cantidad de documentos en la colección de pagos
-    int numeroDePagos = querySnapshot.size;
-    return numeroDePagos + 1;
+  Future<int> obtenerNumeroDePagosRegistrados(int idcontable) async {
+    List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
+
+    // Verifica si serviciosAgendados no es nulo y no está vacío
+    if (serviciosAgendados != null && serviciosAgendados.isNotEmpty) {
+      // Filtra los servicios agendados para encontrar el que coincide con el idConfirmacion
+      ServicioAgendado servicioEncontrado = serviciosAgendados.firstWhere(
+            (servicio) => servicio.idcontable == idcontable,
+        orElse: () => ServicioAgendado.empty(), // O utiliza otro constructor o inicialización
+      );
+
+      // Obtén la cantidad de pagos y suma 1
+      int numeroDePagos = servicioEncontrado.pagos.length;
+      return numeroDePagos + 1;
+    }
+
+    // Si no hay servicios agendados, retorna 1 como número inicial
+    return 1;
   }
   //Modificar servicio cancelado en base de datos y forma local
   Future<void> modificarcancelado(int idcotizacion,int preciocobrado,int preciotutor) async {

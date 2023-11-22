@@ -18,6 +18,7 @@ class Solicitud {
   String urlArchivos = "";
   DateTime actualizarsolicitudes = DateTime.now();
 
+
   Solicitud(
       this.servicio,
       this.idcotizacion,
@@ -64,6 +65,7 @@ class Solicitud {
       'fechaactualizacion':fechaactualizacion,
       'archivos':urlArchivos,
       'actualizarsolicitudes' : actualizarsolicitudes,
+      'cotizaciones' : cotizaciones,
     };
   }
 

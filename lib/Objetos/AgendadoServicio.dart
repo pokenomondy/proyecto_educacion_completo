@@ -1,3 +1,5 @@
+import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+
 import 'RegistrarPago.dart';
 
 class ServicioAgendado{
@@ -15,13 +17,14 @@ class ServicioAgendado{
   int idcontable = 0;
   //Agregar Pagos
   List<RegistrarPago> pagos = [];
+  List<HistorialAgendado> historial = [];
   //Agregar estado si ha sido entregado o no entregado
   String entregadotutor = "";
   String entregadocliente = "";
 
   ServicioAgendado(this.codigo,this.sistema,this.materia,this.fechasistema,this.cliente,this.preciocobrado,this.fechaentrega,
       this.tutor,this.preciotutor,this.identificadorcodigo,this.idsolicitud,this.idcontable,this.pagos,this.entregadotutor,
-      this.entregadocliente);
+      this.entregadocliente,this.historial);
 
   Map<String,dynamic> toMap(){
     return{
@@ -39,8 +42,12 @@ class ServicioAgendado{
       'idcontable' : idcontable,
       'entregadotutor' : entregadotutor,
       'entregadocliente' : entregadocliente,
+      'pagos' : pagos,
+      'historial' : historial,
     };
   }
+
+  ServicioAgendado.empty();
 
   Map<String, dynamic> toJson() {
     return {
@@ -59,6 +66,7 @@ class ServicioAgendado{
       'pagos': pagos.map((pagoData) => pagoData.toJson()).toList(),
       'entregadotutor' : entregadotutor,
       'entregadocliente' : entregadocliente,
+      'historial' :historial.map((historialData) => historialData.toJson()).toList(),
     };
   }
 
@@ -81,6 +89,9 @@ class ServicioAgendado{
           .toList(),
       json['entregadotutor'],
       json['entregadocliente'],
+      (json['historial'] as List<dynamic>)
+          .map((pagoData) => HistorialAgendado.fromJson(pagoData))
+          .toList(),
     );
   }
 

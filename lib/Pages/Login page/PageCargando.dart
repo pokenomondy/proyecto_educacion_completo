@@ -11,6 +11,8 @@ import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Firebase/ActualizarInformacion.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
+import '../../Config/theme.dart';
+
 
 class PageCargando extends StatefulWidget {
 
@@ -28,14 +30,17 @@ class PageCargandoState extends State<PageCargando> {
   String cliente_actual = "";
   List<Clientes> cliente_List = [];
   int cliente_numerocargado = 0;
+  int TotalCliente = 500;
   //Solicitudes
   String solicitud_actual = "";
   List<Solicitud> solicitud_list = [];
   int solicitudes_numerocargado = 0;
+  int TotalSolicitudes = 500;
   //Tutores
   String tutor_actual = "";
   List<Tutores> tutor_List = [];
   int tutores_numerocargado = 0;
+  int TotalTutores = 500;
 
   @override
   void initState() {
@@ -58,8 +63,12 @@ class PageCargandoState extends State<PageCargando> {
             cliente_List.add(clienteactualizacion);
             cliente_numerocargado = cliente_List.length;
           });
-        }
+        },
+      TotalClientes: (int Total){
+          TotalCliente = Total;
+      }
     );
+    /*
     //Actualizamos solicitudes
     await ActualizarInformacion().actualizarsolicitudes(
         onSolicitudAddedd: (Solicitud solicitudactualizaicon){
@@ -70,6 +79,8 @@ class PageCargandoState extends State<PageCargando> {
           });
         }
     );
+
+     */
     //Actualizar tutores
     await ActualizarInformacion().actualizartutores(
         onTutorAdded: (Tutores tutoractualizacion){
@@ -92,6 +103,23 @@ class PageCargandoState extends State<PageCargando> {
     comporbaciondescargacorrecta();
   }
   Future <void> comporbaciondescargacorrecta() async{
+    if(cliente_numerocargado==0){
+      await LoadData().obtenerclientes(
+          onClienteAdded: (Clientes clienteactualizacion){
+            setState(() {
+              cliente_actual = clienteactualizacion.nombreCliente;
+              cliente_List.add(clienteactualizacion);
+              cliente_numerocargado = cliente_List.length;
+            });
+          },
+          TotalClietnes: (int Total){
+            setState(() {
+              TotalCliente = Total;
+            });
+          }
+      );
+      print("esto no va a pasar");
+    }
     if(solicitudes_numerocargado==0){
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.remove('solicitudes_list');
@@ -103,19 +131,12 @@ class PageCargandoState extends State<PageCargando> {
             solicitudes_numerocargado = solicitud_list.length + 471;
           });
         },
-      );
-    }
-    if(cliente_numerocargado==0){
-      await LoadData().obtenerclientes(
-        onClienteAdded: (Clientes clienteactualizacion){
+        TotalSolicitudes: (int Total){
           setState(() {
-            cliente_actual = clienteactualizacion.nombreCliente;
-            cliente_List.add(clienteactualizacion);
-            cliente_numerocargado = cliente_List.length;
+            TotalSolicitudes = Total+471;
           });
         }
       );
-      print("esto no va a pasar");
     }
     if(tutores_numerocargado==0){
       await LoadData().obtenertutores(
@@ -123,6 +144,9 @@ class PageCargandoState extends State<PageCargando> {
           tutor_actual = nuevotutor.nombrewhatsapp;
           tutor_List.add(nuevotutor);
           tutores_numerocargado = tutor_List.length;
+        },
+        TotalTutores: (int Total){
+          TotalTutores = Total;
         }
       );
     }
@@ -131,8 +155,8 @@ class PageCargandoState extends State<PageCargando> {
     });
     //reiniciar licencias y plugins
     reiniciarcontador();
-  }
 
+  }
   Future <void> reiniciarcontador()async{
     Map<String, dynamic> servicioData = {};
     CollectionReference actualizacion = db.collection("ACTUALIZACION");
@@ -150,12 +174,24 @@ class PageCargandoState extends State<PageCargando> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('Cargando variables'),
-        Text("Cargando clientes $cliente_actual , numero $cliente_numerocargado cargados"),
-        Text("cargando solicitudes $solicitud_actual, numero $solicitudes_numerocargado cargados"),
-        Text("cargando tutores $tutor_actual, numero $tutores_numerocargado cargados"),
-        Text("Cargando materias, cargando carreras, cargando universidades,plugins y licencias y mensajes"),
-        ProgressBar(),
+        BarraCarga(
+          title: "Cargando Clientes",
+          cargados: cliente_numerocargado,
+          total: TotalCliente,
+          width: 300,
+        ),
+        BarraCarga(
+          title: "Cargando Solicitudes",
+          cargados: solicitudes_numerocargado,
+          total: TotalSolicitudes,
+          width: 300,
+        ),
+        BarraCarga(
+          title: "Cargando Tutores",
+          cargados: tutores_numerocargado,
+          total: TotalTutores,
+          width: 300,
+        ),
         if(cargacompleta==true)
           FilledButton(child: Text("cargado todo"), onPressed: (){
             material.Navigator.push(context, material.MaterialPageRoute(
