@@ -42,20 +42,31 @@ class LoadData {
           int cliente = solicitudDoc['cliente'];
           DateTime fechasistema = solicitudDoc['fechasistema'].toDate();
           String estado = solicitudDoc['Estado'];
-          DateTime fechaactualizacion = solicitudDoc.data().toString().contains(
-              'fechaactualizacion') ? solicitudDoc.get('fechaactualizacion')
-              .toDate() : DateTime(2023, 1, 1, 0, 0); //Number
-          String urlarchivo = solicitudDoc.data().toString().contains(
-              'archivos') ? solicitudDoc.get('archivos') : 'No tiene Archivos';
+          DateTime fechaactualizacion = solicitudDoc.data().toString().contains('fechaactualizacion') ? solicitudDoc.get('fechaactualizacion').toDate() : DateTime(2023, 1, 1, 0, 0); //Number
+          String urlarchivo = solicitudDoc.data().toString().contains('archivos') ? solicitudDoc.get('archivos') : 'No tiene Archivos';
           //escuchear streambuilder en tiempo real
-          List<Cotizacion> cotizaciones = [];
-          DateTime actualizarsolicitudes = solicitudDoc.data().toString()
-              .contains('actualizarsolicitudes') ?
+          DateTime actualizarsolicitudes = solicitudDoc.data().toString().contains('actualizarsolicitudes') ?
           solicitudDoc['actualizarsolicitudes'].toDate() :
           DateTime(2023,1,1,0,0); //Number
 
 
-          Solicitud newsolicitud = Solicitud(
+          List<Cotizacion> cotizaciones = [];
+          if (solicitudDoc.data() != null && solicitudDoc.data().toString().contains('cotizaciones')) {
+            var CotizacionData = solicitudDoc['cotizaciones'] as List<dynamic>;
+            cotizaciones = CotizacionData.map((CotizaDato) {
+              int cotizacionTutor = CotizaDato['Cotizacion'];
+              String uidtutor = CotizaDato['uidtutor'];
+              String nombretutor = CotizaDato['nombretutor'];
+              int tiempoconfirmacion = CotizaDato['Tiempo confirmacion'];
+              String comentariocotizacion = CotizaDato['Comentario Cotización'];
+              String Agenda = CotizaDato['Agenda'];
+              DateTime fechaconfirmacion = CotizaDato['fechaconfirmacion'] != null ? RegistrarPago.convertirTimestamp(CotizaDato['fechaconfirmacion']) : DateTime.now();
+
+              Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
+              return newcotizacion;
+            }).toList();
+          }
+            Solicitud newsolicitud = Solicitud(
             servicio,
             idcotizacion,
             materia,
@@ -182,7 +193,7 @@ class LoadData {
   }
 
   //Clientes, revisar
-  Future obtenerclientes({Function(Clientes)? onClienteAdded}) async {
+  Future obtenerclientes({Function(Clientes)? onClienteAdded,Function(int)? TotalClietnes}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
@@ -191,7 +202,10 @@ class LoadData {
           .instance.collection("CLIENTES");
       QuerySnapshot queryClientes = await referencetablaclientes.get();
       List<Clientes> clientesList = [];
-
+      int totalClietnesFirebase = queryClientes.size;
+      if (TotalClietnes != null) {
+        TotalClietnes(totalClietnesFirebase);
+      }
       for (var ClienteDoc in queryClientes.docs) {
         String Carrera = ClienteDoc['Carrera'];
         String Universidadd = ClienteDoc['Universidadd'];
@@ -209,6 +223,7 @@ class LoadData {
           onClienteAdded(newClientes);
         }
       }
+
       guardardatostablaclientes(clientesList);
       return clientesList;
     } else {
@@ -229,7 +244,7 @@ class LoadData {
   }
 
   //Tutores, guardar
-  Future obtenertutores({Function(Tutores)? onTutorAdded}) async {
+  Future obtenertutores({Function(Tutores)? onTutorAdded,Function(int)? TotalTutores}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
@@ -238,7 +253,10 @@ class LoadData {
           .instance.collection("TUTORES");
       QuerySnapshot queryTutores = await referencetablaclientes.get();
       List<Tutores> tutoresList = [];
-
+      int TotalTutoresFirebase = 0;
+      if (TotalTutores != null) {
+        TotalTutores(TotalTutoresFirebase);
+      }
       for (var TutorDoc in queryTutores.docs) {
         String nombrewhatsapp = TutorDoc['nombre Whatsapp'];
         String nombrecompleto = TutorDoc['nombre completo'];
@@ -392,7 +410,7 @@ class LoadData {
 
 
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
-  Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded}) async{
+  Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded,Function(int)? TotalSolicitudes}) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
     if (!datosDescargados) {
@@ -400,6 +418,10 @@ class LoadData {
       CollectionReference referencetablassolicitud = await FirebaseFirestore.instance.collection("SOLICITUDES");
       QuerySnapshot QuerySolicitud = await referencetablassolicitud.get();
       List<Solicitud> solicitudList = [];
+      int TotalSolciitudesFirebase = QuerySolicitud.size;
+      if (TotalSolicitudes != null) {
+        TotalSolicitudes(TotalSolciitudesFirebase);
+      }
       for (var solicitudDoc in QuerySolicitud.docs) {
         String servicio = solicitudDoc['Servicio'];
         int idcotizacion = solicitudDoc['idcotizacion'];
@@ -413,24 +435,25 @@ class LoadData {
         DateTime fechaactualizacion = solicitudDoc.data().toString().contains('fechaactualizacion') ? solicitudDoc.get('fechaactualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
         String urlarchivo = solicitudDoc.data().toString().contains('archivos') ? solicitudDoc.get('archivos') : 'No tiene Archivos';
         DateTime actualizarsolicitudes = solicitudDoc.data().toString().contains('actualizarsolicitudes') ? solicitudDoc.get('actualizarsolicitudes').toDate() : DateTime(2023,1,1,0,0); //Number
-
         print(idcotizacion);
-
-        //Cargamos cotizaciones
-        QuerySnapshot cotizacionDocs = await solicitudDoc.reference.collection("COTIZACIONES").get();
         List<Cotizacion> cotizaciones = [];
-        for(var cotizacionDoc in cotizacionDocs.docs){
-          int cotizacionTutor = cotizacionDoc['Cotizacion'];
-          String uidtutor = cotizacionDoc['uidtutor'];
-          String nombretutor = cotizacionDoc['nombretutor'];
-          int tiempoconfirmacion = cotizacionDoc['Tiempo confirmacion'];
-          String comentariocotizacion = cotizacionDoc['Comentario Cotización'];
-          String Agenda = cotizacionDoc['Agenda'];
-          DateTime fechaconfirmacion = cotizacionDoc.data().toString().contains('fechaconfirmacion') ? cotizacionDoc.get('fechaconfirmacion').toDate() : DateTime.now(); //Number
+        if (solicitudDoc.data() != null && solicitudDoc.data().toString().contains('cotizaciones')) {
+          var CotizacionData = solicitudDoc['cotizaciones'] as List<dynamic>;
+          cotizaciones = CotizacionData.map((CotizaDato) {
+            int cotizacionTutor = CotizaDato['Cotizacion'];
+            String uidtutor = CotizaDato['uidtutor'];
+            String nombretutor = CotizaDato['nombretutor'];
+            int tiempoconfirmacion = CotizaDato['Tiempo confirmacion'];
+            String comentariocotizacion = CotizaDato['Comentario Cotización'];
+            String Agenda = CotizaDato['Agenda'];
+            DateTime fechaconfirmacion = CotizaDato['fechaconfirmacion'] != null ? RegistrarPago.convertirTimestamp(CotizaDato['fechaconfirmacion']) : DateTime.now();
 
-          Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
-          cotizaciones.add(newcotizacion);
+            Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
+            return newcotizacion;
+          }).toList();
         }
+
+
 
         Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones,fechaactualizacion,urlarchivo,actualizarsolicitudes);
         solicitudList.add(newsolicitud);
@@ -465,133 +488,6 @@ class LoadData {
     await prefs.setBool('datos_descargados_listasolicitudes', true);
     print("guardando solicitudes");
   }
-
-   
-
-  /*
-//Obtener contabilidad
-  Future obtenerContabilidad() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_listacontabilidad') ?? false;
-
-    if (!datosDescargados) {
-      print("Descargando contabilidad por primera vez");
-      CollectionReference referencecontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
-      QuerySnapshot querycontabilidad = await referencecontabilidad.get();
-      List<ServicioAgendado> serviciosagendadoList = [];
-
-      for (var contabilidadDoc in querycontabilidad.docs) {
-        String codigo = contabilidadDoc['codigo'];
-        String sistema = contabilidadDoc['sistema'];
-        String materia = contabilidadDoc['materia'];
-        DateTime fechasistema = contabilidadDoc['fechasistema'].toDate();
-        String cliente = contabilidadDoc['cliente'];
-        int preciocobrado = contabilidadDoc['preciocobrado'];
-        DateTime fechaentrega = contabilidadDoc['fechaentrega'].toDate();
-        String tutor = contabilidadDoc['tutor'];
-        int preciotutor = contabilidadDoc['preciotutor'];
-        String identificadorcodigo = contabilidadDoc['identificadorcodigo'];
-        int idsolicitud = contabilidadDoc['idsolicitud'];
-        int idcontable = contabilidadDoc['idcontable'];
-        String entregado = contabilidadDoc.data().toString().contains('entregadotutor') ? contabilidadDoc.get('entregadotutor') : 'NO APLICA';
-
-        print(idcontable);
-        print(codigo);
-
-        // Obtener pagos en primera descarga
-        QuerySnapshot registroPagosDoc = await contabilidadDoc.reference.collection("PAGOS").get();
-        List<RegistrarPago> pagos = [];
-
-        for (var pagoDoc in registroPagosDoc.docs) {
-          String pagoCodigo = pagoDoc['codigo'];
-          String tipopago = pagoDoc['tipopago'];
-          int valor = pagoDoc['valor'];
-          String metodopago = pagoDoc['metodopago'];
-          String referencia = pagoDoc['referencia'];
-          DateTime fechapago = pagoDoc['fechapago'].toDate();
-          String id = pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID';
-
-
-          RegistrarPago newpago = RegistrarPago(pagoCodigo, tipopago, valor, referencia, fechapago, metodopago,id);
-          pagos.add(newpago);
-        }
-
-        ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo, idsolicitud, idcontable, pagos,entregado);
-        serviciosagendadoList.add(newservicioagendado);
-      }
-
-      // Guardar los datos descargados en SharedPreferences
-      guardaDatosContabilidad(serviciosagendadoList);
-
-      return serviciosagendadoList;
-    } else {
-      print("Contabilidad ya descargada");
-      String contabilidadJson = prefs.getString('contabilidad_list') ?? '';
-      List<dynamic> ServicioAgendadoData = jsonDecode(contabilidadJson);
-      List<ServicioAgendado> serviciosagendadoList = ServicioAgendadoData.map((tutorData) => ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
-      return serviciosagendadoList;
-    }
-  }
-
-  Future guardaDatosContabilidad(List<ServicioAgendado> servicioagendado) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = jsonEncode(servicioagendado);
-    await prefs.setString('contabilidad_list', solicitudesJson);
-    await prefs.setBool('datos_descargados_listacontabilidad', true);
-  }
-
-   */
-  //cambios de servicios empezamos, toca pensar en como se puede realizar de mejor forma
-  /*
-  Future verificar_cambios() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('verificacionesGeneral') ?? false;
-    if(!datosDescargados) {
-      //Actualización de solicitudes de servicios
-      DocumentSnapshot getfecha_servicios = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc('ACTUALIZADORES').get();
-      DateTime fecha_servicios = getfecha_servicios.get('fecha_servicios').toDate();
-      //Guardar fecha actualización servicio
-      await prefs.setString("verificacionSolicitudes", fecha_servicios.toString());
-      await prefs.setBool("verificacionesGeneral", true);
-      Map<String, dynamic> actualizadores_fechas = {
-        'fecha_local':  fecha_servicios.toUtc().toIso8601String(),
-        'fecha_firebase':  fecha_servicios.toUtc().toIso8601String(),};
-
-      return actualizadores_fechas;
-    }else{
-      //Verificando inicialmente las solicitudes
-      String getverificacionSolicitudes = prefs.getString('verificacionSolicitudes') ?? '';
-      DateTime getverificacionsolicitdlocalcon = DateTime.parse(getverificacionSolicitudes);
-      DocumentSnapshot getfecha_servicios = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc('ACTUALIZADORES').get();
-      DateTime fecha_servicios = getfecha_servicios.get('fecha_servicios').toDate();
-      print('local $getverificacionsolicitdlocalcon');
-      print('firebase $fecha_servicios');
-      if(fecha_servicios==getverificacionsolicitdlocalcon){
-        Map<String, dynamic> actualizadores_fechas = {
-          'fecha_local': getverificacionSolicitudes.toString(),
-          'fecha_firebase': fecha_servicios.toUtc().toIso8601String(),
-        };
-        print("fechas iguales, no actualiza");
-        return actualizadores_fechas;
-      }else{
-        //volver a descargar solicitudes, adicional retornar listas normales
-        print("fechas distintas");
-        await prefs.setString("verificacionSolicitudes", fecha_servicios.toString());
-        //obtenerSolicitudes();
-        Map<String, dynamic> actualizadores_fechas = {
-          'fecha_local': fecha_servicios.toString(),
-          'fecha_firebase': fecha_servicios.toString(),
-        };
-        return actualizadores_fechas;
-      }
-    }
-
-  }
-
-   */
-
-  //Verificar cada cierto 30 minutos, actualización de variables entre todas las plataformas
-
 
 
   //Leer configuración inicial, que es la priemra que hay

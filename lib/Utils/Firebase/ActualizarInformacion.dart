@@ -229,7 +229,7 @@ class ActualizarInformacion {
   }
 
   //Actualziar lista de clientes
-  Future<void> actualizarclientes({Function(Clientes)? onClienteAdded}) async{
+  Future<void> actualizarclientes({Function(Clientes)? onClienteAdded,Function(int)? TotalClientes}) async{
     print("Actualizando información de clientes en firebase");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
@@ -239,6 +239,9 @@ class ActualizarInformacion {
       CollectionReference refenrecetablaClientes = await FirebaseFirestore.instance.collection("CLIENTES");
       QuerySnapshot queryClientes = await refenrecetablaClientes.get();
       Set<String> localClienteList = Set.from(clientList.map((cliente) => cliente.numero.toString()));
+      if (TotalClientes != null) {
+        TotalClientes(queryClientes.size);
+      }
       //Iteramos dentro de la lista de clientes de firebase para generar actualización
       for(var ClienteDoc in queryClientes.docs){
         DateTime fechaActualizacionfirebase = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number

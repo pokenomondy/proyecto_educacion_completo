@@ -1011,7 +1011,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               //metemos un streambuilder para escuchar numero de cotizaciones
-                              escucharnumcotizaciones(solicitud.idcotizacion),
+                              Text("${solicitud.cotizaciones.length} cotizaciones"),
                               Disenos().textocardsolicitudesnobold(
                                   solicitud.estado),
                             ],
@@ -1102,30 +1102,6 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     );
   }
 
-  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> escucharnumcotizaciones(int idsolicitud){
-    return StreamBuilder(
-        stream: db.collection("SOLICITUDES").doc(idsolicitud.toString()).collection("COTIZACIONES").snapshots(),
-        builder: (context,snapshot){
-          if(!snapshot.hasData) return Text('CARGANDO NO HAY NADA');
-          List<Cotizacion> cotizaciones = [];
-          for(var doc in snapshot.data!.docs){
-            final data = doc.data() as Map<String,dynamic>;
-            Cotizacion cotizacion = Cotizacion(
-              data['Cotizacion'],
-              data['uidtutor'],
-              data['nombretutor'],
-              data['Tiempo confirmacion'],
-              data['Comentario Cotización']?.toString(),
-              data['Agenda'],
-              data.containsKey('fechaconfirmacion') ? data['fechaconfirmacion'].toDate() : DateTime.now(), // Maneja el caso en que no existe fechaconfirmacion
-            );
-            numerocotizaciones = snapshot.data!.size;
-            cotizaciones.add(cotizacion);
-          }
-          return Disenos().textocardsolicitudesnobold("${snapshot.data?.size} cotizaciones");
-        }
-    );
-  }
 
   void copiarSolicitud(String servicio, int idcotizacion, String materia, DateTime fechaentrega, String resumen, String infocliente, String urlArchivos) {
     String horaRealizada = "";

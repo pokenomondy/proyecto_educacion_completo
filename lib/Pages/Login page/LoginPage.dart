@@ -28,31 +28,12 @@ import '../../Utils/Firebase/Load_Data.dart';
     @override
     void initState(){
       super.initState();
-      cargaregular();
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid);
       }
       }
 
-    String cliente_actual = "";
-    List<Solicitud> cliente_List = [];
-    int cliente_numerocargado = 0;
     final db = FirebaseFirestore.instance;
-    Future <void> cargaregular() async{
-      if(cliente_numerocargado==0){
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.remove('solicitudes_list');
-        await LoadData().obtenerSolicitudes(
-          onSolicitudAdded: (Solicitud nuevaSolicitud) {
-            setState(() {
-              cliente_actual = nuevaSolicitud.idcotizacion.toString();
-              cliente_List.add(nuevaSolicitud);
-              cliente_numerocargado = cliente_List.length + 471;
-            });
-          },
-        );
-      }
-    }
 
     @override
     Widget build(BuildContext context) {
@@ -105,12 +86,6 @@ import '../../Utils/Firebase/Load_Data.dart';
                   fontSize: 11,
                   color: theme.colorazulventas,
                 ),),
-              BarraCarga(
-                title: "Cargando solicitudes",
-                cargados: cliente_numerocargado,
-                total: 1300,
-                width: 200,
-              ),
               //Google
             ],
         ),

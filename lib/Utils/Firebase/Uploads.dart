@@ -89,9 +89,12 @@ class Uploads{
 
 //añadir cotización
   Future<void> addCotizacion(int idcotizacion,int cotizacion,String uidtutor,String nombretutor,int tiempoconfirmacion, String comentariocotizacion, String Agenda, DateTime fechaconfirmacion) async {
-    CollectionReference cotizacionadd = db.collection('SOLICITUDES').doc(idcotizacion.toString()).collection("COTIZACIONES");
+    List<Cotizacion> cotizaciones = [];
+    DocumentReference cotizacionReference = db.collection("SOLICITUDES").doc(idcotizacion.toString());
     Cotizacion newcotizacion = Cotizacion(cotizacion, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
-    await cotizacionadd.doc(uidtutor).set(newcotizacion.toMap());
+    await cotizacionReference.update({
+      'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
+    });
     //cargar las solitiudes y añadir esta nueva cotización
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
