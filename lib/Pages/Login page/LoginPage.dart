@@ -6,11 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/theme.dart';
 
 
-import '../../Objetos/Clientes.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -28,34 +26,30 @@ import '../../Utils/Firebase/Load_Data.dart';
     @override
     void initState(){
       super.initState();
-      cargaregular();
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid);
       }
       }
 
-    String cliente_actual = "";
-    List<Solicitud> cliente_List = [];
-    int cliente_numerocargado = 0;
-    final db = FirebaseFirestore.instance;
-    Future <void> cargaregular() async{
-      if(cliente_numerocargado==0){
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.remove('solicitudes_list');
-        await LoadData().obtenerSolicitudes(
-          onSolicitudAdded: (Solicitud nuevaSolicitud) {
-            setState(() {
-              cliente_actual = nuevaSolicitud.idcotizacion.toString();
-              cliente_List.add(nuevaSolicitud);
-              cliente_numerocargado = cliente_List.length + 471;
-            });
-          },
-        );
-      }
-    }
-
     @override
     Widget build(BuildContext context) {
+
+      final Solicitud solicitud = Solicitud(
+          "SERVICIO",
+          1,
+          "MATERIA",
+          DateTime.now(),
+          "RESUMEN",
+          "INFO CLIENTE",
+          0,
+          DateTime.now(),
+          "ESTADO",
+          [],
+          DateTime.now(),
+          "URL ARCHIVOS",
+          DateTime.now()
+      );
+
       final ThemeApp theme = ThemeApp();
       const double widthTextBox = 350;
       const double heigthTextBox = 40;
@@ -105,13 +99,8 @@ import '../../Utils/Firebase/Load_Data.dart';
                   fontSize: 11,
                   color: theme.colorazulventas,
                 ),),
-              BarraCarga(
-                title: "Cargando solicitudes",
-                cargados: cliente_numerocargado,
-                total: 1300,
-                width: 200,
-              ),
-              //Google
+              //Tarjeta de solicitudes
+
             ],
         ),
       );

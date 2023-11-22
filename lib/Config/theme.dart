@@ -55,10 +55,12 @@ class PrimaryStyleButton extends StatefulWidget{
   final VoidCallback function;
   final String text;
   final double tamanio;
+  final Color buttonColor;
   const PrimaryStyleButton({
     Key?key,
     required this.function,
     required this.text,
+    this.buttonColor = const Color(0xFF235FD9),
     this.invert = false,
     this.tamanio = 15,
   }):super(key: key);
@@ -418,7 +420,7 @@ class BarraCargaState extends State<BarraCarga>{
               children: [
                 Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(widget.title)
+                    child: Text(widget.width >= 300 ? "${widget.title} - ${widget.cargados} de ${widget.total}" : widget.title)
                 ),
                 Container(
                   width: widget.width - horizontalPadding,
