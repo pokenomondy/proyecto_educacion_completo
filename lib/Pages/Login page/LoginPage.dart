@@ -6,11 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/theme.dart';
 
 
-import '../../Objetos/Clientes.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -32,8 +30,6 @@ import '../../Utils/Firebase/Load_Data.dart';
         _redireccionaDashboarc(currentUser!.uid);
       }
       }
-
-    final db = FirebaseFirestore.instance;
 
     @override
     Widget build(BuildContext context) {
@@ -86,7 +82,6 @@ import '../../Utils/Firebase/Load_Data.dart';
                   fontSize: 11,
                   color: theme.colorazulventas,
                 ),),
-              //Google
             ],
         ),
       );

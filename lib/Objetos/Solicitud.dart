@@ -11,7 +11,7 @@ class Solicitud {
   int cliente = 0; //cliente
   DateTime fechasistema = DateTime.now(); //fecha sistema
   String estado = ""; //disponibilidad
-  List<Cotizacion> cotizaciones ; //lista de cotizaciones
+  List<Cotizacion> cotizaciones; //lista de cotizaciones
   String resumen = ""; //Tema asignado
   String infocliente = ""; //Cronograma de avances
   DateTime fechaactualizacion = DateTime.now(); //fecha de verificación, si esta cambia, se debe solo leer esta para ver si se debe actualizar
