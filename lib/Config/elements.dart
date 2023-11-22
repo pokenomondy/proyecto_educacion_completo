@@ -8,6 +8,7 @@ class TarjetaSolicitudes extends StatelessWidget{
 
   final Solicitud solicitud;
   final double width;
+  final double heigth;
   final Color cardColor;
   final double tamanio;
 
@@ -15,15 +16,19 @@ class TarjetaSolicitudes extends StatelessWidget{
     Key?key,
     required this.solicitud,
     this.width = 400,
+    this.heigth = 175,
     this.cardColor = const Color(0xFF235FD9),
     this.tamanio = 15,
   }):super(key: key);
 
   @override
   Widget build(BuildContext context){
+    final double calculatedHeigth = heigth + (solicitud.resumen.length / 57).floor() * 18;
     final ThemeApp theme = ThemeApp();
+
     return ItemsCard(
       width: width,
+      height: calculatedHeigth,
       shadow: false,
       verticalPadding: 15,
       horizontalPadding: 20,
@@ -89,7 +94,7 @@ class TarjetaSolicitudes extends StatelessWidget{
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text("Botones aqui", style: theme.styleText(tamanio - 2, false, theme.whitecolor),),
+              Text("B", style: theme.styleText(tamanio - 2, false, theme.whitecolor),),
             ],
           )
         ],

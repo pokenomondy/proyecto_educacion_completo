@@ -33,23 +33,6 @@ import '../../Utils/Firebase/Load_Data.dart';
 
     @override
     Widget build(BuildContext context) {
-
-      final Solicitud solicitud = Solicitud(
-          "SERVICIO",
-          1,
-          "MATERIA",
-          DateTime.now(),
-          "RESUMEN",
-          "INFO CLIENTE",
-          0,
-          DateTime.now(),
-          "ESTADO",
-          [],
-          DateTime.now(),
-          "URL ARCHIVOS",
-          DateTime.now()
-      );
-
       final ThemeApp theme = ThemeApp();
       const double widthTextBox = 350;
       const double heigthTextBox = 40;
@@ -99,8 +82,6 @@ import '../../Utils/Firebase/Load_Data.dart';
                   fontSize: 11,
                   color: theme.colorazulventas,
                 ),),
-              //Tarjeta de solicitudes
-
             ],
         ),
       );
