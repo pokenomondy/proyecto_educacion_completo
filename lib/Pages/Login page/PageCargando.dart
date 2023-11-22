@@ -68,6 +68,7 @@ class PageCargandoState extends State<PageCargando> {
           TotalCliente = Total;
       }
     );
+    /*
     //Actualizamos solicitudes
     await ActualizarInformacion().actualizarsolicitudes(
         onSolicitudAddedd: (Solicitud solicitudactualizaicon){
@@ -78,6 +79,8 @@ class PageCargandoState extends State<PageCargando> {
           });
         }
     );
+
+     */
     //Actualizar tutores
     await ActualizarInformacion().actualizartutores(
         onTutorAdded: (Tutores tutoractualizacion){

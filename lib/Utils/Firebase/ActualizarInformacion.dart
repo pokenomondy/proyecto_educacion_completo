@@ -128,7 +128,7 @@ class ActualizarInformacion {
     }
   }
 
-  //Actualizar solicitudes
+  /*
   Future <void> actualizarsolicitudes({Function(Solicitud)? onSolicitudAddedd}) async {
     print("Actualizando información de solicitudes en firebase");
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -227,6 +227,7 @@ class ActualizarInformacion {
       prefs.setString('solicitudes_list', updatedTutoresJson);
     }
   }
+   */
 
   //Actualziar lista de clientes
   Future<void> actualizarclientes({Function(Clientes)? onClienteAdded,Function(int)? TotalClientes}) async{

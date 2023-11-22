@@ -1279,74 +1279,53 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
         content:
         Column(
           children: [
-            StreamBuilder(
-                stream: db.collection("SOLICITUDES").doc(solicitud.idcotizacion.toString()).collection("COTIZACIONES").snapshots(),
-                builder: (context,snapshot){
-                  if(!snapshot.hasData) return Text('CARGANDO NO HAY NADA');
-                  List<Cotizacion> cotizaciones = [];
-                  for(var doc in snapshot.data!.docs){
-                    final data = doc.data() as Map<String,dynamic>;
-                    Cotizacion cotizacion = Cotizacion(
-                      data['Cotizacion'],
-                      data['uidtutor'],
-                      data['nombretutor'],
-                      data['Tiempo confirmacion'],
-                      data['Comentario Cotización']?.toString(),
-                      data['Agenda'],
-                      data.containsKey('fechaconfirmacion') ? data['fechaconfirmacion'].toDate() : DateTime.now(), // Maneja el caso en que no existe fechaconfirmacion
-                    );
-                    numerocotizaciones = snapshot.data!.size;
-                    cotizaciones.add(cotizacion);
-                  }
-                  return Container(
-                    height: 350,
-                    child: ListView.builder(
-                        itemCount: cotizaciones.length,
-                        itemBuilder: (context,subIndex){
-                          Cotizacion cotizacion = cotizaciones[subIndex];
+          Container(
+          height: 350,
+          child: ListView.builder(
+              itemCount: solicitud.cotizaciones.length,
+              itemBuilder: (context,subIndex){
+                Cotizacion cotizacion = solicitud.cotizaciones[subIndex];
 
-                          return Container(
-                            height: 150,
-                            child: Card(
-                              child:
-                              Column(
-                                children: [
-                                  //Nombre de tutor y precio cobrado
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(child: Text(cotizacion.nombretutor)),
-                                      Expanded(child: Text(cotizacion.cotizacion.toString()))
-                                    ],
-                                  ),
-                                  //Tiempo en dar respuesta
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(child: Text("${cotizacion.tiempoconfirmacion.toString()} minutos")),
-                                      Expanded(child: Text('Fecha max confirmación')),
-                                      GestureDetector(child: Icon(FluentIcons.add),
-                                        onTap: () async {
-                                          print("Vamos a agendar con el tutor");
-                                          //caragamos el dialog y despues de cargar el Dialog vamos  a confuirmar la solicitud
-                                          identificadorcodigo(solicitud.servicio);
-                                          codigocontabilidad(solicitud);
-                                          agendartrabajo(context,solicitud,cotizacion);
-                                        },
-                                      )
-                                    ],
-                                  ),
-                                  Text(cotizacion.comentariocotizacion!),
-                                ],
-                              ),
-
-                            ),
-                          );
-                        }
+                return Container(
+                  height: 150,
+                  child: Card(
+                    child:
+                    Column(
+                      children: [
+                        //Nombre de tutor y precio cobrado
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text(cotizacion.nombretutor)),
+                            Expanded(child: Text(cotizacion.cotizacion.toString()))
+                          ],
+                        ),
+                        //Tiempo en dar respuesta
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(child: Text("${cotizacion.tiempoconfirmacion.toString()} minutos")),
+                            Expanded(child: Text('Fecha max confirmación')),
+                            GestureDetector(child: Icon(FluentIcons.add),
+                              onTap: () async {
+                                print("Vamos a agendar con el tutor");
+                                //caragamos el dialog y despues de cargar el Dialog vamos  a confuirmar la solicitud
+                                identificadorcodigo(solicitud.servicio);
+                                codigocontabilidad(solicitud);
+                                agendartrabajo(context,solicitud,cotizacion);
+                              },
+                            )
+                          ],
+                        ),
+                        Text(cotizacion.comentariocotizacion!),
+                      ],
                     ),
-                  );
-                }
-            ),
+
+                  ),
+                );
+              }
+          ),
+        ),
           ],
         ),
         actions: [

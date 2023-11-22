@@ -130,7 +130,7 @@ class LoadData {
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
       print("numero obtenido $numDocumentos");
-      yield numDocumentos + 472;
+      yield numDocumentos + 473;
     }
   }
 
