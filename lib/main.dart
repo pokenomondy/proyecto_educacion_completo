@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return const LoginPage();//InitPage();
+            return const LoginPage();//LoginPage();//InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(
