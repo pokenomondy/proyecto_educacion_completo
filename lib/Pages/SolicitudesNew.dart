@@ -27,6 +27,7 @@ import '../Objetos/Objetos Auxiliares/HistorialEstado.dart';
 import '../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../Objetos/Tutores_objet.dart';
 import '../Utils/Disenos.dart';
+import '../Config/elements.dart';
 
 class SolicitudesNew extends StatefulWidget {
   @override
@@ -793,7 +794,18 @@ class _CrearContainerState extends State<_CrearContainer> {
                   return Center(child: Text('cargando'));
                 }
                 List<Solicitud>? solicitudesList = snapshot.data;
-                return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);
+                return Container(
+                  height: widget.height,
+                  child: ListView.builder(
+                      itemCount: solicitudesList?.length,
+                      itemBuilder: (context, index) {
+                        Solicitud? solicitud = solicitudesList?[index];
+
+                        return TarjetaSolicitudes(solicitud: solicitud!);
+                      }
+                  ),
+                );
+                //return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);
               },
             ),
           ],
