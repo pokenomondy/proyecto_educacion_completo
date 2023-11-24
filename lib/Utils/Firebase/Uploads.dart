@@ -16,6 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Pages/Contabilidad/Pagos.dart';
+import 'CollectionReferences.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -25,14 +26,12 @@ import 'StreamBuilders.dart';
 
 class Uploads{
   final db = FirebaseFirestore.instance; //inicializar firebase
+  CollectionReferencias referencias =  CollectionReferencias();
 
   //añadir servicio
   void addServicio (String servicio,String cotizacion,int idcotizacion,String materia, String carrera,DateTime fechaentrega, String resumen, String infocliente, int cliente,String urlarchivo) async{
-  //Actualizador revisar
-  db.collection("ACTUALIZACION").doc("ACTUALIZADORES").update({'fecha_servicios': DateTime.now()});
   DateTime fechaactualizacion = DateTime.now();
-  //  
-  CollectionReference solicitud = db.collection('SOLICITUDES');
+  CollectionReference solicitud = referencias.solicitudes;
   List<Cotizacion> cotizaciones = [];
   Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now());
   print("subido con exito servicio $idcotizacion");
@@ -41,8 +40,7 @@ class Uploads{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
   List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-  List solicitudList = CarreraData.map((tutorData) =>
-      Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
+  List solicitudList = CarreraData.map((tutorData) => Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
   solicitudList.add(newservice);
   //Ahora guardamos la lista
   String solicitudesJsondos = jsonEncode(solicitudList);
@@ -64,7 +62,7 @@ class Uploads{
       variable = "infocliente";
     }
 
-    CollectionReference solicitud = db.collection('SOLICITUDES');
+    CollectionReference solicitud = referencias.solicitudes;
     if(index!=3){
       uploadinformacion = {
         '$variable': texto,
@@ -90,7 +88,7 @@ class Uploads{
 //añadir cotización
   Future<void> addCotizacion(int idcotizacion,int cotizacion,String uidtutor,String nombretutor,int tiempoconfirmacion, String comentariocotizacion, String Agenda, DateTime fechaconfirmacion) async {
     List<Cotizacion> cotizaciones = [];
-    DocumentReference cotizacionReference = db.collection("SOLICITUDES").doc(idcotizacion.toString());
+    DocumentReference cotizacionReference = referencias.solicitudes.doc(idcotizacion.toString());
     Cotizacion newcotizacion = Cotizacion(cotizacion, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
     await cotizacionReference.update({
       'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
@@ -112,7 +110,7 @@ class Uploads{
   //añadir servicio agendado
   Future<void> addServicioAgendado(String codigo,String sistema,String materia,String cliente,int preciocobrado,DateTime fechaentrega,String tutor,int preciotutor,String identificadorcodigo,int idsolicitud, int numerocontabilidadagenda,String entregado) async {
     DateTime fechasistema = DateTime.now();
-    CollectionReference contabilidad = db.collection('CONTABILIDAD');
+    CollectionReference contabilidad = referencias.contabilidad;
     List<RegistrarPago> pagos = [];
     ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[]);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
@@ -132,7 +130,7 @@ class Uploads{
   //modificar un servicio agendado
   Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
     String variable = "";
-    CollectionReference contabilidad = db.collection("CONTABILIDAD");
+    CollectionReference contabilidad = referencias.contabilidad;
     Map<String, dynamic> uploadinformacion = {};
     if(index == 1){
       variable = "materia";
@@ -173,7 +171,7 @@ class Uploads{
   //Entregar trabajos tutores
   Future<void> modifyServicioAgendadoEntregado(String codigo)async {
     print("entregado de tutor");
-    CollectionReference contabilidad = db.collection("CONTABILIDAD");
+    CollectionReference contabilidad = referencias.contabilidad;
     Map<String, dynamic> uploadinformacion = {};
     uploadinformacion = {
       "entregadotutor": "ENTREGADO",
@@ -183,7 +181,7 @@ class Uploads{
   //Entregar trabajos clientes
   Future<void> modifyServicioAgendadoEntregadoCliente(String codigo)async {
     print("entregado de Cliente");
-    CollectionReference contabilidad = db.collection("CONTABILIDAD");
+    CollectionReference contabilidad = referencias.contabilidad;
     Map<String, dynamic> uploadinformacion = {};
     uploadinformacion = {
       "entregadocliente": "ENTREGADO",
@@ -192,7 +190,7 @@ class Uploads{
   }
 
   void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
-    CollectionReference tutor = db.collection("TUTORES");
+    CollectionReference tutor = referencias.tutores;
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
     Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR");
@@ -230,7 +228,7 @@ class Uploads{
       };
     }
 
-    CollectionReference tutores = db.collection('TUTORES');
+    CollectionReference tutores = referencias.tutores;
     await tutores.doc(tutor.uid).update(uploadinformacion);
 
     //Modificar
@@ -249,7 +247,7 @@ class Uploads{
 
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
-    CollectionReference cuentas = db.collection("TUTORES").doc(uidtutor.toString()).collection("CUENTAS");
+    CollectionReference cuentas = referencias.tutores;
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
     print("Subido nueva cuenta bancaria");
     await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
@@ -268,7 +266,7 @@ class Uploads{
   }
   //Subir materia de tutor
   void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
-    CollectionReference materias = db.collection("TUTORES").doc(uidtutor.toString()).collection("MATERIA");
+    CollectionReference materias = referencias.tutores.doc(uidtutor.toString()).collection("MATERIA");
     Materia newmateria = Materia(nombremateria);
     await materias.doc(nombremateria).set(newmateria.toMap());
     //Actualizar de forma local
@@ -289,7 +287,7 @@ class Uploads{
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {
-    CollectionReference cliente = db.collection("CLIENTES");
+    CollectionReference cliente = referencias.clientes;
     Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now());
     await cliente.doc(numero.toString()).set(newcliente.toMap());
     //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
@@ -307,7 +305,7 @@ class Uploads{
   //actualizar prospecto a cliente
   Future<void> prospectoacliente(String nombreCliente, String nombrecompletoCliente, int numero ) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    CollectionReference cliente = db.collection("CLIENTES");
+    CollectionReference cliente = referencias.clientes;
     Map<String, dynamic> datosActualizados = {
       "nombreCliente": nombreCliente,
       "nombrecompletoCliente": nombrecompletoCliente,
@@ -332,7 +330,7 @@ class Uploads{
   Future<void> addPago(int idconfirmacion, ServicioAgendado servicio, String tipopago, int valor, String referencia, DateTime fechapago, String metodopago, BuildContext context) async {
     List<RegistrarPago> pagos = [];
     int numeropagosregistrados = await obtenerNumeroDePagosRegistrados(idconfirmacion);
-    DocumentReference pagoReference = db.collection("CONTABILIDAD").doc(servicio.codigo);
+    DocumentReference pagoReference = referencias.contabilidad.doc(servicio.codigo);;
     RegistrarPago newpago = RegistrarPago(servicio.codigo, tipopago, valor, referencia, fechapago, metodopago, "$numeropagosregistrados-$referencia",DateTime.now());
     // Actualizar la lista de pagos en el documento del servicio agendado
     if(tipopago == "REEMBOLSOCLIENTE"){
@@ -374,7 +372,7 @@ class Uploads{
   }
   //Modificar servicio cancelado en base de datos y forma local
   Future<void> modificarcancelado(int idcotizacion,int preciocobrado,int preciotutor) async {
-    CollectionReference solicitud = db.collection("CONTABILIDAD");
+    CollectionReference solicitud = referencias.contabilidad;
     DocumentSnapshot serviciosnapshot = await solicitud.doc(idcotizacion.toString()).get();
     Map<String, dynamic> servicioData = serviciosnapshot.data() as Map<String, dynamic>;
 
@@ -408,7 +406,7 @@ class Uploads{
   }
   //Agregar carrera a tabla
   Future<void> addCarrera(String nombrecarrera) async {
-    CollectionReference carreraCollection = db.collection("TABLAS").doc("TABLAS").collection("CARRERAS");
+    CollectionReference carreraCollection = referencias.tablascarreras;
     Carrera newcarrera = Carrera(nombrecarrera);
     await carreraCollection.doc(nombrecarrera).set(newcarrera.toMap());
     //Obtenemos tablas de carreras agregadas
@@ -424,7 +422,7 @@ class Uploads{
   }
   //Agregar unversidad a tabla
   Future<void> addUniversidad(String nombreuniversidad) async {
-    CollectionReference universidadCollection = db.collection("TABLAS").doc("TABLAS").collection("UNIVERSIDADES");
+    CollectionReference universidadCollection = referencias.tablasuniversidades;
     Universidad newuniversidad = Universidad(nombreuniversidad);
     await universidadCollection.doc(nombreuniversidad).set(newuniversidad.toMap());
     //Obtenemos tablas de carreras agregadas
@@ -440,7 +438,7 @@ class Uploads{
   }
   //Envíar configuración inicial
   Future<void> uploadconfiginicial(String Primarycolor,String Secundarycolor,String nombre_empresa) async{
-    CollectionReference actualizadores = db.collection("ACTUALIZACION");
+    CollectionReference actualizadores = referencias.configuracion;
     Map<String, dynamic> uploadconfiguracion = {
       'Primarycolor':  Primarycolor,
       'Secundarycolor':  Secundarycolor,
@@ -455,7 +453,7 @@ class Uploads{
   }
   //uploadmsgs
   Future<void> uploadconfigmensaje(String text, String s) async{
-    CollectionReference actualizadores = db.collection("ACTUALIZACION");
+    CollectionReference actualizadores = referencias.configuracion;
     Map<String, dynamic> uploadconfiguracion = {
       '$s':  text,
     };

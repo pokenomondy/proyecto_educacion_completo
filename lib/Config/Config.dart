@@ -38,7 +38,12 @@ class Config {
   Future<void> initConfig() async {
     configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
     configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
-    rol = await LoadData().verificar_rol(currentUser!);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      rol = await LoadData().verificar_rol(currentUser);
+    } else {
+      // Manejar el caso en que currentUser es nulo.
+    }
     configuracion_mensajes = await LoadData().configuracion_mensajes();
     tiempoActualizacion = await LoadData().tiempoactualizacion();
 
@@ -96,7 +101,7 @@ class Config {
   String apiurl =  "https://graph.facebook.com/v17.0/134108179779463/messages";
   //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
   //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.
-  bool dufyadmon = true;
+  static const bool dufyadmon = false;
   //Para cambiar de base de datos, se debe cambiar esto a false, y luego se debe cambiar el inicializador del main, con eso ya estaría
   //correcto.
 

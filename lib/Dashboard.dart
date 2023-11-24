@@ -84,7 +84,7 @@ class DashboardState extends State<Dashboard> {
             child:   Row(
               children: [
                 Text(configuracion.nombreempresa, style: TextStyle(fontSize: 32),),
-                Text("tiempo ${configuracion.tiempoActualizacion.inMinutes.toString()}", style: TextStyle(fontSize: 15),),
+                Text("Dufy Amor", style: TextStyle(fontSize: 15),),
               ],
             ),
           ),

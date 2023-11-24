@@ -1,4 +1,5 @@
 import 'package:dashboard_admin_flutter/Dashboard.dart';
+import 'package:dashboard_admin_flutter/Pages/Contabilidad/Pagos.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/ConfigInicial.dart';
 import 'package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,6 +7,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'Config/Config.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
@@ -27,13 +29,29 @@ void main() async {
           messagingSenderId: "350250942752",
           appId: "1:350250942752:web:f8d0492c9cea9669dd1745",
           measurementId: "G-MH2TEMC9DB"
-      )
+      ),
   );
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+        apiKey: "AIzaSyA_xNYL-1mikJJCsB8EQjNg6DyeKdNWyww",
+        authDomain: "liba-education-app.firebaseapp.com",
+        projectId: "liba-education-app",
+        storageBucket: "liba-education-app.appspot.com",
+        messagingSenderId: "1854378948",
+        appId: "1:1854378948:web:82d700cb65df601544ca91",
+        measurementId: "G-BZKDF684XY"
+    ),
+    name: 'LIBADB'
+  );
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => MateriasProvider()),
         ChangeNotifierProvider(create: (context) => CuentasProvider()),
+        ChangeNotifierProvider(create: (context) => HistorialProvider()),
+        ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
+
       ],
       child: MyApp(),
     ),
@@ -42,6 +60,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
 
+  Config configuracion = Config();
   Solicitud solicitudVacia = Solicitud.empty();
 
 
@@ -54,7 +73,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return const LoginPage();//LoginPage();//InitPage();
+            return (Config.dufyadmon)? LoginPage():InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(

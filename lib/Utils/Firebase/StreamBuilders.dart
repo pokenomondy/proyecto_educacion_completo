@@ -5,12 +5,14 @@ import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/RegistrarPago.dart';
+import 'CollectionReferences.dart';
 
 class stream_builders{
+  CollectionReferencias referencias =  CollectionReferencias();
 
   //Streambuilders de servicios agendados
   Stream<List<ServicioAgendado>> getServiciosAgendados() async* {
-    CollectionReference refcontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
+    CollectionReference refcontabilidad = referencias.contabilidad;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
 
@@ -127,7 +129,7 @@ class stream_builders{
 
   //Obtener contabilidad en stream, servicios AGENDADOA
   Stream<List<ServicioAgendado>> getServiciosAgendadosTutor(String nombretutor) async* {
-    CollectionReference refcontabilidad = FirebaseFirestore.instance.collection("CONTABILIDAD");
+    CollectionReference refcontabilidad = referencias.contabilidad;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Stream<QuerySnapshot> queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor).snapshots();
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {

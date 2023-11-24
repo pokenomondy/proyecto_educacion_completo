@@ -55,7 +55,9 @@ class PageCargandoState extends State<PageCargando> {
 
   //Load datos regularmente
   Future <void> cargaregular() async{
+
     //Actualizamos clientes
+    /*
     await ActualizarInformacion().actualizarclientes(
         onClienteAdded: (Clientes clienteactualizacion){
           setState(() {
@@ -68,6 +70,8 @@ class PageCargandoState extends State<PageCargando> {
           TotalCliente = Total;
       }
     );
+
+     */
     /*
     //Actualizamos solicitudes
     await ActualizarInformacion().actualizarsolicitudes(
@@ -82,6 +86,7 @@ class PageCargandoState extends State<PageCargando> {
 
      */
     //Actualizar tutores
+    /*
     await ActualizarInformacion().actualizartutores(
         onTutorAdded: (Tutores tutoractualizacion){
           setState(() {
@@ -91,6 +96,8 @@ class PageCargandoState extends State<PageCargando> {
           });
         }
     );
+
+     */
 
     //actualizar tabla de materias
     //actualizar carreras
