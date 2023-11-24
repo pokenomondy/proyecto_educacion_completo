@@ -96,6 +96,13 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
               ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
               //Secundary Color
               ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
+
+                style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
+              ),
+              //Primary Color
+            ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
+              //Secundary Color
+            ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
               //Solicitudes con Drive Api
               if(configuracion.SolicitudesDriveApi==true)
                 Column(

@@ -7,28 +7,35 @@ import 'package:intl/intl.dart';
 class TarjetaSolicitudes extends StatelessWidget{
 
   final Solicitud solicitud;
-  final double width;
-  final double heigth;
+  late double width;
   final Color cardColor;
   final double tamanio;
 
-  const TarjetaSolicitudes({
+  TarjetaSolicitudes({
     Key?key,
     required this.solicitud,
     this.width = 400,
-    this.heigth = 175,
     this.cardColor = const Color(0xFF235FD9),
     this.tamanio = 15,
   }):super(key: key);
 
+  static const double definedWidth = 320;
+  static const double constant = -1/830;
+
   @override
   Widget build(BuildContext context){
     final double calculatedHeigth = heigth + (solicitud.resumen.length / 60).floor() * 20;
+    if(width<=300){
+      width=300;
+    }
+    final double numeroLetras = 1/3000 * ( width * width);
+    final int contarSaltos = solicitud.resumen.isEmpty ? 0 : (solicitud.resumen.length / numeroLetras).floor() + solicitud.resumen.split('\n').length - 1;
+    final double resumenHeigth = (-1/8000 * (width * width)) + 70 + (contarSaltos * tamanio);
+    final double height = width >= 448 ? 75 + resumenHeigth: (constant * (width * width) + definedWidth) + resumenHeigth;
     final ThemeApp theme = ThemeApp();
-
     return ItemsCard(
       width: width,
-      height: calculatedHeigth,
+      height: height,
       shadow: false,
       verticalPadding: 15,
       horizontalPadding: 20,
@@ -52,6 +59,7 @@ class TarjetaSolicitudes extends StatelessWidget{
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: ItemsCard(
               width: width,
+              height: resumenHeigth,
               shadow: false,
               margin: 0,
               border: 10,
@@ -75,7 +83,7 @@ class TarjetaSolicitudes extends StatelessWidget{
                     )
                   ],
                 ),
-                Text(solicitud.resumen, style: theme.styleText(tamanio - 1, false, theme.whitecolor),)
+                Text(solicitud.resumen.isEmpty ? "Sin resumen" : solicitud.resumen, style: theme.styleText(tamanio - 1, false, theme.whitecolor),)
               ]
           ),
         ),
