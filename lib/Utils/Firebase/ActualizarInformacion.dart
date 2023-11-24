@@ -12,7 +12,7 @@ import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Tutores_objet.dart';
 
 class ActualizarInformacion {
-
+  /*
   //Actualizar Tutores
   Future <void> actualizartutores({Function(Tutores)? onTutorAdded}) async {
     print("Actualizando información de tutores en firebase");
@@ -287,4 +287,6 @@ class ActualizarInformacion {
       prefs.setString('clientes_list', updatedTutoresJson);
     }
   }
+
+   */
 }

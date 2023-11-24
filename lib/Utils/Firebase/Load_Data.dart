@@ -19,13 +19,15 @@ import 'package:googleapis/driveactivity/v2.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
+import 'CollectionReferences.dart';
 
 class LoadData {
   final db = FirebaseFirestore.instance; //inicializar firebase
+  CollectionReferencias referencias =  CollectionReferencias();
 
   //Obtener solicitudes en stream
   Stream<List<Solicitud>> getsolicitudstream(String estado) async* {
-    CollectionReference refsolicitudes = FirebaseFirestore.instance.collection("SOLICITUDES");
+    CollectionReference refsolicitudes = referencias.solicitudes;
     Stream<QuerySnapshot> querySolicitud = refsolicitudes.where('Estado', isEqualTo: estado).snapshots();
 
     await for (QuerySnapshot solicitudSnapshot in querySolicitud) {
@@ -92,41 +94,9 @@ class LoadData {
     }
   }
 
-  Stream<List<Cotizacion>> getcotizaciones(int idcotizacion) async* {
-    CollectionReference refcotizacion = FirebaseFirestore.instance.collection(
-        "SOLICITUDES").doc(idcotizacion.toString()).collection("COTIZACIONES");
-    Stream<QuerySnapshot> querycotizacion = refcotizacion.snapshots();
-
-    await for (QuerySnapshot cotizacionSnapshot in querycotizacion) {
-      List<Cotizacion> cotizacionList = [];
-      for (var cotizacionDoc in cotizacionSnapshot.docs) {
-        int cotizacion = cotizacionDoc['Cotizacion'];
-        String uidtutor = cotizacionDoc['uidtutor'];
-        String nombretutor = cotizacionDoc['nombretutor'];
-        int? tiempoconfirmacion = cotizacionDoc['Tiempo confirmacion'];
-        String? comentariocotizacion = cotizacionDoc['Comentario Cotización'];
-        String? Agenda = cotizacionDoc['Agenda'];
-        DateTime fechaconfirmacion = cotizacionDoc.data()
-            .toString()
-            .contains('fechaconfirmacion') ? cotizacionDoc.get(
-            'fechaconfirmacion').toDate() : DateTime.now();
-        Cotizacion newcotizacion = Cotizacion(
-            cotizacion,
-            uidtutor,
-            nombretutor,
-            tiempoconfirmacion,
-            comentariocotizacion,
-            Agenda,
-            fechaconfirmacion);
-        cotizacionList.add(newcotizacion);
-      }
-      yield cotizacionList;
-    }
-  }
-
   //Obtener en tiempo real, numero de servicio a publicar
   Stream<int> cargarnumerodesolicitudes() async* {
-    CollectionReference referencesolicitudes = db.collection("SOLICITUDES");
+    CollectionReference referencesolicitudes = referencias.solicitudes;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
       print("numero obtenido $numDocumentos");
@@ -136,7 +106,7 @@ class LoadData {
 
   //Obtener numero de contabilidades en tiempo real
   Stream<int> cargarnumerocontabilidad() async* {
-    CollectionReference referencecontabilidad = db.collection("CONTABILIDAD");
+    CollectionReference referencecontabilidad = referencias.contabilidad;
     await for (QuerySnapshot snapshot in referencecontabilidad.snapshots()){
       int numDocumentos = snapshot.size;
       print("numero obtenido $numDocumentos");
@@ -144,24 +114,13 @@ class LoadData {
     }
   }
 
-  /*
-  //Guardar Solicitudes
-  Future guardardatosSolicitudes(List<Solicitud> solicitudesList) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    print("se guardan datos de parciales");
-    String solicitudesJson = jsonEncode(solicitudesList);
-    await prefs.setString('solicitudes_List', solicitudesJson);
-    await prefs.setBool('datos_descargados_lista_solicitudes', true);
-  }
-   */
-
   //Tablas de materias
   Future tablasmateria() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablamateria') ?? false;
     if (!datosDescargados) {
       print("a descargar materias por primera vez");
-      CollectionReference referencetablamaterias = await FirebaseFirestore.instance.collection("TABLAS").doc("TABLAS").collection("MATERIAS");
+      CollectionReference referencetablamaterias = referencias.tablasmaterias;
       QuerySnapshot queryMaterias = await referencetablamaterias.get();
       List<Materia> materiaList = [];
 
@@ -198,8 +157,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
       print("a descargar clientes por primera vez");
-      CollectionReference referencetablaclientes = await FirebaseFirestore
-          .instance.collection("CLIENTES");
+      CollectionReference referencetablaclientes = referencias.clientes;
       QuerySnapshot queryClientes = await referencetablaclientes.get();
       List<Clientes> clientesList = [];
       int totalClietnesFirebase = queryClientes.size;
@@ -249,8 +207,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
       print("a descargar tutores por primera vez");
-      CollectionReference referencetablaclientes = await FirebaseFirestore
-          .instance.collection("TUTORES");
+      CollectionReference referencetablaclientes = referencias.tutores;
       QuerySnapshot queryTutores = await referencetablaclientes.get();
       List<Tutores> tutoresList = [];
       int TotalTutoresFirebase = 0;
@@ -342,8 +299,7 @@ class LoadData {
         false;
     if (!datosDescargados) {
       print("a descargar carreras por priemra vez");
-      CollectionReference referencetablascarrera = await FirebaseFirestore
-          .instance.collection("TABLAS").doc("TABLAS").collection("CARRERAS");
+      CollectionReference referencetablascarrera = referencias.tablascarreras;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Carrera> carreraList = [];
       for (var CarreraDoc in QueryCarreras.docs) {
@@ -378,9 +334,7 @@ class LoadData {
         'datos_descargados_listauniversidades') ?? false;
     if (!datosDescargados) {
       print("a descargar universidades por priemra vez");
-      CollectionReference referencetablascarrera = await FirebaseFirestore
-          .instance.collection("TABLAS").doc("TABLAS").collection(
-          "UNIVERSIDADES");
+      CollectionReference referencetablascarrera = await referencias.tablasuniversidades;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Universidad> universidadList = [];
       for (var CarreraDoc in QueryCarreras.docs) {
@@ -415,7 +369,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
     if (!datosDescargados) {
       print("descagando por primera vez");
-      CollectionReference referencetablassolicitud = await FirebaseFirestore.instance.collection("SOLICITUDES");
+      CollectionReference referencetablassolicitud = referencias.solicitudes;
       QuerySnapshot QuerySolicitud = await referencetablassolicitud.get();
       List<Solicitud> solicitudList = [];
       int TotalSolciitudesFirebase = QuerySolicitud.size;
@@ -497,7 +451,7 @@ class LoadData {
 
     if (!datosDescargados) {
       try {
-        DocumentSnapshot getconfiguracioninicial = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("CONFIGURACION").get();
+        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion.doc("CONFIGURACION").get();
 
         if (getconfiguracioninicial.exists) {
           String primaryColor = getconfiguracioninicial.get('Primarycolor') ?? '';
@@ -546,7 +500,7 @@ class LoadData {
     if (!datosDescargados) {
       try {
         print("descarngado plugins");
-        DocumentSnapshot getplugins = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("Plugins").get();
+        DocumentSnapshot getplugins = await referencias.configuracion.doc("Plugins").get();
         if (getplugins.exists) {
           bool PagosDriveApi = getplugins.get('PagosDriveApi') ?? '';
           bool SolicitudesDriveApi = getplugins.get('SolicitudesDriveApi') ?? '';
@@ -604,7 +558,7 @@ class LoadData {
 
     if (!datosDescargados) {
       try {
-        DocumentSnapshot getconfiguracioninicial = await FirebaseFirestore.instance.collection("ACTUALIZACION").doc("MENSAJES").get();
+        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion.doc("MENSAJES").get();
 
         if (getconfiguracioninicial.exists) {
           String msjsolicitudes = getconfiguracioninicial.get('SOLICITUD') ?? '';
@@ -648,7 +602,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
     if (!datosDescargados) {
       print("Datos de tutor de cero");
-      DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+      DocumentSnapshot getutoradmin = await referencias.tutores.doc(currentUser?.uid).get();
       String nametutor = getutoradmin.get('nombre Whatsapp');
       String Correo_gmail = getutoradmin.get('Correo gmail');
       Map<String, dynamic> datos_tutor = {
@@ -678,7 +632,7 @@ class LoadData {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
     if(!datosDescargados){
-      DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+      DocumentSnapshot getutoradmin = await referencias.tutores.doc(currentUser?.uid).get();
       String rol = getutoradmin.get('rol') ?? '';
       await prefs.setString('rol_usuario', rol);
       await prefs.setBool('datos_Descargados_verificar_rol', true);
@@ -691,58 +645,31 @@ class LoadData {
 
   }
 
-  /*
-  Future verificar_tiempos_Cache() async{
-    Map<String, dynamic> servicioData = {};
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
-    if (solicitudesJson.isNotEmpty) {
-      Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-      //Verificador de tiempo
-      DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
-      Duration diferenciaTiempo = DateTime.now().difference(verificador);
-      print("tiempo recorrido ${diferenciaTiempo.inMinutes}");
-      //Reiniciar todas las variables de configuración, por si acaso
-      CollectionReference actualizacion = db.collection("ACTUALIZACION");
-      servicioData['verificadoractualizar'] = DateTime.now();
-      await actualizacion.doc("Plugins").update(servicioData);
-      tiempoactualizacion();
-      if(diferenciaTiempo.inMinutes >= 300){
-        //Revisar clientes
-        ActualizarInformacion().actualizarclientes();
-        //Revisar tablas de materias y carreras
-
-        //Revisar solicitudes para actualización
-        //ActualizarInformacion().actualizarsolicitudes();
-        //Revisar tutores ? Quiero los de tutores
-        //ActualizarInformacion().actualizartutores();
-        //Revisar pagos?
-
-        //Revisar plugins -- Licencias
-        await prefs.setBool('datos_descargados_plugins', false);
-        await configuracion_plugins();
-        //Revisar configuración inicial
-
-        //Revisar configuración de mensajes
-
-        return configuracion;
-      }else{
-        return configuracion;
-      }
-    } else {
-      return {};
-    }
-  }
-
-   */
-
-  Future tiempoactualizacion()async{
+  Future tiempoactualizacion() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
     Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
     DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
     Duration diferenciaTiempo = DateTime.now().difference(verificador);
     return diferenciaTiempo;
+  }
+
+  //Cargar lista de emrpesas y contraseñas
+  Future cargaListaEmpresas() async{
+    CollectionReference referencelistaempresas = referencias.listaEmpresas;
+    QuerySnapshot querylistaEmpresas = await referencelistaempresas.get();
+    List<Map<String, dynamic>> listaClaves = [];
+    for (var EmpresaDoc in querylistaEmpresas.docs){
+      String Contrasena = EmpresaDoc['Contrasena'];
+      String Empresa = EmpresaDoc['Empresa'];
+      Map<String, dynamic> mapaEmpresa = {
+        'Contrasena': Contrasena,
+        'Empresa': Empresa,
+      };
+      listaClaves.add(mapaEmpresa);
+    }
+
+    return listaClaves;
   }
 }
 

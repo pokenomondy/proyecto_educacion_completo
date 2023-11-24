@@ -24,6 +24,7 @@ class TarjetaSolicitudes extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+    final double calculatedHeigth = heigth + (solicitud.resumen.length / 60).floor() * 20;
     if(width<=300){
       width=300;
     }
@@ -32,7 +33,6 @@ class TarjetaSolicitudes extends StatelessWidget{
     final double resumenHeigth = (-1/8000 * (width * width)) + 70 + (contarSaltos * tamanio);
     final double height = width >= 448 ? 75 + resumenHeigth: (constant * (width * width) + definedWidth) + resumenHeigth;
     final ThemeApp theme = ThemeApp();
-
     return ItemsCard(
       width: width,
       height: height,

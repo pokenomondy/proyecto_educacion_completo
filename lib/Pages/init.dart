@@ -1,5 +1,8 @@
 import "package:dashboard_admin_flutter/Config/strings.dart";
+import "package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart";
+import "package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart";
 import "package:flutter/material.dart";
+import "package:shared_preferences/shared_preferences.dart";
 import "../Config/theme.dart";
 
 class InitPage extends StatefulWidget{
@@ -9,6 +12,25 @@ class InitPage extends StatefulWidget{
 }
 
 class InitPageState extends State<InitPage>{
+  List<Map<String, dynamic>> listaClaves = [];
+
+
+  @override
+  void initState() {
+    loadclaves();
+    super.initState();
+  }
+
+  Future loadclaves() async{
+    listaClaves = await LoadData().cargaListaEmpresas();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? nombre_empresa = prefs.getString("Nombre_Empresa");
+    if (nombre_empresa != null) {
+      _redireccionALogin(nombre_empresa);
+    }
+  }
+
+
   @override
   Widget build(BuildContext context){
     final ThemeApp theme = ThemeApp();
@@ -38,7 +60,7 @@ class InitPageState extends State<InitPage>{
           ),
           PrimaryStyleButton(
               function: (){
-                print(textController.text);
+                verificarEmpresa(textController.text);
               },
               text: "Iniciar con empresa"
           ),
@@ -49,5 +71,46 @@ class InitPageState extends State<InitPage>{
         ],
       ),
     );
+  }
+
+  void verificarEmpresa(String contrasena) async {
+    // Verificar si la contraseña está en la lista de claves
+    bool contrasenaCorrecta = false;
+    String nombreEmpresa = '';
+
+    for (var empresa in listaClaves) {
+      if (empresa['Contrasena'] == contrasena) {
+        contrasenaCorrecta = true;
+        nombreEmpresa = empresa['Empresa'];
+        break;
+      }
+    }
+
+    if (contrasenaCorrecta) {
+      print("Contraseña correcta. Nombre de la empresa: $nombreEmpresa");
+      //vamos a guardar de forma local esta contraseña
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString("Nombre_Empresa", nombreEmpresa);
+      RedireccionaALogin();
+    } else {
+      print("Contraseña incorrecta. Inténtelo de nuevo.");
+    }
+  }
+
+  void RedireccionaALogin() async {
+    // Si no está vacío, redirige a LoginPage
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
+  void _redireccionALogin(String nameEmpresa) async{
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    });
   }
 }
