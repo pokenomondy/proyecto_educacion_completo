@@ -15,6 +15,8 @@ import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'package:intl/intl.dart';
 
+import 'Utils/Firebase/CollectionReferences.dart';
+
 class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
   final Solicitud solicitud;
@@ -39,8 +41,10 @@ class DashboardState extends State<Dashboard> {
   bool configloaded = false;
   bool configloadedos = false;
   bool showDetallesSolicitud = false;
-  final currentUser = FirebaseAuth.instance.currentUser;
   String rol = "";
+  CollectionReferencias referencias =  CollectionReferencias();
+  User? currentUser;
+
 
   @override
   void initState() {
@@ -57,10 +61,9 @@ class DashboardState extends State<Dashboard> {
 
   void cargarprimeravez() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? false;
+    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? true;
+    currentUser = referencias.authdireccion!.currentUser;
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +71,20 @@ class DashboardState extends State<Dashboard> {
       print("Cargando configuración inicial");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
       return Text('cargando'); // Ejemplo de indicador de carga
+      /*
     }else if(entraprimeravez == false){
+      print("carga porque entra por primera vez");
       return PageCargando();
     }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+      print("carga por tiempo ${configuracion.tiempoActualizacion.inMinutes}");
       return PageCargando();
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
-    }else{
+    */}
+     else{
+
       return NavigationView(
         appBar: NavigationAppBar(
           title: Container(

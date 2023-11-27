@@ -3,12 +3,13 @@ import 'package:dashboard_admin_flutter/Config/Strings.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../Config/Config.dart';
 import '../../Config/theme.dart';
-
-
+import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -21,15 +22,32 @@ import '../../Utils/Firebase/Load_Data.dart';
   class LoginPageState extends State<LoginPage> {
     final TextEditingController correo = TextEditingController();
     final TextEditingController contrasena = TextEditingController();
-    final currentUser = FirebaseAuth.instance.currentUser;
+    User? currentUser;
+    FirebaseAuth? authdirection;
+    CollectionReference? firestoredirection;
+    CollectionReferencias referencias =  CollectionReferencias();
+
 
     @override
     void initState(){
       super.initState();
+      redireccion();
+      }
+
+    Future redireccion() async{
+      if(Config.dufyadmon==true){
+        currentUser = FirebaseAuth.instance.currentUser;
+        authdirection = FirebaseAuth.instance;
+      }else{
+        currentUser =  FirebaseAuth.instanceFor(app: Firebase.app('LIBADB')).currentUser;
+        authdirection = FirebaseAuth.instanceFor(app: Firebase.app('LIBADB'));
+      }
+
       if (currentUser != null) {
-        _redireccionaDashboarc(currentUser!.uid);
+        _redireccionaDashboarc(currentUser!.uid,currentUser!,Config.dufyadmon);
       }
-      }
+
+    }
 
     @override
     Widget build(BuildContext context) {
@@ -88,9 +106,11 @@ import '../../Utils/Firebase/Load_Data.dart';
     }
 
     Future<void> login()  async {
-      //print('presionado login');
+      Map<String, dynamic> configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
+      DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
+
       try {
-        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        final credential = await authdirection!.signInWithEmailAndPassword(
             email: correo.text,
             password: contrasena.text
         );
@@ -98,20 +118,10 @@ import '../../Utils/Firebase/Load_Data.dart';
         String? uid = user?.uid;
         //Lógica si es tutor o es administrador
 
-        DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(uid).get();
+        DocumentSnapshot getutoradmin = await referencias.tutores!.doc(uid).get();
 
-        if(getutoradmin.exists){
-          String rol = getutoradmin.get('rol') ?? '';
-          //print(rol);
-          if(rol=="TUTOR"){
-            context.go('/homeTutor');
-          }else{
-            context.go('/home');
-          }
-        }else{
-          //print("vos no tenes rol, error gravisimo");
-          context.go('/home');
-        }
+        _redireccionaDashboarc(uid!,user!,Config.dufyadmon);
+
         Utiles().notificacion("Logueado con extio", context, false, "log");
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
@@ -124,9 +134,9 @@ import '../../Utils/Firebase/Load_Data.dart';
       }
     }
 
-    void _redireccionaDashboarc(String uid) async{
+    void _redireccionaDashboarc(String uid, User currentUser, bool dufyadmon) async{
       Map<String, dynamic> configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
-      DocumentSnapshot getutoradmin = await FirebaseFirestore.instance.collection("TUTORES").doc(currentUser?.uid).get();
+      DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
       print(configuracion_inicial);
 
       if(getutoradmin.exists){

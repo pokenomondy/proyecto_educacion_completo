@@ -27,7 +27,7 @@ class LoadData {
 
   //Obtener solicitudes en stream
   Stream<List<Solicitud>> getsolicitudstream(String estado) async* {
-    CollectionReference refsolicitudes = referencias.solicitudes;
+    CollectionReference refsolicitudes = referencias.solicitudes!;
     Stream<QuerySnapshot> querySolicitud = refsolicitudes.where('Estado', isEqualTo: estado).snapshots();
 
     await for (QuerySnapshot solicitudSnapshot in querySolicitud) {
@@ -96,7 +96,7 @@ class LoadData {
 
   //Obtener en tiempo real, numero de servicio a publicar
   Stream<int> cargarnumerodesolicitudes() async* {
-    CollectionReference referencesolicitudes = referencias.solicitudes;
+    CollectionReference referencesolicitudes = referencias.solicitudes!;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
       print("numero obtenido $numDocumentos");
@@ -106,7 +106,7 @@ class LoadData {
 
   //Obtener numero de contabilidades en tiempo real
   Stream<int> cargarnumerocontabilidad() async* {
-    CollectionReference referencecontabilidad = referencias.contabilidad;
+    CollectionReference referencecontabilidad = referencias.contabilidad!;
     await for (QuerySnapshot snapshot in referencecontabilidad.snapshots()){
       int numDocumentos = snapshot.size;
       print("numero obtenido $numDocumentos");
@@ -120,7 +120,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_tablamateria') ?? false;
     if (!datosDescargados) {
       print("a descargar materias por primera vez");
-      CollectionReference referencetablamaterias = referencias.tablasmaterias;
+      CollectionReference referencetablamaterias = referencias.tablasmaterias!;
       QuerySnapshot queryMaterias = await referencetablamaterias.get();
       List<Materia> materiaList = [];
 
@@ -157,7 +157,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
       print("a descargar clientes por primera vez");
-      CollectionReference referencetablaclientes = referencias.clientes;
+      CollectionReference referencetablaclientes = referencias.clientes!;
       QuerySnapshot queryClientes = await referencetablaclientes.get();
       List<Clientes> clientesList = [];
       int totalClietnesFirebase = queryClientes.size;
@@ -207,7 +207,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
       print("a descargar tutores por primera vez");
-      CollectionReference referencetablaclientes = referencias.tutores;
+      CollectionReference referencetablaclientes = referencias.tutores!;
       QuerySnapshot queryTutores = await referencetablaclientes.get();
       List<Tutores> tutoresList = [];
       int TotalTutoresFirebase = 0;
@@ -299,7 +299,7 @@ class LoadData {
         false;
     if (!datosDescargados) {
       print("a descargar carreras por priemra vez");
-      CollectionReference referencetablascarrera = referencias.tablascarreras;
+      CollectionReference referencetablascarrera = referencias.tablascarreras!;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Carrera> carreraList = [];
       for (var CarreraDoc in QueryCarreras.docs) {
@@ -334,7 +334,7 @@ class LoadData {
         'datos_descargados_listauniversidades') ?? false;
     if (!datosDescargados) {
       print("a descargar universidades por priemra vez");
-      CollectionReference referencetablascarrera = await referencias.tablasuniversidades;
+      CollectionReference referencetablascarrera = await referencias.tablasuniversidades!;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Universidad> universidadList = [];
       for (var CarreraDoc in QueryCarreras.docs) {
@@ -362,14 +362,13 @@ class LoadData {
     await prefs.setBool('datos_descargados_listauniversidades', true);
   }
 
-
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
   Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded,Function(int)? TotalSolicitudes}) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
     if (!datosDescargados) {
       print("descagando por primera vez");
-      CollectionReference referencetablassolicitud = referencias.solicitudes;
+      CollectionReference referencetablassolicitud = referencias.solicitudes!;
       QuerySnapshot QuerySolicitud = await referencetablassolicitud.get();
       List<Solicitud> solicitudList = [];
       int TotalSolciitudesFirebase = QuerySolicitud.size;
@@ -451,7 +450,7 @@ class LoadData {
 
     if (!datosDescargados) {
       try {
-        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion.doc("CONFIGURACION").get();
+        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion!.doc("CONFIGURACION").get();
 
         if (getconfiguracioninicial.exists) {
           String primaryColor = getconfiguracioninicial.get('Primarycolor') ?? '';
@@ -478,7 +477,7 @@ class LoadData {
           return {};
         }
       } catch (e) {
-        print("Error: $e");
+        print("Error: $e, config inicial 0");
         return {};
       }
     } else {
@@ -500,12 +499,8 @@ class LoadData {
     if (!datosDescargados) {
       try {
         print("descarngado plugins");
-        DocumentSnapshot getplugins = await referencias.configuracion.doc("Plugins").get();
+        DocumentSnapshot getplugins = await referencias.configuracion!.doc("Plugins").get();
         if (getplugins.exists) {
-          bool PagosDriveApi = getplugins.get('PagosDriveApi') ?? '';
-          bool SolicitudesDriveApi = getplugins.get('SolicitudesDriveApi') ?? '';
-          bool TutoresBanca = getplugins.get('TutoresBanca') ?? '';
-          bool basicoNormal = getplugins.get('basicoNormal') ?? '';
           DateTime basicoFecha = getplugins.get('basicoFecha').toDate() ?? DateTime.now();
           DateTime SolicitudesDriveApiFecha = getplugins.get('SolicitudesDriveApiFecha').toDate() ?? DateTime.now();
           DateTime PagosDriveApiFecha = getplugins.get('PagosDriveApiFecha').toDate() ?? DateTime.now();
@@ -513,10 +508,6 @@ class LoadData {
           DateTime verificador = getplugins.get('verificadoractualizar').toDate() ?? DateTime.now();
 
           Map<String, dynamic> uploadconfiguracion = {
-            'PagosDriveApi': PagosDriveApi,
-            'SolicitudesDriveApi': SolicitudesDriveApi,
-            'TutoresBanca': TutoresBanca,
-            'basicoNormal' : basicoNormal,
             'basicoFecha' : basicoFecha.toIso8601String(),
             'SolicitudesDriveApiFecha' : SolicitudesDriveApiFecha.toIso8601String(),
             'PagosDriveApiFecha' : PagosDriveApiFecha.toIso8601String(),
@@ -526,6 +517,8 @@ class LoadData {
           String solicitudesJson = jsonEncode(uploadconfiguracion);
           await prefs.setString('configuracion_plugins', solicitudesJson);
           await prefs.setBool('datos_descargados_plugins', true);
+
+          print("guardando plugins");
 
           return uploadconfiguracion;
         } else {
@@ -558,7 +551,7 @@ class LoadData {
 
     if (!datosDescargados) {
       try {
-        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion.doc("MENSAJES").get();
+        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion!.doc("MENSAJES").get();
 
         if (getconfiguracioninicial.exists) {
           String msjsolicitudes = getconfiguracioninicial.get('SOLICITUD') ?? '';
@@ -602,7 +595,7 @@ class LoadData {
     bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
     if (!datosDescargados) {
       print("Datos de tutor de cero");
-      DocumentSnapshot getutoradmin = await referencias.tutores.doc(currentUser?.uid).get();
+      DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
       String nametutor = getutoradmin.get('nombre Whatsapp');
       String Correo_gmail = getutoradmin.get('Correo gmail');
       Map<String, dynamic> datos_tutor = {
@@ -632,7 +625,7 @@ class LoadData {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
     if(!datosDescargados){
-      DocumentSnapshot getutoradmin = await referencias.tutores.doc(currentUser?.uid).get();
+      DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
       String rol = getutoradmin.get('rol') ?? '';
       await prefs.setString('rol_usuario', rol);
       await prefs.setBool('datos_Descargados_verificar_rol', true);
@@ -646,17 +639,25 @@ class LoadData {
   }
 
   Future tiempoactualizacion() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
-    Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-    DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
-    Duration diferenciaTiempo = DateTime.now().difference(verificador);
-    return diferenciaTiempo;
+    try{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
+      Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
+      DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
+      Duration diferenciaTiempo = DateTime.now().difference(verificador);
+      print(" la difrencia de tiempoe s");
+      print(diferenciaTiempo);
+      return diferenciaTiempo;
+    }catch(e){
+      print('Error en tiempoActualizacion: $e');
+      print("duracion es cero");
+      return Duration.zero;
+    }
   }
 
   //Cargar lista de emrpesas y contraseñas
   Future cargaListaEmpresas() async{
-    CollectionReference referencelistaempresas = referencias.listaEmpresas;
+    CollectionReference referencelistaempresas = referencias.listaEmpresas!;
     QuerySnapshot querylistaEmpresas = await referencelistaempresas.get();
     List<Map<String, dynamic>> listaClaves = [];
     for (var EmpresaDoc in querylistaEmpresas.docs){

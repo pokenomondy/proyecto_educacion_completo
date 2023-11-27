@@ -82,11 +82,11 @@ class MyApp extends StatelessWidget {
               },
               routes: <RouteBase>[
                 GoRoute(
-                  path: 'home',
-                  builder: (BuildContext context, GoRouterState state) {
-                    return Dashboard(showSolicitudesNew: false,solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
-                  },
-                  routes: <RouteBase>[
+                    path: 'home',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return Dashboard(showSolicitudesNew: false, solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
+                    },
+                    routes: <RouteBase>[
                     GoRoute(
                       path: 'configuracion_inicial',
                       builder: (BuildContext context, GoRouterState state) {

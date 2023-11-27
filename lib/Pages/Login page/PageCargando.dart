@@ -10,6 +10,7 @@ import 'package:flutter/material.dart' as material;
 import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Firebase/ActualizarInformacion.dart';
+import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Config/theme.dart';
 
@@ -41,6 +42,9 @@ class PageCargandoState extends State<PageCargando> {
   List<Tutores> tutor_List = [];
   int tutores_numerocargado = 0;
   int TotalTutores = 500;
+
+  CollectionReferencias referencias =  CollectionReferencias();
+
 
   @override
   void initState() {
@@ -165,8 +169,9 @@ class PageCargandoState extends State<PageCargando> {
 
   }
   Future <void> reiniciarcontador()async{
+    print("reiniciando contador");
     Map<String, dynamic> servicioData = {};
-    CollectionReference actualizacion = db.collection("ACTUALIZACION");
+    CollectionReference actualizacion = referencias.configuracion!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     servicioData['verificadoractualizar'] = DateTime.now();
     await actualizacion.doc("Plugins").update(servicioData);
