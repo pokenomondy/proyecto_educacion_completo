@@ -24,7 +24,6 @@ class TarjetaSolicitudes extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-    final double calculatedHeigth = heigth + (solicitud.resumen.length / 60).floor() * 20;
     if(width<=300){
       width=300;
     }
