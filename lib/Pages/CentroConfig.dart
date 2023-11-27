@@ -96,6 +96,10 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
               ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
               //Secundary Color
               ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
+              //Primary Color
+            ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
+              //Secundary Color
+            ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
               //Solicitudes con Drive Api
               if(configuracion.SolicitudesDriveApi==true)
                 Column(
@@ -126,7 +130,9 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CartaPlugin(function: (){}, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
+                    CartaPlugin(function: (){
+                      print("Sistema basico");
+                    }, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
                     CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: configuracion.SolicitudesDriveApi, fecha: configuracion.SolicitudesDriveApiFecha),
                     CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: configuracion.PagosDriveApi, fecha: configuracion.PagosDriveApiFecha),
                   ],
