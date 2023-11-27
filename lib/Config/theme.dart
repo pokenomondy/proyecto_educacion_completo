@@ -56,6 +56,8 @@ class PrimaryStyleButton extends StatefulWidget{
   final String text;
   final double tamanio;
   final Color buttonColor;
+  final Color tapColor;
+  final double width;
   const PrimaryStyleButton({
     Key?key,
     required this.function,
@@ -63,6 +65,8 @@ class PrimaryStyleButton extends StatefulWidget{
     this.buttonColor = const Color(0xFF235FD9),
     this.invert = false,
     this.tamanio = 15,
+    this.width = -1,
+    this.tapColor = const Color(0xFF151515),
   }):super(key: key);
 
   @override
@@ -71,11 +75,11 @@ class PrimaryStyleButton extends StatefulWidget{
 }
 
 class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
-  late Color buttonColor = !widget.invert ? ThemeApp().buttonSecundaryColor : ThemeApp().whitecolor;
+  late Color buttonColor = !widget.invert ? widget.buttonColor : ThemeApp().whitecolor;
 
   @override
   Widget build(BuildContext context) {
-    double widthCalculate = widget.text.length * 9;
+    double widthCalculate = widget.width == -1 ? widget.text.length * 9: widget.width;
     double heigthCalculate = (widget.tamanio * 30) / 15;
 
     return Padding(
@@ -83,12 +87,12 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
       child: GestureDetector(
         onTapDown: (_) {
           setState(() {
-            buttonColor = ThemeApp().buttoncolor;
+            buttonColor = widget.tapColor;
           });
         },
         onTapUp: (_) {
           setState(() {
-            buttonColor = widget.invert ? ThemeApp().whitecolor : ThemeApp().primaryColor;
+            buttonColor = widget.invert ? ThemeApp().whitecolor : widget.buttonColor;
           });
         },
         onTap: widget.function,
@@ -103,7 +107,7 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
           child: Center(
             child: Text(
               widget.text,
-              style: ThemeApp().styleText(widget.tamanio, true, !widget.invert? ThemeApp().whitecolor: ThemeApp().buttonSecundaryColor ),
+              style: ThemeApp().styleText(widget.tamanio, true, !widget.invert? ThemeApp().whitecolor: widget.buttonColor ),
             ),
           ),
         ),

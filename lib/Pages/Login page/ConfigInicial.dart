@@ -1,3 +1,4 @@
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as dialog;
@@ -12,10 +13,11 @@ class ConfigInicialPrimerAcceso extends StatefulWidget {
 
 class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
   //Colores
-  Color pickerColor = Color(0xff493a3a);
-  Color colorPrimaryColor = Color(0xff493a3a);
-  Color colorSecundarycolor = Color(0xff493a3a);
-  String nombre_empresa = "";
+  late Color pickerColor = Color(0xff493a3a);
+  late Color colorPrimaryColor = Color(0xff493a3a);
+  late Color colorSecundarycolor = Color(0xff493a3a);
+  final TextEditingController nombre_empresa = TextEditingController();
+  final ThemeApp theme = ThemeApp();
 
   void cambiarcolor(Color color) {
     setState(() => colorPrimaryColor = color);
@@ -23,61 +25,65 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        width: 500,
-        height: 500,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            //Mnesaje de copiar
-            //Color primarío
-            seleccionadorcolor(colorPrimaryColor, 'Color primario', (Color newColor) {
-              setState(() {
-                colorPrimaryColor = newColor;
-              });
-            }),
-            //Color secundario
-            seleccionadorcolor(colorSecundarycolor, 'Color Secundario', (Color newColor) {
-              setState(() {
-                colorSecundarycolor = newColor;
-              });
-            }),
-            //Nombre de empresa
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Nombre de empresa'),
-                Container(
-                  width: 500,
-                  child: TextBox(
-                    placeholder: 'Nombre de empresa',
-                    onChanged: (value){
-                      setState(() {
-                        nombre_empresa = value;
-                      });
-                    },
-                    maxLines: null,
-                  ),
-                ),
-              ],
+    return Center(
+      child: ItemsCard(
+        height: 350,
+        width: 400,
+        children: [
+          //Nombre de empresa
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            child: Text(
+              "Configuracion inicial",
+              style: theme.styleText(23, true, theme.primaryColor),
             ),
-            //Primary Background
-            //Botón color
-            //Color ventas
-            //Envíar info
-            FilledButton(
-                child: Text('Envíar'),
-                onPressed: (){
-                  String Primarycolor = colorToHex(colorPrimaryColor);
-                  String Secundarycolor = colorToHex(colorSecundarycolor);
-                  Uploads().uploadconfiginicial(Primarycolor, Secundarycolor, nombre_empresa);
-                  _redireccionaDashboarc();
-                }),
-          ],
-        ),
+          ),
+          Text(
+              'Nombre de empresa',
+              style: theme.styleText(14, true, theme.grayColor),
+          ),
+          SizedBox(
+            width: 350,
+            child: RoundedTextField(
+              placeholder: "Nombre de empresa",
+              controller: nombre_empresa,
+            ),
+          ),
+          //Mnesaje de copiar
+          //Color primarío
+          Padding(
+            padding: const EdgeInsets.only(top: 10,bottom: 8),
+            child: Text(
+              'Colores de la empresa',
+              style: theme.styleText(14, true, theme.grayColor),
+            ),
+          ),
+          seleccionadorcolor(colorPrimaryColor, 'Color primario', (Color newColor) {
+            setState(() {
+              colorPrimaryColor = newColor;
+            });
+          }),
+          //Color secundario
+          seleccionadorcolor(colorSecundarycolor, 'Color Secundario', (Color newColor) {
+            setState(() {
+              colorSecundarycolor = newColor;
+            });
+          }),
+          //Primary Background
+          //Botón color
+          //Color ventas
+          //Envíar info
+          PrimaryStyleButton(
+            width: 100,
+            tamanio: 14,
+            function: (){
+            String Primarycolor = colorToHex(colorPrimaryColor);
+            String Secundarycolor = colorToHex(colorSecundarycolor);
+            Uploads().uploadconfiginicial(Primarycolor, Secundarycolor, nombre_empresa.text);
+            _redireccionaDashboarc();
+          }, text: "Enviar"
+          ),
+        ],
       ),
     );
   }
@@ -87,20 +93,29 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
   }
 
   Widget seleccionadorcolor(Color colorcito,String colortext,Function(Color) onColorChanged){
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        FilledButton(
-          onPressed: (){
-            changecolordialog(colorcito,onColorChanged);
-          },
-          child: Text(colortext),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 7),
+      child: SizedBox(
+        width: 200,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            PrimaryStyleButton(
+              buttonColor: theme.blackColor,
+              tapColor: theme.primaryColor,
+              tamanio: 14,
+                function: (){
+                  changecolordialog(colorcito,onColorChanged);
+                  },
+                text: colortext
+            ),
+            CircleAvatar(
+              backgroundColor: colorcito,
+              radius: 20.0,
+            ),
+          ],
         ),
-        CircleAvatar(
-          backgroundColor: colorcito,
-          radius: 20.0,
-        ),
-      ],
+      ),
     );
   }
 
