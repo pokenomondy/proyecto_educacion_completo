@@ -1,8 +1,13 @@
+import 'dart:html';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/driveactivity/v2.dart';
 import '../Utils/Firebase/Load_Data.dart';
 import '../Utils/Utiles/FuncionesUtiles.dart';
+import 'package:flutter/material.dart' as material;
+
 
 class Config {
   //Configuración inicial
@@ -15,10 +20,11 @@ class Config {
   //plugins
   Map<String, dynamic> configuracion_plugins = {}; //plugins
   Map<String, dynamic> configuracion_mensajes = {}; //mensajes
+  //booleanos de configuración
   bool PagosDriveApi = false;
   bool SolicitudesDriveApi = false;
-  bool TutoresBanca = false;
   bool basicoNormal = false;
+  //
   DateTime basicofecha = DateTime.now();
   DateTime SolicitudesDriveApiFecha = DateTime.now();
   DateTime PagosDriveApiFecha = DateTime.now();
@@ -58,19 +64,35 @@ class Config {
     } else {
     }
     //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
-    if(configuracion_plugins.containsKey('basicoNormal')){
-      basicoNormal = configuracion_plugins['basicoNormal'];
-      SolicitudesDriveApi = configuracion_plugins['SolicitudesDriveApi'];
-      PagosDriveApi = configuracion_plugins['PagosDriveApi'];
+    if(configuracion_plugins.containsKey('basicoFecha')){
+      print("actualizando fechas parece");
       basicofecha = configuracion_plugins['basicoFecha'] != null
           ? DateTime.parse(configuracion_plugins['basicoFecha'])
           : DateTime.now();
+      if(basicofecha.isAfter(DateTime.now())){
+        basicoNormal = true;
+      }else{
+        basicoNormal = false;
+      }
+      print("fecha normal ${basicofecha}");
       SolicitudesDriveApiFecha = configuracion_plugins['SolicitudesDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
           : DateTime.now();
+      if(SolicitudesDriveApiFecha.isAfter(DateTime.now())){
+        SolicitudesDriveApi = false;
+        print("false api feca $SolicitudesDriveApiFecha");
+      }else{
+        SolicitudesDriveApi = false;
+        print("tru api feca $SolicitudesDriveApiFecha");
+      }
       PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
           : DateTime.now();
+      if(PagosDriveApiFecha.isAfter(DateTime.now())){
+        PagosDriveApi = true;
+      }else{
+        PagosDriveApi = false;
+      }
     }
 
     if(configuracion_mensajes.containsKey('SOLICITUDES')){
@@ -107,9 +129,9 @@ class Config {
 
 
 
-  Text panelnavegacion(String text,bool isexpanded){
+  material.Text panelnavegacion(String text,bool isexpanded){
     Color textcolor = (isexpanded) ? Config.secundaryColor : primaryColor;
-    return Text(text,style:
+    return material.Text(text,style:
     TextStyle(
       color: textcolor,
       fontFamily: "Poppins",

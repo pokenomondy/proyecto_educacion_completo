@@ -12,7 +12,7 @@ class stream_builders{
 
   //Streambuilders de servicios agendados
   Stream<List<ServicioAgendado>> getServiciosAgendados() async* {
-    CollectionReference refcontabilidad = referencias.contabilidad;
+    CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
 
@@ -129,7 +129,7 @@ class stream_builders{
 
   //Obtener contabilidad en stream, servicios AGENDADOA
   Stream<List<ServicioAgendado>> getServiciosAgendadosTutor(String nombretutor) async* {
-    CollectionReference refcontabilidad = referencias.contabilidad;
+    CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Stream<QuerySnapshot> queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor).snapshots();
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {

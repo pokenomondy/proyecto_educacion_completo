@@ -1,22 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Config/Config.dart';
 
 class CollectionReferencias{
+  //Firebases
   FirebaseFirestore DufyFirestore = FirebaseFirestore.instance;
   FirebaseFirestore LibaFirestore = FirebaseFirestore.instanceFor(app: Firebase.app('LIBADB'));
+  //Autentication
+  FirebaseAuth authdufy = FirebaseAuth.instance;
+  FirebaseAuth authLiba = FirebaseAuth.instanceFor(app: Firebase.app('LIBADB'));
+  FirebaseAuth? authdireccion ;
+
   //Colecciones
-  CollectionReference contabilidad = FirebaseFirestore.instance.collection('CONTABILIDAD');
-  CollectionReference solicitudes = FirebaseFirestore.instance.collection('SOLICITUDES');
-  CollectionReference clientes = FirebaseFirestore.instance.collection('CLIENTES');
-  CollectionReference configuracion = FirebaseFirestore.instance.collection('ACTUALIZACION');
-  CollectionReference tutores = FirebaseFirestore.instance.collection('TUTORES');
-  CollectionReference tablasmaterias = FirebaseFirestore.instance.collection('TABLAS').doc("TABLAS").collection("MATERIAS");
-  CollectionReference tablascarreras = FirebaseFirestore.instance.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
-  CollectionReference tablasuniversidades = FirebaseFirestore.instance.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
+  CollectionReference? contabilidad;
+  CollectionReference? solicitudes ;
+  CollectionReference? clientes ;
+  CollectionReference? configuracion;
+  CollectionReference? tutores ;
+  CollectionReference? tablasmaterias ;
+  CollectionReference? tablascarreras  ;
+  CollectionReference? tablasuniversidades ;
   //Documentos
-  DocumentReference configuracioninicial = FirebaseFirestore.instance.collection("ACTUALIZACION").doc("CONFIGURACION");
+  DocumentReference? infotutores;
   
   //Libaewducation
   CollectionReference listaEmpresas = FirebaseFirestore.instanceFor(app: Firebase.app('LIBADB')).collection("CLAVES");
@@ -26,6 +34,10 @@ class CollectionReferencias{
   }
 
   Future<void> initCollections() async {
+    //Shared preferences cargar
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? nombre_empresa = prefs.getString("Nombre_Empresa");
+
     if(Config.dufyadmon==true){
       contabilidad = DufyFirestore.collection('CONTABILIDAD');
       solicitudes = DufyFirestore.collection('SOLICITUDES');
@@ -35,17 +47,19 @@ class CollectionReferencias{
       tablasmaterias = DufyFirestore.collection('TABLAS').doc("TABLAS").collection("MATERIAS");
       tablascarreras = DufyFirestore.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
       tablasuniversidades = DufyFirestore.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
-      configuracioninicial = DufyFirestore.collection("ACTUALIZACION").doc("CONFIGURACION");
+      authdireccion = authdufy;
     }else{
-      contabilidad = LibaFirestore.collection('CONTABILIDAD');
-      solicitudes = LibaFirestore.collection('SOLICITUDES');
-      clientes = LibaFirestore.collection('CLIENTES');
-      configuracion = LibaFirestore.collection('ACTUALIZACION');
-      tutores = LibaFirestore.collection('TUTORES');
-      tablasmaterias = LibaFirestore.collection('TABLAS').doc("TABLAS").collection("MATERIAS");
-      tablascarreras = LibaFirestore.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
-      tablasuniversidades = LibaFirestore.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
-      configuracioninicial = LibaFirestore.collection("ACTUALIZACION").doc("CONFIGURACION");
+      DocumentReference referenceNoDufy = LibaFirestore.collection("EMPRESAS").doc(nombre_empresa);
+
+      contabilidad = referenceNoDufy.collection('CONTABILIDAD');
+      solicitudes = referenceNoDufy.collection('SOLICITUDES');
+      clientes = referenceNoDufy.collection('CLIENTES');
+      configuracion = referenceNoDufy.collection('ACTUALIZACION');
+      tutores = referenceNoDufy.collection('TUTORES');
+      tablasmaterias = referenceNoDufy.collection('TABLAS').doc("TABLAS").collection("MATERIAS");
+      tablascarreras = referenceNoDufy.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
+      tablasuniversidades = referenceNoDufy.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
+      authdireccion = authLiba;
     }
   }
 
