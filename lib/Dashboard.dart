@@ -61,7 +61,7 @@ class DashboardState extends State<Dashboard> {
 
   void cargarprimeravez() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? true;
+    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     currentUser = referencias.authdireccion!.currentUser;
   }
 
@@ -119,7 +119,7 @@ class DashboardState extends State<Dashboard> {
             PaneItem(icon: const Icon(FluentIcons.home),
                 title: configuracion.panelnavegacion("Contable",_currentPage==3), body: ContableDashboard(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
             PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: ConfiguracionDatos(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+                title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: CentroConfiguracionDash(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
           ],
           selected: _currentPage,
           onChanged: (index) => setState(() {

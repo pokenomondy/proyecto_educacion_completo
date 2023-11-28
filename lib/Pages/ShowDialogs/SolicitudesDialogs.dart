@@ -184,7 +184,7 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
     String universidad = selectedUniversidadobject?.nombreuniversidad ?? "NO REGISTRADO";
     String carrera = selectedCarreraobject?.nombrecarrera ?? "NO REGISTRADO";
 
-    await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto);
+    //await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto);
     widget.onUpdateListaClientes();
     Future.delayed(Duration(milliseconds: 500), () {
       print("actualizando tablas");

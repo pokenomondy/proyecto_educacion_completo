@@ -29,7 +29,11 @@ class Uploads{
   CollectionReferencias referencias =  CollectionReferencias();
 
   Uploads() {
-    CollectionReferencias().initCollections();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await referencias.initCollections();
   }
 
 
@@ -299,9 +303,11 @@ class Uploads{
     }
   }
   //Añadimos cliente
-  Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente) async {
+  Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {
+    print("subiedno nuevo cliente");
+    await referencias.initCollections();
     CollectionReference cliente = referencias.clientes!;
-    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now());
+    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now(),procedencia,DateTime.now());
     await cliente.doc(numero.toString()).set(newcliente.toMap());
     //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -312,7 +318,6 @@ class Uploads{
     //Ahora metamosle el nuevo cliente y guardemoslo
     clientesList.add(newcliente);
     String solicitudesJsonother = jsonEncode(clientesList);
-    print("añadimos nuevo cliente");
     await prefs.setString('clientes_list', solicitudesJsonother);
   }
   //actualizar prospecto a cliente
@@ -419,6 +424,7 @@ class Uploads{
   }
   //Agregar carrera a tabla
   Future<void> addCarrera(String nombrecarrera) async {
+    await referencias.initCollections();
     CollectionReference carreraCollection = referencias.tablascarreras!;
     Carrera newcarrera = Carrera(nombrecarrera);
     await carreraCollection.doc(nombrecarrera).set(newcarrera.toMap());
@@ -435,6 +441,7 @@ class Uploads{
   }
   //Agregar unversidad a tabla
   Future<void> addUniversidad(String nombreuniversidad) async {
+    await referencias.initCollections();
     CollectionReference universidadCollection = referencias.tablasuniversidades!;
     Universidad newuniversidad = Universidad(nombreuniversidad);
     await universidadCollection.doc(nombreuniversidad).set(newuniversidad.toMap());
@@ -486,6 +493,23 @@ class Uploads{
     await actualizadores.doc("MENSAJES").set(uploadconfiguracion);
   }
 
+  //Subir materias de forma local
+
+  Future<void> addnewmateria(String nombremateria) async{
+    await referencias.initCollections();
+    CollectionReference referencemateria = referencias.tablasmaterias!;
+    Materia newmateria = Materia(nombremateria);
+    await referencemateria.doc(nombremateria).set(newmateria.toMap());
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<Materia> materiaList = [];
+    materiaList = await LoadData().tablasmateria();
+    materiaList.add(newmateria);
+    //guardar info
+    String solicitudesJsondos = jsonEncode(materiaList);
+    await prefs.setString('tablamaterias_list', solicitudesJsondos);
+
+  }
 
 
 
