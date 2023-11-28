@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class TarjetaSolicitudes extends StatelessWidget{
 
   final Solicitud solicitud;
-  late double width;
+  final double width;
   final Color cardColor;
   final double tamanio;
 
@@ -24,9 +24,6 @@ class TarjetaSolicitudes extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-    if(width<=300){
-      width=300;
-    }
     final double numeroLetras = 1/3000 * ( width * width);
     final int contarSaltos = solicitud.resumen.isEmpty ? 0 : (solicitud.resumen.length / numeroLetras).floor() + solicitud.resumen.split('\n').length - 1;
     final double resumenHeigth = (-1/8000 * (width * width)) + 70 + (contarSaltos * tamanio);
@@ -110,5 +107,112 @@ class TarjetaSolicitudes extends StatelessWidget{
     );
   }
 
+}
+
+class MensajeTextBox extends StatelessWidget{
+
+  final TextEditingController controller;
+  final String placeholder;
+  final double width;
+  final double heigth;
+
+  const MensajeTextBox({
+    Key?key,
+    required this.controller,
+    required this.placeholder,
+    this.width = 410,
+    this.heigth = 150,
+  }):super(key: key);
+
+  @override
+  Widget build(BuildContext context){
+    const double tamanio = 12;
+    return SizedBox(
+      width: width,
+      child: Column(
+        children: [
+          Column(
+              children: [
+                Row(
+                  children: [
+                    PrimaryStyleButton(
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/servicio/";
+                        },
+                        text: "Servicio"
+                    ),
+                    PrimaryStyleButton(
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/idcotizacion/";
+                        },
+                        text: "Id Cotizacion"
+                    ),
+                    PrimaryStyleButton(
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/materia/";
+                        },
+                        text: "Materia"
+                    ),
+                    PrimaryStyleButton(
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/resumen/";
+                        },
+                        text: "Resumen"
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    PrimaryStyleButton(
+                      width: 110,
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/fechaentrega/";
+                        },
+                        text: "Fecha de Entrega"
+                    ),
+                    PrimaryStyleButton(
+                        width: 110,
+                        tamanio: tamanio,
+                        function: (){
+                          controller.text += "/horaentrega/";
+                        },
+                        text: "Hora de Entrega"
+                    ),
+                    PrimaryStyleButton(
+                        tamanio: tamanio,
+                        width: 140,
+                        function: (){
+                          controller.text += "/infocliente/";
+                        },
+                        text: "Informacion Cliente"
+                    ),
+                  ],
+                ),
+              ]
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            width: width,
+            height: heigth,
+            child: TextBox(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20)
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+              textAlignVertical: TextAlignVertical.top,
+              placeholder: placeholder,
+              controller: controller,
+              maxLines: null,
+            ),
+          ),
+        ]
+      ),
+    );
+  }
 
 }

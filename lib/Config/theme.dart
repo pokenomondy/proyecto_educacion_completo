@@ -83,7 +83,7 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
     double heigthCalculate = (widget.tamanio * 30) / 15;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
       child: GestureDetector(
         onTapDown: (_) {
           setState(() {
