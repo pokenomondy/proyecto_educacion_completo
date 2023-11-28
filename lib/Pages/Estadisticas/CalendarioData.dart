@@ -165,61 +165,8 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                   Text('Descargados'),
               ],
             )
-
         ],
       ),
-    );
-  }
-
-  Widget numerodepagos(String codigo){
-    return Text('Hola ${escucharnumerodepagos(codigo)}');
-  }
-
-  void calendario_oprimido(CalendarTapDetails details) {
-    if (details.targetElement == CalendarElement.appointment ||
-        details.targetElement == CalendarElement.agenda) {
-      final Appointment appointmentdetails = details.appointments![0];
-      _subject = appointmentdetails.subject;
-      _notes = appointmentdetails.notes;
-    } else {
-
-    }
-    dialog.showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return dialog.AlertDialog(
-            title: Text('Agenda $_subject'),
-            content: Column(
-              children: [
-                Text(_notes!),
-              ],
-            ),
-          );
-        }
-    );
-  }
-
-  StreamBuilder<QuerySnapshot<Map<String, dynamic>>> escucharnumerodepagos(String codigo){
-    return StreamBuilder(
-        stream: db.collection("CONTABILIDAD").doc(codigo).collection("PAGOS").snapshots(),
-        builder: (context,snapshot){
-          if(!snapshot.hasData) return Text('CARGANDO NO HAY NADA');
-          List<RegistrarPago> pagos = [];
-          for(var pagoDoc in snapshot.data!.docs){
-            RegistrarPago newpago = RegistrarPago(
-              pagoDoc['codigo'],
-              pagoDoc['tipopago'],
-              pagoDoc['valor'],
-              pagoDoc['referencia'],
-              pagoDoc['fechapago'].toDate(),
-              pagoDoc['metodopago'],
-              pagoDoc.data().toString().contains('id') ? pagoDoc.get('id') : 'NO ID',
-              pagoDoc['fecharegistro'],
-            );
-            pagos.add(newpago);
-          }
-          return Text(pagos.length.toString());
-        }
     );
   }
 

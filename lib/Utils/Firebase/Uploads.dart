@@ -125,7 +125,7 @@ class Uploads{
     List<dynamic> ServicioAgendadoData = jsonDecode(solicitudesJson);
     List serviciosagendadoList = ServicioAgendadoData.map((tutorData) =>
         ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
-    //Ahora le metemos el nuevo
+    //Ahora le metemos el nuevoxxxx
     serviciosagendadoList.add(newservicioagendado);
     //Ahora guardamos la lista
     String solicitudesJsondos = jsonEncode(serviciosagendadoList);
@@ -134,6 +134,7 @@ class Uploads{
 
   //modificar un servicio agendado
   Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
+    await referencias.initCollections();
     String variable = "";
     CollectionReference contabilidad = referencias.contabilidad!;
     Map<String, dynamic> uploadinformacion = {};
@@ -184,12 +185,19 @@ class Uploads{
     await contabilidad.doc(codigo).update(uploadinformacion);
   }
   //Entregar trabajos clientes
-  Future<void> modifyServicioAgendadoEntregadoCliente(String codigo)async {
+  Future<void> modifyServicioAgendadoEntregadoCliente(String codigo,String motivoentrega)async {
+    await referencias.initCollections();
+    String motivoentregaFirestore = "";
+    if(motivoentrega == "CLIENTE"){
+      motivoentregaFirestore = "ENTREGADO";
+    }else if(motivoentrega == "NOENTREGAR"){
+      motivoentregaFirestore = "NO ALMACENADO";
+    }
     print("entregado de Cliente");
     CollectionReference contabilidad = referencias.contabilidad!;
     Map<String, dynamic> uploadinformacion = {};
     uploadinformacion = {
-      "entregadocliente": "ENTREGADO",
+      "entregadocliente": motivoentregaFirestore,
     };
     await contabilidad.doc(codigo).update(uploadinformacion);
   }

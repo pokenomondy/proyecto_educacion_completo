@@ -79,7 +79,7 @@ class Config {
           ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
           : DateTime.now();
       if(SolicitudesDriveApiFecha.isAfter(DateTime.now())){
-        SolicitudesDriveApi = false;
+        SolicitudesDriveApi = true;
         print("false api feca $SolicitudesDriveApiFecha");
       }else{
         SolicitudesDriveApi = false;
@@ -123,7 +123,7 @@ class Config {
   String apiurl =  "https://graph.facebook.com/v17.0/134108179779463/messages";
   //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
   //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.
-  static const bool dufyadmon = false;
+  static const bool dufyadmon = true;
   //Para cambiar de base de datos, se debe cambiar esto a false, y luego se debe cambiar el inicializador del main, con eso ya estaría
   //correcto.
 
