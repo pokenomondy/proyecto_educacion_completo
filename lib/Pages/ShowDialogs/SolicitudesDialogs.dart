@@ -31,6 +31,8 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
   int numwasaCliente = 0;
   Carrera? selectedCarreraobject;
   Universidad? selectedUniversidadobject;
+  List<String> EstadoList = ['FACEBOOK','WHATSAPP','REFERIDO AMIGO','INSTAGRAM','CAMPAÑA INSTAGRAM',];
+  String? selectedProcedencia;
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +159,37 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
                           AgregarCarreraDialog(carreraList: widget.carreraList, universidadList: widget.universidadList,CarreUniver: "UNIVERSIDAD",onUpdateListaClientes: widget.onUpdateListaClientes,),
                         ],
                       ),
+                      //Lista de procedencia del cliente
+                      Container(
+                        child: AutoSuggestBox<String>(
+                          items: EstadoList.map((servicio) {
+                            return AutoSuggestBoxItem<String>(
+                                value: servicio,
+                                label: servicio,
+                                onFocusChange: (focused) {
+                                  if (focused) {
+                                    debugPrint('Focused $servicio');
+                                  }
+                                }
+                            );
+                          }).toList(),
+                          onSelected: (item) {
+                            setState(() {
+                              selectedProcedencia = item.value;
+                            });
+                          },
+                          decoration: Disenos().decoracionbuscador(),
+                          placeholder: 'Procedencia',
+                          onChanged: (text, reason) {
+                            if (text.isEmpty ) {
+                              setState(() {
+                                selectedProcedencia = null; // Limpiar la selección cuando se borra el texto
+                              });
+                            }
+                          },
+                        ),
+                      ),
+
                     ],
                   ),
                 ],
@@ -184,7 +217,7 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
     String universidad = selectedUniversidadobject?.nombreuniversidad ?? "NO REGISTRADO";
     String carrera = selectedCarreraobject?.nombrecarrera ?? "NO REGISTRADO";
 
-    await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto);
+    await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto,selectedProcedencia!);
     widget.onUpdateListaClientes();
     Future.delayed(Duration(milliseconds: 500), () {
       print("actualizando tablas");

@@ -99,7 +99,6 @@ class LoadData {
     CollectionReference referencesolicitudes = referencias.solicitudes!;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
-      print("numero obtenido $numDocumentos");
       yield numDocumentos + 473;
     }
   }
@@ -171,11 +170,13 @@ class LoadData {
         int numero = ClienteDoc['numero'];
         String nombrecompletoCliente = ClienteDoc.data().toString().contains('nombrecompletoCliente') ? ClienteDoc.get('nombrecompletoCliente') : 'NO REGISTRADO';
         DateTime fechaActualizacion = ClienteDoc.data().toString().contains('fechaActualizacion') ? ClienteDoc.get('fechaActualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+        String procedencia = ClienteDoc.data().toString().contains('procedencia') ? ClienteDoc.get('procedencia') : 'VIEJO';
+        DateTime fechaContacto = ClienteDoc.data().toString().contains('fechaContacto') ? ClienteDoc.get('fechaContacto').toDate() : DateTime(2023,1,1,0,0); //Number
 
 
         print("$Carrera $Universidadd $nombreCliente $numero");
 
-        Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion);
+        Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion,procedencia,fechaContacto);
         clientesList.add(newClientes);
         if (onClienteAdded != null) {
           onClienteAdded(newClientes);
@@ -645,8 +646,6 @@ class LoadData {
       Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
       DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
       Duration diferenciaTiempo = DateTime.now().difference(verificador);
-      print(" la difrencia de tiempoe s");
-      print(diferenciaTiempo);
       return diferenciaTiempo;
     }catch(e){
       print('Error en tiempoActualizacion: $e');
