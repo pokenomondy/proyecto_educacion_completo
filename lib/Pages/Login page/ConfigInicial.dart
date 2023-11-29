@@ -145,7 +145,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                         function: (){
                           String Primarycolor = colorToHex(colorPrimaryColor);
                           String Secundarycolor = colorToHex(colorSecundarycolor);
-                          Uploads().uploadconfiginicial(Primarycolor, Secundarycolor, nombre_empresa.text);
+                          //Uploads().uploadconfiginicial(Primarycolor, Secundarycolor, nombre_empresa.text);
                           _redireccionaDashboarc();
                         }, text: "Enviar"
                     ),

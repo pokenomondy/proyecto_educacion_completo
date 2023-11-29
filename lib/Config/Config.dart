@@ -65,7 +65,6 @@ class Config {
     }
     //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
     if(configuracion_plugins.containsKey('basicoFecha')){
-      print("actualizando fechas parece");
       basicofecha = configuracion_plugins['basicoFecha'] != null
           ? DateTime.parse(configuracion_plugins['basicoFecha'])
           : DateTime.now();
@@ -74,16 +73,13 @@ class Config {
       }else{
         basicoNormal = false;
       }
-      print("fecha normal ${basicofecha}");
       SolicitudesDriveApiFecha = configuracion_plugins['SolicitudesDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
           : DateTime.now();
       if(SolicitudesDriveApiFecha.isAfter(DateTime.now())){
-        SolicitudesDriveApi = false;
-        print("false api feca $SolicitudesDriveApiFecha");
+        SolicitudesDriveApi = true;
       }else{
         SolicitudesDriveApi = false;
-        print("tru api feca $SolicitudesDriveApiFecha");
       }
       PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
@@ -123,7 +119,7 @@ class Config {
   String apiurl =  "https://graph.facebook.com/v17.0/134108179779463/messages";
   //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
   //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.
-  static const bool dufyadmon = false;
+  static const bool dufyadmon = true;
   //Para cambiar de base de datos, se debe cambiar esto a false, y luego se debe cambiar el inicializador del main, con eso ya estaría
   //correcto.
 

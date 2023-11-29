@@ -795,18 +795,7 @@ class _CrearContainerState extends State<_CrearContainer> {
                   return Center(child: Text('cargando'));
                 }
                 List<Solicitud>? solicitudesList = snapshot.data;
-                return Container(
-                  height: widget.height,
-                  child: ListView.builder(
-                      itemCount: solicitudesList?.length,
-                      itemBuilder: (context, index) {
-                        Solicitud? solicitud = solicitudesList?[index];
-
-                        return TarjetaSolicitudes(solicitud: solicitud!);
-                      }
-                  ),
-                );
-                //return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);
+                return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);;
               },
             ),
           ],

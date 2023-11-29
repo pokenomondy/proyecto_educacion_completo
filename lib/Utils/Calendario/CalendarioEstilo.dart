@@ -53,7 +53,9 @@ class CalendarioStyle {
       return dialog.Colors.yellow;
     }else if(servicio.identificadorcodigo == "A" || servicio.identificadorcodigo == "P" || servicio.identificadorcodigo == "Q"){
       return dialog.Colors.grey;
-    } else if(servicio.entregadocliente=="ENTREGADO") {
+    } else if(servicio.entregadocliente=="NO ALMACENADO"){
+      return dialog.Colors.green;
+    }else if(servicio.entregadocliente=="ENTREGADO") {
       return dialog.Colors.green;
     }else if(servicio.entregadotutor=="ENTREGADO"){
       return dialog.Colors.orange;
@@ -234,11 +236,17 @@ class CalendarioStyle {
           //Entrega cliente
           FilledButton(child: Text('Entregar trabajo'),
               onPressed: (){
-                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo);
+                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
                 Navigator.pop(context, 'User deleted file');
               }),
           //Esccuhar numero pagos
           Text(servicioseleccionado.pagos.length.toString()),
+          Text('Opciones beta'),
+          FilledButton(child: Text('No Entregar trabajo'),
+              onPressed: (){
+                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
+                Navigator.pop(context, 'User deleted file');
+              }),
         ],
       ),
     );

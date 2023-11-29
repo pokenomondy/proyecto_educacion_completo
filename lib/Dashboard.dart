@@ -61,7 +61,7 @@ class DashboardState extends State<Dashboard> {
 
   void cargarprimeravez() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? true;
+    entraprimeravez = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     currentUser = referencias.authdireccion!.currentUser;
   }
 
@@ -70,8 +70,7 @@ class DashboardState extends State<Dashboard> {
     if (!configloaded && !configloadedos) {
       print("Cargando configuración inicial");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
-      return Text('cargando'); // Ejemplo de indicador de carga
-      /*
+      return Text('cargando'); // Ejemplo de indicador de carg
     }else if(entraprimeravez == false){
       print("carga porque entra por primera vez");
       return PageCargando();
@@ -82,7 +81,7 @@ class DashboardState extends State<Dashboard> {
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
       return Text('ERROR 404');
-    */}
+    }
      else{
 
       return NavigationView(
@@ -120,7 +119,7 @@ class DashboardState extends State<Dashboard> {
             PaneItem(icon: const Icon(FluentIcons.home),
                 title: configuracion.panelnavegacion("Contable",_currentPage==3), body: ContableDashboard(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
             PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: ConfiguracionDatos(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+                title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: CentroConfiguracionDash(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
           ],
           selected: _currentPage,
           onChanged: (index) => setState(() {
