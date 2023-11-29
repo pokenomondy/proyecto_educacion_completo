@@ -10,6 +10,7 @@ import '../Utils/Firebase/DeleteLocalData.dart';
 import '../Utils/Firebase/Uploads.dart';
 import 'Configuracion/AgregarVariables.dart';
 import 'Configuracion/Configuracion_Completa.dart';
+import 'Configuracion/EditarClientes.dart';
 
 class CentroConfiguracionDash extends StatefulWidget {
   const CentroConfiguracionDash({super.key});
@@ -44,6 +45,11 @@ class CentroConfiguracionDashState extends State<CentroConfiguracionDash> {
               icon:  const Icon(FluentIcons.home),
               title: const Text('Agregar variables'),
               body: AgregarVariables(),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Editar Clientes'),
+              body: EditarClientes(),
             ),
           ]
       ),

@@ -85,7 +85,6 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     historialProvider.actualizarHistorialPorCodigo(codigo);
   }
 
-
   Future loadtablas() async{
     servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {

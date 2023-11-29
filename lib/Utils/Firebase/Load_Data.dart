@@ -99,7 +99,6 @@ class LoadData {
     CollectionReference referencesolicitudes = referencias.solicitudes!;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
-      print("numero obtenido $numDocumentos");
       yield numDocumentos + 473;
     }
   }
@@ -647,8 +646,6 @@ class LoadData {
       Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
       DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
       Duration diferenciaTiempo = DateTime.now().difference(verificador);
-      print(" la difrencia de tiempoe s");
-      print(diferenciaTiempo);
       return diferenciaTiempo;
     }catch(e){
       print('Error en tiempoActualizacion: $e');

@@ -39,6 +39,7 @@ class Uploads{
 
   //añadir servicio
   void addServicio (String servicio,String cotizacion,int idcotizacion,String materia, String carrera,DateTime fechaentrega, String resumen, String infocliente, int cliente,String urlarchivo) async{
+  await referencias.initCollections();
   DateTime fechaactualizacion = DateTime.now();
   CollectionReference solicitud = referencias.solicitudes!;
   List<Cotizacion> cotizaciones = [];
@@ -96,6 +97,7 @@ class Uploads{
 
 //añadir cotización
   Future<void> addCotizacion(int idcotizacion,int cotizacion,String uidtutor,String nombretutor,int tiempoconfirmacion, String comentariocotizacion, String Agenda, DateTime fechaconfirmacion) async {
+    await referencias.initCollections();
     List<Cotizacion> cotizaciones = [];
     DocumentReference cotizacionReference = referencias.solicitudes!.doc(idcotizacion.toString());
     Cotizacion newcotizacion = Cotizacion(cotizacion, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
@@ -261,7 +263,6 @@ class Uploads{
     String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
     prefs.setString('tutores_list', updatedTutoresJson);
   }
-
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
     CollectionReference cuentas = referencias.tutores!;
@@ -320,6 +321,43 @@ class Uploads{
     String solicitudesJsonother = jsonEncode(clientesList);
     await prefs.setString('clientes_list', solicitudesJsonother);
   }
+  //Modificaar cliente
+  Future<void> modifyCliente(int index,String numerocliente,String cambio)async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await referencias.initCollections();
+    CollectionReference refcliente = referencias.clientes!;
+    Map<String, dynamic> uploadinformacion = {};
+    String variable = "";
+    if(index ==0){
+      variable = 'Carrera';
+    }else if(index==1){
+      variable = 'Universidadd';
+    }else if(index==4){
+      variable = 'nombrecompletoCliente';
+    }
+
+    uploadinformacion = {
+      "$variable": "$cambio",
+    };
+
+    await refcliente.doc(numerocliente).update(uploadinformacion);
+    //Ahora que se guarde de forma local?
+    List<Clientes> clienteList = [];
+    clienteList = await LoadData().obtenerclientes();
+    Clientes clienteEnLista = clienteList.where((cliente) => cliente.numero.toString() == numerocliente.toString()).first;
+    if(index ==0){
+      clienteEnLista.carrera = cambio;
+    }else if(index==1){
+      clienteEnLista.universidad = cambio;
+    }else if(index==4){
+      clienteEnLista.nombrecompletoCliente = cambio;
+    }
+    String updatedClienteJson = jsonEncode(clienteList.map((tutor) => tutor.toJson()).toList());
+    prefs.setString('clientes_list', updatedClienteJson);
+
+  }
+
+
   //actualizar prospecto a cliente
   Future<void> prospectoacliente(String nombreCliente, String nombrecompletoCliente, int numero ) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

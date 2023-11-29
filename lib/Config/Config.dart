@@ -65,7 +65,6 @@ class Config {
     }
     //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
     if(configuracion_plugins.containsKey('basicoFecha')){
-      print("actualizando fechas parece");
       basicofecha = configuracion_plugins['basicoFecha'] != null
           ? DateTime.parse(configuracion_plugins['basicoFecha'])
           : DateTime.now();
@@ -74,16 +73,13 @@ class Config {
       }else{
         basicoNormal = false;
       }
-      print("fecha normal ${basicofecha}");
       SolicitudesDriveApiFecha = configuracion_plugins['SolicitudesDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
           : DateTime.now();
       if(SolicitudesDriveApiFecha.isAfter(DateTime.now())){
         SolicitudesDriveApi = true;
-        print("false api feca $SolicitudesDriveApiFecha");
       }else{
         SolicitudesDriveApi = false;
-        print("tru api feca $SolicitudesDriveApiFecha");
       }
       PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
           ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
