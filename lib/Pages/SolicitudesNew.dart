@@ -1515,7 +1515,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
               ),
               actions: [
                 Button(
-                  child: const Text('Actualizar Estado'),
+                  child: const Text('Subir Servicio'),
                   onPressed: () {
                     comprobacionagendartrabajo(cotizacion,solicitud,context);
                   },
@@ -1539,14 +1539,8 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
       print("precio cobrado es < al precio del tutor");
       Utiles().notificacion("Precio cobrado es < precio tutor", context, false,"cambia el precio");
     } else{
-      CollectionReference agendatutor = db.collection("SOLICITUDES").doc(solicitud.idcotizacion.toString()).collection("COTIZACIONES");
-      Map<String, dynamic> data = {'Agenda': "AGENDADO"};
-      agendatutor.doc(cotizacion.uidtutor).update(data);
-      CollectionReference expiradoglobal = db.collection("SOLICITUDES");
-      Map<String, dynamic> dataexpirado = {'Estado': "AGENDADO"};
-      expiradoglobal.doc(solicitud.idcotizacion.toString()).update(dataexpirado);
       //Aqui vamos a tener el servicio agendado, agendado realmente
-      Uploads().addServicioAgendado(codigo,selectedSistema!, solicitud.materia, solicitud.cliente.toString(), preciocobrado, solicitud.fechaentrega, cotizacion.nombretutor, cotizacion.cotizacion, selectedIdentificador, solicitud.idcotizacion,numerocontabilidadagenda,"NO ENTREGADO");
+      await Uploads().addServicioAgendado(codigo,selectedSistema!, solicitud.materia, solicitud.cliente.toString(), preciocobrado, solicitud.fechaentrega, cotizacion.nombretutor, cotizacion.cotizacion, selectedIdentificador, solicitud.idcotizacion,numerocontabilidadagenda,"NO ENTREGADO");
       Navigator.pop(context, 'User deleted file');
       Navigator.pop(context, 'User deleted file');
       Utiles().notificacion("Servicio subido con exito", context, true,"bien rey");

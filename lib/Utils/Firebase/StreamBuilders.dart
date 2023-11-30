@@ -126,7 +126,6 @@ class stream_builders{
     return clientesList;
   }
 
-
   //Obtener contabilidad en stream, servicios AGENDADOA
   Stream<List<ServicioAgendado>> getServiciosAgendadosTutor(String nombretutor) async* {
     CollectionReference refcontabilidad = referencias.contabilidad!;

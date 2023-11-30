@@ -249,13 +249,17 @@ class TutorEvaluator {
     });
 
   }
-  /*
+
   //obtener precio de tutor en solicitudes de la matería
   double getPromedioPrecioTutorMateria(String tutorName, String materia) {
     int totalCotizacionPrice = 0;
     int cotizacionCount = 0;
 
     for (Solicitud solicitud in solicitudesList) {
+      if (solicitud.materia == null ) {
+        // Verifica si solicitud.materia es nulo y salta esta solicitud
+        continue;
+      }
       for (Cotizacion cotizacion in solicitud.cotizaciones) {
         if (cotizacion.nombretutor == tutorName &&
             solicitud.materia == materia) {
@@ -293,6 +297,7 @@ class TutorEvaluator {
       tutorNotas[tutor.nombrewhatsapp]?['prom_precioglobalmateria'] = nota.abs();
     });
   }
+
   //obtener numero de servicios agendadas
   int getNumeroCotizacionesAgendado(String tutorName) {
     int cotizacionCount = 0;
@@ -322,11 +327,16 @@ class TutorEvaluator {
         tutorNotas[tutor.nombrewhatsapp]?['num_serviciosagedndados'] = nota;
     });
   }
+
   //obtener numero de servicios agendados de materia
   int getNumeroCotizacionesAgendadoMateria(String tutorName,String materia) {
     int cotizacionCount = 0;
 
     for (ServicioAgendado servicios in serviciosagendadosList) {
+      if (servicios.materia == null) {
+        // Verifica si solicitud.materia es nulo y salta esta solicitud
+        continue;
+      }
       if (servicios.tutor == tutorName && servicios.materia == materia) {
         cotizacionCount++;
       }
@@ -346,7 +356,11 @@ class TutorEvaluator {
       int cotizaciones = getNumeroCotizacionesAgendadoMateria(tutor.nombrewhatsapp,selectedMateria!.nombremateria);
       double nota = 1+ ((cotizaciones - numserviciosagendadosminmateria) / rangenumeroserviciosagendados) * 4;
       tutorNotas.putIfAbsent(tutor.nombrewhatsapp, () => {});
-      tutorNotas[tutor.nombrewhatsapp]?['num_serviciosagedndadosmateria'] = nota;
+      if(rangenumeroserviciosagendados==0){
+        tutorNotas[tutor.nombrewhatsapp]?['num_serviciosagedndadosmateria'] = 0;
+      }else{
+        tutorNotas[tutor.nombrewhatsapp]?['num_serviciosagedndadosmateria'] = nota;
+      }
     });
   }
   //obtener promedio de preciocobradotutor
@@ -395,6 +409,7 @@ class TutorEvaluator {
       tutorNotas[tutor.nombrewhatsapp]?['prom_precioagendadosglobal'] = nota.abs();
     });
   }
+
   //obtener promedio de ganancias generadas
   double getpromediogananciasgeneradas(String tutorName){
     double totalCotizacionPrice = 0;
@@ -434,7 +449,7 @@ class TutorEvaluator {
     });
   }
 
-   */
+
 
   void tutorcalificacion(){
     getnotanumcotizacionesglobal();
@@ -442,14 +457,11 @@ class TutorEvaluator {
     getnotapromediorespuesta();
     getnotapromediorespuestamateria();
     getnotapromediopreciotutroglobalsolicitudes();
-    /*
     getnotapromediopreciotutormateria();
     getnotanumerocotizacionesagendado();
     getnotanumerocotizacionesagendadoMateria();
     getnotapromedioprecioglobalagendado();
     getnotapromedioganancias();
-
-     */
     //# de servicios agendados
   }
   double retornocalificacion(Tutores tutore){
@@ -463,7 +475,7 @@ class TutorEvaluator {
     double numeroserviciosagendadosmateria = tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria'] ?? 0.0;
     double promprecioagendado = tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal'] ?? 0.0;
     double promprecioganancias = tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal'] ?? 0.0;
-
+    DateTime? fechaultimacalificacion = ultimaFechaCotizacionTutor(tutore.nombrewhatsapp);
     //el periodo de prueba de un tutor debe ser de 1 mes, y minimo los 10, ahí les damos de nota 5.0 para dejarlos cotizar
     //y ver en que se destacan
 
@@ -472,12 +484,54 @@ class TutorEvaluator {
     +promprecioagendado+promprecioganancias)/10;
 
 
+    print("${tutore.nombrewhatsapp} cotizo la ultima vez $fechaultimacalificacion ${ultimos20dias(fechaultimacalificacion!)}");
+
     //Aqui tenemos <= 15 solicitudes, tambien toca meter un tiempo de pruegba de 1 mes puede ser tambien
+    //Toca comprobar la fecha de enlistamiento del tutor, para poder saber cuantos osn
     if(getNumeroCotizacionesGlobal(tutore.nombrewhatsapp) <= 10){
-      return 5;
+      if(!ultimos20dias(fechaultimacalificacion)){
+        return notaoficial;
+      }else{
+        return 5;
+      }
     }else{
       return notaoficial;
     }
   }
 
+  //ver la ultima cotización del tutor
+  DateTime? ultimaFechaCotizacionTutor(String tutorname) {
+    Cotizacion? ultimaCotizacion;
+    DateTime? fechaUltimaCotizacion;
+
+    for (Solicitud solicitud in solicitudesList) {
+      for (Cotizacion cotizacion in solicitud.cotizaciones) {
+        if (cotizacion.nombretutor == tutorname) {
+          // Calcular la fecha de cotización
+          DateTime fechaCotizacion = solicitud.fechasistema.add(Duration(minutes: cotizacion.tiempoconfirmacion ?? 0));
+
+          // Comprobar si es la cotización más reciente
+          if (ultimaCotizacion == null || fechaCotizacion.isAfter(fechaUltimaCotizacion!)) {
+            ultimaCotizacion = cotizacion;
+            fechaUltimaCotizacion = fechaCotizacion;
+          }
+        }
+      }
+    }
+
+    // Verificar si se encontró alguna cotización
+    if (ultimaCotizacion != null) {
+      tutorNotas.putIfAbsent(tutorname, () => {});
+      return fechaUltimaCotizacion;
+    } else {
+      return DateTime.now(); // Puedes manejar el caso cuando no hay cotizaciones, retornando null o una fecha predeterminada
+    }
+  }
+
+  bool ultimos20dias(DateTime fecha) {
+    DateTime fechaActual = DateTime.now();
+    DateTime fechaLimite = fechaActual.subtract(Duration(days: 20));
+
+    return fecha.isAfter(fechaLimite);
+  }
 }

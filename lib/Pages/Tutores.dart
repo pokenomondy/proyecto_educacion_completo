@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
 import '../Config/Config.dart';
+import 'package:intl/intl.dart';
 import '../Dashboard.dart';
 import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
@@ -171,6 +172,8 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   String nombreCedula = "";
   List<Materia> materiaList = [];
   Materia? selectedMateria;
+  List<Solicitud> solicitudesList = [];
+  bool dataLoaded = false;
 
   @override
   void initState() {
@@ -181,6 +184,10 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
 
   Future<void> loadtablas() async {
     materiaList = await LoadData().tablasmateria();
+    solicitudesList = await LoadData().obtenerSolicitudes();
+    setState(() {
+      dataLoaded=true;
+    });
     print("load tablas ejecutandose");
   }
 
@@ -241,7 +248,9 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                                 Expanded(child: Text(tutor.univerisdad)),
                               ],
                             ),
-                            Text('Activo? ${tutor.activo}')
+                            Text('Activo? ${tutor.activo}'),
+                            if(dataLoaded==true)
+                              Text('ult fecha ${DateFormat('dd/MM/yy').format(ultimaFechaCotizacionTutor(tutor.nombrewhatsapp))}')
                           ],
                         ),
                       ),
@@ -252,6 +261,33 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
         ),
       ],
     );
+  }
+
+  DateTime ultimaFechaCotizacionTutor(String tutorname) {
+    Cotizacion? ultimaCotizacion;
+    DateTime? fechaUltimaCotizacion;
+
+    for (Solicitud solicitud in solicitudesList) {
+      for (Cotizacion cotizacion in solicitud.cotizaciones) {
+        if (cotizacion.nombretutor == tutorname) {
+          // Calcular la fecha de cotización
+          DateTime fechaCotizacion = solicitud.fechasistema.add(Duration(minutes: cotizacion.tiempoconfirmacion ?? 0));
+
+          // Comprobar si es la cotización más reciente
+          if (ultimaCotizacion == null || fechaCotizacion.isAfter(fechaUltimaCotizacion!)) {
+            ultimaCotizacion = cotizacion;
+            fechaUltimaCotizacion = fechaCotizacion;
+          }
+        }
+      }
+    }
+
+    // Verificar si se encontró alguna cotización
+    if (ultimaCotizacion != null) {
+      return fechaUltimaCotizacion!;
+    } else {
+      return DateTime.now(); // Puedes manejar el caso cuando no hay cotizaciones, retornando null o una fecha predeterminada
+    }
   }
 
 }
@@ -763,11 +799,11 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                       Text("% resp global ${tutorEvaluator?.getPromedioRespuesta(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
                                       Text("% resp materia ${tutorEvaluator?.getPromedioRespuestaMateria(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
                                       Text("% precio global ${tutorEvaluator?.getPromedioPrecioTutor(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      //Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                      //Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      //Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                      //Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      //Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
+                                      Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
+                                      Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
 
                                     ],
                                   ), //de materia
@@ -778,13 +814,14 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                       Text("not % resp global ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestaglobal']?.toStringAsFixed(2)}"),
                                       Text("not % resp materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestalocal']?.toStringAsFixed(1)}"),
                                       Text("not % precio global ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobal']?.toStringAsFixed(1)}"),
-                                      //Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
-                                      //Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
-                                      //Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
-                                      //Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
-                                      //Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
+                                      Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
+                                      Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
+                                      Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
+                                      Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
+                                      Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
 
                                       Text('calificación ${tutorEvaluator?.retornocalificacion(tutore).toStringAsFixed(1)}'),
+                                      Text('ult fecha ${tutorEvaluator?.ultimaFechaCotizacionTutor(tutore.nombrewhatsapp)}'),
                                     ],
                                   )
                                 ],
