@@ -27,6 +27,7 @@ class LoadData {
 
   //Obtener solicitudes en stream
   Stream<List<Solicitud>> getsolicitudstream(String estado) async* {
+    await referencias.initCollections();
     CollectionReference refsolicitudes = referencias.solicitudes!;
     Stream<QuerySnapshot> querySolicitud = refsolicitudes.where('Estado', isEqualTo: estado).snapshots();
 
@@ -96,6 +97,7 @@ class LoadData {
 
   //Obtener en tiempo real, numero de servicio a publicar
   Stream<int> cargarnumerodesolicitudes() async* {
+    await referencias.initCollections();
     CollectionReference referencesolicitudes = referencias.solicitudes!;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
@@ -105,6 +107,7 @@ class LoadData {
 
   //Obtener numero de contabilidades en tiempo real
   Stream<int> cargarnumerocontabilidad() async* {
+    await referencias.initCollections();
     CollectionReference referencecontabilidad = referencias.contabilidad!;
     await for (QuerySnapshot snapshot in referencecontabilidad.snapshots()){
       int numDocumentos = snapshot.size;
@@ -115,6 +118,7 @@ class LoadData {
 
   //Tablas de materias
   Future tablasmateria() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablamateria') ?? false;
     if (!datosDescargados) {
@@ -152,6 +156,7 @@ class LoadData {
 
   //Clientes, revisar
   Future obtenerclientes({Function(Clientes)? onClienteAdded,Function(int)? TotalClietnes}) async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablaclientes') ?? false;
     if (!datosDescargados) {
@@ -204,6 +209,7 @@ class LoadData {
 
   //Tutores, guardar
   Future obtenertutores({Function(Tutores)? onTutorAdded,Function(int)? TotalTutores}) async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
@@ -295,6 +301,7 @@ class LoadData {
 
   //Carrareas Listas
   Future obtenercarreras() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listacarreras') ??
         false;
@@ -330,6 +337,7 @@ class LoadData {
 
   //Lista de euniversidades
   Future obtenerUniversidades() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool(
         'datos_descargados_listauniversidades') ?? false;
@@ -365,6 +373,7 @@ class LoadData {
 
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
   Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded,Function(int)? TotalSolicitudes}) async{
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
     if (!datosDescargados) {
@@ -446,6 +455,7 @@ class LoadData {
 
   //Leer configuración inicial, que es la priemra que hay
   Future<Map<String, dynamic>> configuracion_inicial() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_configinicial') ?? false;
 
@@ -495,6 +505,7 @@ class LoadData {
 
   //Leer plugins, para ver cuales estan o no estan
   Future<Map<String, dynamic>> configuracion_plugins() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_plugins') ?? false;
     if (!datosDescargados) {
@@ -547,6 +558,7 @@ class LoadData {
 
   //Mnesajes personalizados
   Future<Map<String, dynamic>> configuracion_mensajes() async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_config_mensajes') ?? false;
 
@@ -592,6 +604,7 @@ class LoadData {
 
   //Tutores en local
   Future getinfotutor(User currentUser) async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
     if (!datosDescargados) {
@@ -623,6 +636,7 @@ class LoadData {
   }
 
   Future<String> verificar_rol(User currentUser) async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_Descargados_verificar_rol') ?? false;
     if(!datosDescargados){
@@ -640,6 +654,7 @@ class LoadData {
   }
 
   Future tiempoactualizacion() async{
+    await referencias.initCollections();
     try{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
@@ -656,6 +671,7 @@ class LoadData {
 
   //Cargar lista de emrpesas y contraseñas
   Future cargaListaEmpresas() async{
+    await referencias.initCollections();
     CollectionReference referencelistaempresas = referencias.listaEmpresas!;
     QuerySnapshot querylistaEmpresas = await referencelistaempresas.get();
     List<Map<String, dynamic>> listaClaves = [];

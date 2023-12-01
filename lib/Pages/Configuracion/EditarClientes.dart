@@ -108,7 +108,6 @@ class PrimaryColumnEditarClietnesState extends State<PrimaryColumnEditarClietnes
               setState(() {
                 print("seleccionado ${item.label} con numero ${item.value?.numero.toString()}");
                 selectedCliente = item.value;
-                //Ahora sacamos , carrera y universidad
                 actualizarvalores();
                 dataSearch = true;
               });

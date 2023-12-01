@@ -851,14 +851,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
   int precio = 0;
   String comentario = "";
   DateTime fechaconfirmacion = DateTime.now();
-  List<String> EstadoList = [
-    'DISPONIBLE',
-    'EXPIRADO',
-    'ESPERANDO',
-    'AGENDADO',
-    'NO PODEMOS'
-  ];
-  String? selectedEstado = "";
+
   final db = FirebaseFirestore.instance;
   String? selectedSistema;
   int preciocobrado = 0;
@@ -1080,15 +1073,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
                                     child: Icon(FluentIcons.access_logo),
                                   ),
                                   //Cambiar estado de servicio
-                                  GestureDetector(
-                                    onTap: () {
-                                      print("Cambiar de estado del servicio");
-                                      cambiarestadoDialog(
-                                          context, solicitud.idcotizacion,
-                                          solicitud.fechasistema);
-                                    },
-                                    child: Icon(FluentIcons.activate_orders),
-                                  ),
+                                  EstadoServicioDialog(solicitud: solicitud,),
                                 ],
                               )
                             ],
@@ -1345,75 +1330,6 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     );
   }
 
-  void cambiarestadoDialog(BuildContext context, int idcotizacion, DateTime fechasistema) async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Cotizaciones de servicio'),
-              content: Column(
-                children: [
-                  //seleccionar estado
-                  ComboBox<String>(
-                    value: selectedEstado,
-                    items: EstadoList.map<ComboBoxItem<String>>((e) {
-                      return ComboBoxItem<String>(
-                        child: Text(e),
-                        value: e,
-                      );
-                    }).toList(),
-                    onChanged: (text) {
-                      setState(() {
-                        selectedEstado = text; // Update the local variable
-                      });
-                      print("materia seleccionado $selectedEstado");
-                    },
-                    placeholder: const Text('Seleccionar tipo servicio'),
-                  ),
-                ],
-              ),
-              actions: [
-                Button(
-                  child: const Text('Actualizar Estado'),
-                  onPressed: () async {
-                    print("Enviar estado de servicio");
-                    DocumentReference estadomateria = db.collection("SOLICITUDES").doc(idcotizacion.toString());
-                    estadomateria.update({'Estado': selectedEstado});
-                    Navigator.pop(context);
-                    //Registrar el historial cada vez que se coloque
-                    final ahora = DateTime.now();
-                    final Duration duration = ahora.difference(fechasistema);
-                    CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
-                    HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
-                    historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
-                    //Ahora de forma local, cambiemos el estado a ver
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
-                    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-                    List solicitudList = CarreraData.map((tutorData) =>
-                        Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
-                    // Actualizar la lista de clientes local con el cliente actualizado
-                    int indexToUpdate = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idcotizacion);
-                    if (indexToUpdate != -1) {
-                      solicitudList[indexToUpdate].estado = selectedEstado;
-                    }
-                    String solicitudListdos = jsonEncode(solicitudList);
-                      await prefs.setString('solicitudes_list', solicitudListdos);
-                  },
-                ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
 
   void agendartrabajo(BuildContext context, Solicitud solicitud, Cotizacion cotizacion) async {
     final currentwidth = MediaQuery.of(context).size.width;
@@ -1515,7 +1431,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
               ),
               actions: [
                 Button(
-                  child: const Text('Actualizar Estado'),
+                  child: const Text('Subir Servicio'),
                   onPressed: () {
                     comprobacionagendartrabajo(cotizacion,solicitud,context);
                   },
@@ -1538,15 +1454,11 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     }else if(preciocobrado<cotizacion.cotizacion){
       print("precio cobrado es < al precio del tutor");
       Utiles().notificacion("Precio cobrado es < precio tutor", context, false,"cambia el precio");
-    } else{
-      CollectionReference agendatutor = db.collection("SOLICITUDES").doc(solicitud.idcotizacion.toString()).collection("COTIZACIONES");
-      Map<String, dynamic> data = {'Agenda': "AGENDADO"};
-      agendatutor.doc(cotizacion.uidtutor).update(data);
-      CollectionReference expiradoglobal = db.collection("SOLICITUDES");
-      Map<String, dynamic> dataexpirado = {'Estado': "AGENDADO"};
-      expiradoglobal.doc(solicitud.idcotizacion.toString()).update(dataexpirado);
+    }else if(solicitud.fechaentrega.isBefore(DateTime.now())){
+      Utiles().notificacion("fecha de entrega es < a hoy", context, false,"cambia la fehca de entrega");
+    }else{
       //Aqui vamos a tener el servicio agendado, agendado realmente
-      Uploads().addServicioAgendado(codigo,selectedSistema!, solicitud.materia, solicitud.cliente.toString(), preciocobrado, solicitud.fechaentrega, cotizacion.nombretutor, cotizacion.cotizacion, selectedIdentificador, solicitud.idcotizacion,numerocontabilidadagenda,"NO ENTREGADO");
+      await Uploads().addServicioAgendado(codigo,selectedSistema!, solicitud.materia, solicitud.cliente.toString(), preciocobrado, solicitud.fechaentrega, cotizacion.nombretutor, cotizacion.cotizacion, selectedIdentificador, solicitud.idcotizacion,numerocontabilidadagenda,"NO ENTREGADO");
       Navigator.pop(context, 'User deleted file');
       Navigator.pop(context, 'User deleted file');
       Utiles().notificacion("Servicio subido con exito", context, true,"bien rey");

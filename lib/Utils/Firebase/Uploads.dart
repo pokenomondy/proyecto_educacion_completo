@@ -58,6 +58,7 @@ class Uploads{
 }
   //Modificar un servicio
   Future<void> modifyServiciosolicitud(int index, String texto, DateTime dateTime, int idcotizacionfire) async {
+    await referencias.initCollections();
     String variable = "";
     Map<String, dynamic> uploadinformacion = {};
     if (index == 0) {
@@ -120,22 +121,35 @@ class Uploads{
 
   //añadir servicio agendado
   Future<void> addServicioAgendado(String codigo,String sistema,String materia,String cliente,int preciocobrado,DateTime fechaentrega,String tutor,int preciotutor,String identificadorcodigo,int idsolicitud, int numerocontabilidadagenda,String entregado) async {
+    await referencias.initCollections();
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = referencias.contabilidad!;
     List<RegistrarPago> pagos = [];
     ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[]);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
-    //Llamar servicios ya agendados y guardar el nuevo
+
+    print(idsolicitud);
+    cambiarEstadoSolicitud(idsolicitud,"AGENDADO");
+  }
+
+  Future<void> cambiarEstadoSolicitud(int idsolicitud,String motivo) async{
+    await referencias.initCollections();
+    CollectionReference expiradoglobal = referencias.solicitudes!;
+    Map<String, dynamic> dataAgendado = {'Estado': motivo};
+    expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('contabilidad_list') ?? '';
-    List<dynamic> ServicioAgendadoData = jsonDecode(solicitudesJson);
-    List serviciosagendadoList = ServicioAgendadoData.map((tutorData) =>
-        ServicioAgendado.fromJson(tutorData as Map<String, dynamic>)).toList();
-    //Ahora le metemos el nuevoxxxx
-    serviciosagendadoList.add(newservicioagendado);
-    //Ahora guardamos la lista
-    String solicitudesJsondos = jsonEncode(serviciosagendadoList);
-    await prefs.setString('contabilidad_list', solicitudesJsondos);
+    String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
+    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
+    List solicitudList = CarreraData.map((tutorData) =>
+        Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
+    // Actualizar la lista de clientes local con el cliente actualizado
+    int indexToUpdate = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idsolicitud);
+    if (indexToUpdate != -1) {
+      solicitudList[indexToUpdate].estado = motivo;
+    }
+    String solicitudListdos = jsonEncode(solicitudList);
+    await prefs.setString('solicitudes_list', solicitudListdos);
   }
 
   //modificar un servicio agendado
@@ -182,6 +196,7 @@ class Uploads{
   }
   //Entregar trabajos tutores
   Future<void> modifyServicioAgendadoEntregado(String codigo)async {
+    await referencias.initCollections();
     print("entregado de tutor");
     CollectionReference contabilidad = referencias.contabilidad!;
     Map<String, dynamic> uploadinformacion = {};
@@ -209,6 +224,7 @@ class Uploads{
   }
 
   void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
+    await referencias.initCollections();
     CollectionReference tutor = referencias.tutores!;
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
@@ -229,6 +245,7 @@ class Uploads{
   }
   //Modificar infomración de tutor
   Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num) async{
+    await referencias.initCollections();
     String variable = "";
     Map<String, dynamic> uploadinformacion = {};
     if(index == 1){
@@ -265,6 +282,7 @@ class Uploads{
   }
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
+    await referencias.initCollections();
     CollectionReference cuentas = referencias.tutores!;
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
     print("Subido nueva cuenta bancaria");
@@ -284,6 +302,7 @@ class Uploads{
   }
   //Subir materia de tutor
   void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
+    await referencias.initCollections();
     CollectionReference materias = referencias.tutores!.doc(uidtutor.toString()).collection("MATERIA");
     Materia newmateria = Materia(nombremateria);
     await materias.doc(nombremateria).set(newmateria.toMap());
@@ -305,7 +324,6 @@ class Uploads{
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {
-    print("subiedno nuevo cliente");
     await referencias.initCollections();
     CollectionReference cliente = referencias.clientes!;
     Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now(),procedencia,DateTime.now());
@@ -357,9 +375,9 @@ class Uploads{
 
   }
 
-
   //actualizar prospecto a cliente
   Future<void> prospectoacliente(String nombreCliente, String nombrecompletoCliente, int numero ) async {
+    await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     CollectionReference cliente = referencias.clientes!;
     Map<String, dynamic> datosActualizados = {
@@ -384,6 +402,7 @@ class Uploads{
   }
   //Registramos un nuevo pago a servicio
   Future<void> addPago(int idconfirmacion, ServicioAgendado servicio, String tipopago, int valor, String referencia, DateTime fechapago, String metodopago, BuildContext context) async {
+    await referencias.initCollections();
     List<RegistrarPago> pagos = [];
     int numeropagosregistrados = await obtenerNumeroDePagosRegistrados(idconfirmacion);
     DocumentReference pagoReference = referencias.contabilidad!.doc(servicio.codigo);;
@@ -408,6 +427,7 @@ class Uploads{
     }
   }
   Future<int> obtenerNumeroDePagosRegistrados(int idcontable) async {
+    await referencias.initCollections();
     List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
 
     // Verifica si serviciosAgendados no es nulo y no está vacío
@@ -428,6 +448,7 @@ class Uploads{
   }
   //Modificar servicio cancelado en base de datos y forma local
   Future<void> modificarcancelado(int idcotizacion,int preciocobrado,int preciotutor) async {
+    await referencias.initCollections();
     CollectionReference solicitud = referencias.contabilidad!;
     DocumentSnapshot serviciosnapshot = await solicitud.doc(idcotizacion.toString()).get();
     Map<String, dynamic> servicioData = serviciosnapshot.data() as Map<String, dynamic>;
