@@ -1,9 +1,15 @@
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/Config.dart';
 import '../../Objetos/Objetos Auxiliares/Carreras.dart';
+import '../../Objetos/Objetos Auxiliares/HistorialEstado.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
+import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Uploads.dart';
@@ -530,6 +536,116 @@ class _TutoresDialogState extends State<TutoresDialog> {
                 Button(
                   child: const Text('Agregar Cliente'),
                   onPressed: () async{
+                  },
+                ),
+                FilledButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _truncateLabel(String label) {
+    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
+    if (label.length > maxLength) {
+      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
+    }
+    return label;
+  }
+
+}
+
+//Dialogo de estado de servicio
+
+class EstadoServicioDialog extends StatefulWidget {
+  final Solicitud solicitud;
+
+  const EstadoServicioDialog({Key?key,
+    required this.solicitud,
+  }) :super(key: key);
+
+  @override
+  EstadoServicioDialogState createState() => EstadoServicioDialogState();
+}
+
+class EstadoServicioDialogState extends State<EstadoServicioDialog> {
+  List<String> EstadoList = [
+    'DISPONIBLE',
+    'EXPIRADO',
+    'ESPERANDO',
+    'NO PODEMOS'
+  ];
+  String? selectedEstado = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(child: GestureDetector(
+      child: Container(
+          height: 30,
+          width: 30,
+          decoration: BoxDecoration(
+            color: Config.secundaryColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Icon(FluentIcons.add,
+            color: Config().primaryColor,
+            weight: 30,)),
+      onTap: (){
+        _showDialog(context,widget.solicitud.idcotizacion);
+      },
+    ),);
+  }
+
+  void _showDialog(BuildContext context, int idcotizacion) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return ContentDialog(
+              title: const Text('Cambiar estado del servicio'),
+              content: Column(
+                children: [
+                  //seleccionar estado
+                  ComboBox<String>(
+                    value: selectedEstado,
+                    items: EstadoList.map<ComboBoxItem<String>>((e) {
+                      return ComboBoxItem<String>(
+                        child: Text(e),
+                        value: e,
+                      );
+                    }).toList(),
+                    onChanged: (text) {
+                      setState(() {
+                        selectedEstado = text; // Update the local variable
+                      });
+                      print("materia seleccionado $selectedEstado");
+                    },
+                    placeholder: const Text('Seleccionar tipo servicio'),
+                  ),
+                ],
+              ),
+              actions: [
+                Button(
+                  child: const Text('Actualizar Estado'),
+                  onPressed: () async {
+                    print("actualizar estado $idcotizacion");
+                    await Uploads().cambiarEstadoSolicitud(idcotizacion, selectedEstado!);
+                    Navigator.pop(context, 'User canceled dialog');
+                    /*
+                    final ahora = DateTime.now();
+                    final Duration duration = ahora.difference(fechasistema);
+                    CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
+                    HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
+                    historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
+                    //Ahora de forma local, cambiemos el estado a ver
+
+                     */
                   },
                 ),
                 FilledButton(

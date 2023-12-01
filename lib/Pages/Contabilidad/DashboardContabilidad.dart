@@ -187,7 +187,11 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     String valor = valores[index];
 
     if (index == 1) {
-      cambio = selectedMateria?.nombremateria;
+      if(selectedMateria!=null){
+        cambio = selectedMateria?.nombremateria;
+      }else{
+        cambio = valor;
+      }
     }else if(index == 4 ||index == 7){
       cambio = valorcambio.toString();
     }else if(index == 8){
@@ -345,13 +349,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
               //actualizar variable
               GestureDetector(
                 onTap: () async{
-                  print("texto a cambiar = ${servicioAgendado!.codigo} cambio = ${cambio!} textoanterior = ${valor}");
-                  await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
-                  actualizarHistorialporcodigo(servicioAgendado!.codigo);
-                  setState(() {
-                    valores[index] = cambio!;
-                    editarcasilla[index] = false;  // Desactiva el modo de edición
-                  });
+                  comprobaractualziardatos(index,cambio!,valor);
                 },
                 child: Icon(FluentIcons.check_list),
               ),
@@ -374,6 +372,20 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
       ],
     );
   }
+
+  void comprobaractualziardatos(int index,String cambio,String valor) async{
+    if(index == 1 && cambio == valor){
+      Utiles().notificacion("Selecciona una materia", context, false,"desp");
+    }else{
+      await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
+      actualizarHistorialporcodigo(servicioAgendado!.codigo);
+      setState(() {
+        valores[index] = cambio!;
+        editarcasilla[index] = false;  // Desactiva el modo de edición
+      });
+    }
+  }
+
 
   String _truncateLabel(String label) {
     const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta

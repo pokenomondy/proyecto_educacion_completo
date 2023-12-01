@@ -129,10 +129,27 @@ class Uploads{
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
 
     print(idsolicitud);
-    //modificar la solicitud por agendada
+    cambiarEstadoSolicitud(idsolicitud,"AGENDADO");
+  }
+
+  Future<void> cambiarEstadoSolicitud(int idsolicitud,String motivo) async{
+    await referencias.initCollections();
     CollectionReference expiradoglobal = referencias.solicitudes!;
-    Map<String, dynamic> dataAgendado = {'Estado': "AGENDADO"};
+    Map<String, dynamic> dataAgendado = {'Estado': motivo};
     expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
+    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
+    List solicitudList = CarreraData.map((tutorData) =>
+        Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
+    // Actualizar la lista de clientes local con el cliente actualizado
+    int indexToUpdate = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idsolicitud);
+    if (indexToUpdate != -1) {
+      solicitudList[indexToUpdate].estado = motivo;
+    }
+    String solicitudListdos = jsonEncode(solicitudList);
+    await prefs.setString('solicitudes_list', solicitudListdos);
   }
 
   //modificar un servicio agendado

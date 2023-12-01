@@ -5,6 +5,7 @@ import '../../Objetos/Clientes.dart';
 import '../../Objetos/Solicitud.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
+import '../ShowDialogs/SolicitudesDialogs.dart';
 
 class SolicitudClientesDash extends StatefulWidget {
 
@@ -132,10 +133,9 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
                               children: [
                                 Text(solicitud.idcotizacion.toString()),
                                 Text(solicitud.materia),
+                                Text(solicitud.fechaentrega.toString()),
                                 Text(solicitud.estado),
-                                FilledButton(child: Text('cambiar estado'), onPressed: (){
-
-                                }),
+                                EstadoServicioDialog(solicitud: solicitud),
                               ],
                             ),
                           ),
