@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'Config/Config.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
+import 'Pages/CentroConfig.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
@@ -73,7 +74,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return (Config.dufyadmon)? LoginPage():InitPage();//InitPage();
+            return (Config.dufyadmon)? const LoginPage(): ConfigInicialPrimerAcceso();//InitPage();//InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(

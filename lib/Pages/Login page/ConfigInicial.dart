@@ -111,9 +111,10 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                                     dialog.Icons.info_outline,
                                     size: 20,
                                   ),
-                                  onPressed: (){
-
-                                  }
+                                  onPressed: () => dialog.showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) => theme.ConfirmDialog("lkashdjlksahdkjashdkljashd jhasdkhaskjd kjñhaslkjdhas kljhaskjldhlksad bjklashdlkashd hlkjashdlkjsah  hjkashdkjlhsalkjd ", context)
+                                  )
                               ),
                             )
                           ],
@@ -160,6 +161,41 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
     );
   }
 
+  dialog.Dialog tutorial(){
+    return dialog.Dialog(
+      backgroundColor: theme.primaryColor.withOpacity(0),
+      child: ItemsCard(
+        margin: 8,
+        width: 320,
+        height: 280,
+        children: [
+          Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Text(
+                "Ejemplo Mensaje",
+                style: theme.styleText(22, true, theme.primaryColor)
+              ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 15.0),
+            child: Text(
+              "🔴TIPO SERVICIO = /servicio/\n🔴SOLICITUD = /idcotizacion/\n🔴MATERIA = /materia/\n🔴FECHA ENTREGA = /fechaentrega\n🔴HORA ENTREGA =  /horaentrega\n🔴RESUMEN = /resumen\n🔴INFORMACIÓN CLIENTE = /infocliente\n🔴ARCHIVOS =/urlarchivos/",
+              maxLines: null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 15.0),
+            child: PrimaryStyleButton(
+                width: 100,
+                function: (){
+                  Navigator.pop(context);
+                }, text: "Cerrar"),
+          )
+        ],
+      ),
+    );
+  }
+  
   String colorToHex(Color color) {
     return '#' + color.value.toRadixString(16).padLeft(8, '0');
   }
