@@ -25,7 +25,6 @@ import 'package:provider/provider.dart';
 import 'StreamBuilders.dart';
 
 class Uploads{
-  final db = FirebaseFirestore.instance; //inicializar firebase
   CollectionReferencias referencias =  CollectionReferencias();
 
   Uploads() {
