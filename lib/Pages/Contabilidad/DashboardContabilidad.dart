@@ -12,6 +12,7 @@ import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/Uploads.dart';
 import '../../Utils/FuncionesMaterial.dart';
+import 'Pagos.dart';
 
 class ContaDash extends StatefulWidget {
 
@@ -21,12 +22,13 @@ class ContaDash extends StatefulWidget {
 }
 
 class ContaDashState extends State<ContaDash> {
+  bool dataloaded = true;
 
 
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/2)-30;
+    final tamanowidth = (currentwidth/3)-30;
     return Container(
       child: Row(
         children: [
@@ -67,6 +69,14 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
   ServicioAgendado? servicioAgendado;
   bool dataloaded = false;
 
+  //Pagos
+  int sumaPagosClientes = 0;
+  int sumaPagosTutores = 0;
+  int sumaPagosReembolsoCliente = 0;
+  int sumaPagosReembolsoTutores = 0;
+  bool disabledbutton = false;
+  Map<String, dynamic> uploadconfiguracion = {};
+
   @override
   void initState() {
     loadtablas();
@@ -92,6 +102,16 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     });
     materiaList = await LoadData().tablasmateria();
     tutoresList = await LoadData().obtenertutores();
+  }
+
+  void actualizarpagosMain(ServicioAgendado codigo) async{
+    uploadconfiguracion = await Utiles().actualizarpagos(codigo, context);
+    setState(() {
+      sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
+      sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
+      sumaPagosReembolsoCliente = uploadconfiguracion['sumaPagosReembolsoCliente'];
+      sumaPagosReembolsoTutores = uploadconfiguracion['sumaPagosReembolsoTutores'];
+    });
   }
 
   void actualizarvalores(){
@@ -140,6 +160,10 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                       servicioAgendado = item.value;
                       actualizarvalores();
                       actualizarHistorialporcodigo(servicioAgendado!.codigo);
+                      actualizarpagosMain(servicioAgendado!);
+                      setState(() {
+                        buscador = true;
+                      });
                     });
                   },
                   onChanged: (text, reason) {
@@ -152,13 +176,6 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                 ),
               ),
 
-              FilledButton(child: Text('Buscard'), onPressed: ()async{
-                actualizarvalores();
-                actualizarHistorialporcodigo(servicioAgendado!.codigo);
-                setState(() {
-                  buscador = true;
-                });
-              }),
               if(buscador==true)
                 Column(
                   children: [
@@ -170,10 +187,12 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                     textoymodificable("Fecha entrega ", servicioAgendado!, 5, false),
                     textoymodificable("Tutor ", servicioAgendado!, 6, false),
                     textoymodificable("Precio tutor ", servicioAgendado!, 7, false),
-                    textoymodificable("Identificador código ", servicioAgendado!, 8, false),
+                    textoymodificable("Identificador código ", servicioAgendado!, 8, true),
                     textoymodificable("ID solicitud ", servicioAgendado!, 9, true),
                     textoymodificable("ID contable ", servicioAgendado!, 10, true),
                     textoymodificable("Entregado tutor ", servicioAgendado!, 11, true),
+                    Text('pago clientes: ${sumaPagosClientes-sumaPagosReembolsoCliente}\n'
+                        'pago tutores : ${sumaPagosTutores-sumaPagosReembolsoTutores}')
                   ],
                 ),
             ],
@@ -349,7 +368,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
               //actualizar variable
               GestureDetector(
                 onTap: () async{
-                  comprobaractualziardatos(index,cambio!,valor);
+                  comprobaractualziardatos(index,cambio!,valor,valorcambio);
                 },
                 child: Icon(FluentIcons.check_list),
               ),
@@ -373,19 +392,38 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     );
   }
 
-  void comprobaractualziardatos(int index,String cambio,String valor) async{
+  void comprobaractualziardatos(int index,String cambio,String valor, int valorcambio,) async{
+    int pagocliente = sumaPagosClientes-sumaPagosReembolsoCliente;
+    int pagoTutor = sumaPagosTutores-sumaPagosReembolsoTutores;
     if(index == 1 && cambio == valor){
       Utiles().notificacion("Selecciona una materia", context, false,"desp");
-    }else{
-      await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
-      actualizarHistorialporcodigo(servicioAgendado!.codigo);
-      setState(() {
-        valores[index] = cambio!;
-        editarcasilla[index] = false;  // Desactiva el modo de edición
-      });
+    }else if(index == 4 && sumaPagosClientes>0){
+      if(valorcambio < pagocliente ){
+        Utiles().notificacion("No se puede cambiar, porque el precio es < al pagado", context, false,"desp");
+      }else{
+        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
+        _cambiarprecio(index, valor, cambio, valorcambio);
+      }
+    }else if(index == 7 && sumaPagosTutores>0){
+      if(valorcambio < pagoTutor){
+        Utiles().notificacion("No se puede editar el precio porque hay pagos", context, false,"desp");
+      }else{
+        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
+        _cambiarprecio(index, valor, cambio, valorcambio);
+      }
+    } else{
+      _cambiarprecio(index, valor, cambio, valorcambio);
     }
   }
 
+  Future<void> _cambiarprecio(int index,String valor,String cambio,int valorcambio) async{
+    await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
+    actualizarHistorialporcodigo(servicioAgendado!.codigo);
+    setState(() {
+      valores[index] = cambio!;
+      editarcasilla[index] = false;  // Desactiva el modo de edición
+    });
+  }
 
   String _truncateLabel(String label) {
     const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta

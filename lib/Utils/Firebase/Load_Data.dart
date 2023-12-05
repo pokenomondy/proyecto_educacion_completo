@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
@@ -101,7 +102,11 @@ class LoadData {
     CollectionReference referencesolicitudes = referencias.solicitudes!;
     await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
       int numDocumentos = snapshot.size;
-      yield numDocumentos + 473;
+      if(!Config.dufyadmon){
+        yield numDocumentos + 1;
+      }else{
+        yield numDocumentos + 473;
+      }
     }
   }
 

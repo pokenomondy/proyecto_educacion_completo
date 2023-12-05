@@ -1,15 +1,16 @@
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:googleapis/driveactivity/v2.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
-
+import 'package:intl/intl.dart';
 import '../../Config/Config.dart';
 import '../EnviarMensajesWhataspp.dart';
+import '../Firebase/CollectionReferences.dart';
 
 class ResultadosUpload{
   final int numberfilesUploaded;
@@ -25,11 +26,11 @@ class ArchivoResultado{
 }
 
 class DriveApiUsage {
+  CollectionReferencias referencias =  CollectionReferencias();
   int archivosubidos = 0;
 
   //Subir solicitudes a Drive Api
-  Future<ResultadosUpload> subirSolicitudes(String carpetaId,
-      List<PlatformFile>? selectedFiles, String nombrecarpetanueva) async {
+  Future<ResultadosUpload> subirSolicitudes(String carpetaId, List<PlatformFile>? selectedFiles, String nombrecarpetanueva) async {
     try {
       final httpClient = await auth.clientViaServiceAccount(
         auth.ServiceAccountCredentials.fromJson({
@@ -60,13 +61,9 @@ class DriveApiUsage {
         final nuevaCarpetaDentro = await driveApi.files.create(foldernew);
 
         if (nuevaCarpetaDentro.id != null) {
-          final folderUrl = 'https://drive.google.com/drive/folders/${nuevaCarpetaDentro
-              .id}';
-          print(
-              'Carpeta dentro de la carpeta principal creada con ID: ${nuevaCarpetaDentro
-                  .id}');
-          print(
-              'Enlace a la carpeta dentro de la carpeta principal: $folderUrl');
+          final folderUrl = 'https://drive.google.com/drive/folders/${nuevaCarpetaDentro.id}';
+          print('Carpeta dentro de la carpeta principal creada con ID: ${nuevaCarpetaDentro.id}');
+          print('Enlace a la carpeta dentro de la carpeta principal: $folderUrl');
 
           //Vamos a agregar archivos dentro de la carpeta de drive
           if (selectedFiles != null && selectedFiles.isNotEmpty) {
@@ -76,22 +73,20 @@ class DriveApiUsage {
                 ..parents = [nuevaCarpetaDentro.id!];
 
               final media = drive.Media(
-                Stream.fromIterable(
-                    [Uint8List.fromList(file.bytes as List<int>)]),
+                Stream.fromIterable([Uint8List.fromList(file.bytes as List<int>)]),
                 // Convierte los bytes en un Stream
                 file.bytes?.length, // Tamaño del archivo
               );
-              final result = await driveApi.files.create(
-                  fileToUpload, uploadMedia: media);
+              final result = await driveApi.files.create(fileToUpload, uploadMedia: media);
               if (result.id != null) {
-                print('Archivo "${file
-                    .name}" subido correctamente a la nueva carpeta.');
+                print('Archivo "${file.name}" subido correctamente a la nueva carpeta.');
                 archivosubidos = archivosubidos + 1;
               } else {
-                print('No se pudo subir el archivo "${file
-                    .name}" a la nueva carpeta.');
+                print('No se pudo subir el archivo "${file.name}" a la nueva carpeta.');
               }
             }
+            //Aqui vamos a actualizar las estadisticas
+            estadisticasSolicitudesDriveApi(selectedFiles.length);
             return ResultadosUpload(archivosubidos, folderUrl);
           }
         } else {
@@ -105,10 +100,33 @@ class DriveApiUsage {
       return ResultadosUpload(0, '');
     }
   }
+  //Estadisticas de Solicitudes subidas
+  Future estadisticasSolicitudesDriveApi(int numArchivos) async{
+    await referencias.initCollections();
+    CollectionReference rutaEstadisticasDriveApi = referencias.EstadisticaDriveSolicitudes!;
+
+    final fechaActual = DateTime.now();
+    final fechaActualString = DateFormat('dd-MM-yyyy').format(fechaActual);
+
+    final estadisticaDiaDoc = rutaEstadisticasDriveApi.doc(fechaActualString);
+    final estadisticaDiaSnapshot = await estadisticaDiaDoc.get();
+
+    if (estadisticaDiaSnapshot.exists) {
+      // Si ya existe la estadística para este día, actualiza el número de archivos subidos
+      await estadisticaDiaDoc.update({
+        'archivos_subidos': FieldValue.increment(numArchivos),
+      });
+    } else {
+      // Si no existe la estadística para este día, crea un nuevo documento
+      await estadisticaDiaDoc.set({
+        'archivos_subidos': numArchivos,
+        'fecha' : fechaActual,
+      });
+    }
+  }
 
   //Subir imagenes de pagos, y poder verlos desde la app
-  Future<void> subirPago(String carpetaId, List<PlatformFile>? selectedFiles,
-      String referencia) async {
+  Future<void> subirPago(String carpetaId, List<PlatformFile>? selectedFiles, String referencia) async {
     try {
       final httpClient = await auth.clientViaServiceAccount(
         auth.ServiceAccountCredentials.fromJson({
@@ -224,8 +242,9 @@ class DriveApiUsage {
   //mostrar archivos en lista
   Future<List<ArchivoResultado>> viewarchivosolicitud(int idcotizacion)async{
     List<ArchivoResultado> resultados = [];
+    Config configuracion = Config();
     try{
-      String carpetaid = Config().carpetasolicitudes;
+      String carpetaid = configuracion.idcarpetaSolicitudes!;
       final httpClient = await auth.clientViaServiceAccount(
         auth.ServiceAccountCredentials.fromJson({
           "type": "service_account",

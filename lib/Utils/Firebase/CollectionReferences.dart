@@ -29,6 +29,9 @@ class CollectionReferencias{
   //Libaewducation
   CollectionReference listaEmpresas = FirebaseFirestore.instanceFor(app: Firebase.app('LIBADB')).collection("CLAVES");
 
+  //Referencia de estaidistcas plugin
+  CollectionReference? EstadisticaDriveSolicitudes;
+
   CollectionReferencias() {
     initCollections();
   }
@@ -48,6 +51,7 @@ class CollectionReferencias{
       tablascarreras = DufyFirestore.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
       tablasuniversidades = DufyFirestore.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
       authdireccion = authdufy;
+      EstadisticaDriveSolicitudes = configuracion!.doc("CONFIGURACION").collection("DRIVESOLICITUDES");
     }else{
       DocumentReference referenceNoDufy = LibaFirestore.collection("EMPRESAS").doc(nombre_empresa);
 
@@ -60,6 +64,7 @@ class CollectionReferencias{
       tablascarreras = referenceNoDufy.collection('TABLAS').doc("TABLAS").collection("CARRERAS");
       tablasuniversidades = referenceNoDufy.collection('TABLAS').doc("TABLAS").collection("UNIVERSIDADES");
       authdireccion = authLiba;
+      EstadisticaDriveSolicitudes = referenceNoDufy.collection('ACTUALIZACION').doc("Plugins").collection("DRIVESOLICITUDES");
     }
   }
 

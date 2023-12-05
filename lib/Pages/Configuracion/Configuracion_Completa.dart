@@ -136,6 +136,9 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                     }, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
                     CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: configuracion.SolicitudesDriveApi, fecha: configuracion.SolicitudesDriveApiFecha),
                     CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: configuracion.PagosDriveApi, fecha: configuracion.PagosDriveApiFecha),
+                    //Tutores
+                    CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
+
                   ],
                 ),
               ),
