@@ -16,7 +16,7 @@ class Config {
   Color primaryColor = Color(0xFF235FD9); //Color primario de la plataforma
   Color Secundarycolor = Color(0xFF235FD9); //Color primario de la plataforma
   String idcarpetaPagos = "";
-  String idcarpetaSolicitudes = "";
+  String? idcarpetaSolicitudes;
   //plugins
   Map<String, dynamic> configuracion_plugins = {}; //plugins
   Map<String, dynamic> configuracion_mensajes = {}; //mensajes
@@ -108,8 +108,6 @@ class Config {
   int tablet = 620;
   int celular = 620;
 
-  //Carpeta de Solicitudes
-  String carpetasolicitudes = "1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD";
   //Carpeta de Pagos
   String carpetapagos = "1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N";
   //Carpeta de entregas de trabajos
