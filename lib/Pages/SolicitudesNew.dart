@@ -42,9 +42,9 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
   List<Universidad> UniversidadList = [];
   List<Materia> materiaList = [];
   bool dataLoaded = false;
-  final GlobalKey<_CuadroSolicitudesState> actualizartablas = GlobalKey<_CuadroSolicitudesState>();
+  final GlobalKey<CuadroSolicitudesState> actualizartablas = GlobalKey<CuadroSolicitudesState>();
   final GlobalKey<_subirsolicitudesState> subirsolicitudes = GlobalKey<_subirsolicitudesState>();
-  final GlobalKey<_CuadroSolicitudesState> dialogKey = GlobalKey<_CuadroSolicitudesState>();
+  final GlobalKey<CuadroSolicitudesState> dialogKey = GlobalKey<CuadroSolicitudesState>();
   Config configuracion = Config();
   bool configloaded = false;
 
@@ -307,7 +307,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("Nueva solicitud",style: Disenos().aplicarEstilo(Config.secundaryColor, 30,true),),
+              Text("Nueva solicitud ",style: Disenos().aplicarEstilo(Config.secundaryColor, 30,true),),
               //Tipo de servicio
               Container(
                 margin: EdgeInsets.only(top: margen_solicitud),
@@ -519,8 +519,9 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                     //cuadrar la subida de archivos, como llevar a cabo ?
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        FilledButton(
+                      children:[
+                        if(configuracion.SolicitudesDriveApi)
+                          FilledButton(
                             style: Disenos().boton_estilo(),
                             child: Text('seleccionar archivos'), onPressed: (){
                           selectFile();
@@ -592,14 +593,18 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   }
 
   Future<void> uploadarchivosDrive() async{
-    final result = await DriveApiUsage().subirSolicitudes("1UhZBywK1XjkIJDQH0xpaAzzqVRevG3iD", selectedFiles,numsolicitud.toString());
-    print("Número de archivos subidos: ${result.numberfilesUploaded}");
-    print("URL de la carpeta: ${result.folderUrl}");
-    //Ahora avisar numero de archivos subidos y url
-    setState(() {
-      uploadedCount = result.numberfilesUploaded;
-      carpetaurl = result.folderUrl;
-    });
+    if(configuracion.SolicitudesDriveApi){
+      final result = await DriveApiUsage().subirSolicitudes(configuracion.idcarpetaSolicitudes!, selectedFiles,numsolicitud.toString());
+      print("Número de archivos subidos: ${result.numberfilesUploaded}");
+      print("URL de la carpeta: ${result.folderUrl}");
+      //Ahora avisar numero de archivos subidos y url
+      setState(() {
+        uploadedCount = result.numberfilesUploaded;
+        carpetaurl = result.folderUrl;
+      });
+    }else{
+      print("no tenes credenciales para esto");
+    }
   }
 
   void eliminar_Datos(){
@@ -795,7 +800,7 @@ class _CrearContainerState extends State<_CrearContainer> {
                   return Center(child: Text('cargando'));
                 }
                 List<Solicitud>? solicitudesList = snapshot.data;
-                return _CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,onUpdateListaClientes: forzarupdatedata,primarycolor: widget.primarycolor,);;
+                return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);;
               },
             ),
           ],
@@ -805,30 +810,28 @@ class _CrearContainerState extends State<_CrearContainer> {
   }
 }
 
-class _CuadroSolicitudes extends StatefulWidget{
+class CuadroSolicitudes extends StatefulWidget{
   final List<Solicitud>? solicitudesList;
   final double height;
   final List<Clientes> clienteList;
   final List<Tutores> tutoresList;
-  final Function() onUpdateListaClientes; // Agrega esta variable
   final Color primarycolor;
 
-  const _CuadroSolicitudes({Key?key,
+  const CuadroSolicitudes({Key?key,
     required this.solicitudesList,
     required this.height,
     required this.clienteList,
     required this.tutoresList,
-    required this.onUpdateListaClientes,
     required this.primarycolor,
   }) :super(key: key);
 
   @override
-  _CuadroSolicitudesState createState() => _CuadroSolicitudesState();
+  CuadroSolicitudesState createState() => CuadroSolicitudesState();
 
 
 }
 
-class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
+class CuadroSolicitudesState extends State<CuadroSolicitudes> {
 
   Stream<Duration> _tick(DateTime fechasistema) {
     return Stream<Duration>.periodic(Duration(seconds: 1), (count) {
@@ -869,7 +872,7 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
 
   String editnombrecliente = "";
   String editnombrewspcliente = "";
-  final GlobalKey<_CuadroSolicitudesState> statefulBuilderKey = GlobalKey<_CuadroSolicitudesState>();
+  final GlobalKey<CuadroSolicitudesState> statefulBuilderKey = GlobalKey<CuadroSolicitudesState>();
   String codigo = "";
   Config configuracion = Config();
   bool configloaded = false;
@@ -1623,7 +1626,6 @@ class _CuadroSolicitudesState extends State<_CuadroSolicitudes> {
     await Uploads().prospectoacliente(
         editnombrewspcliente, editnombrecliente, solicitud.cliente);
     //Función
-    widget.onUpdateListaClientes();
     print("registrando nuevo usuarido editado, porque no cambia");
     setState(() {
       stringnombrecliente = editnombrecliente;

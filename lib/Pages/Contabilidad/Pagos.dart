@@ -29,7 +29,6 @@ class ContablePagosState extends State<ContablePagos> {
   bool dataloaded = false;
   String selectedCodigo = ""; // Mantén el código seleccionado aquí
   bool cargue = false;
-  final GlobalKey<_ContainerPagosDashboardState> dashboardKey = GlobalKey<_ContainerPagosDashboardState>();
   final GlobalKey<_ContainerPagosState> registrarpago = GlobalKey<_ContainerPagosState>();
 
   @override
@@ -53,7 +52,7 @@ class ContablePagosState extends State<ContablePagos> {
       child: Row(
         children: [
           _ContainerPagos(currentwidth: tamanowidth,dataloaded: dataloaded,servicioagendadList: servicioagendadList,key: registrarpago),
-          _ContainerPagosDashboard(currentwidth: tamanowidth,servicioagendadList: servicioagendadList,dataloaded: dataloaded,selectedCodigo: selectedCodigo,key: dashboardKey,),
+          ContainerPagosDashboard(currentwidth: tamanowidth,dataloaded: dataloaded,)
         ],
       ),
     );
@@ -89,6 +88,10 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     String referenciapago = "";
     DateTime fecharegistropago = DateTime.now();
     Map<String, List<RegistrarPago>> pagosPorServicio = {};
+    List<PlatformFile>? selectedFiles ;
+    List<ServicioAgendado> servicioagendadList = [];
+    bool cargandopagos = false;
+    TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
 
     //Pagos
     int sumaPagosClientes = 0;
@@ -96,12 +99,18 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     int sumaPagosReembolsoCliente = 0;
     int sumaPagosReembolsoTutores = 0;
     bool disabledbutton = false;
-    List<PlatformFile>? selectedFiles ;
-    List<ServicioAgendado> servicioagendadList = [];
-    bool cargandopagos = false;
+    Map<String, dynamic> uploadconfiguracion = {};
 
-    TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
 
+    void actualizarpagosMain() async{
+      uploadconfiguracion = await Utiles().actualizarpagos(selectedservicio!, context);
+      setState(() {
+        sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
+        sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
+        sumaPagosReembolsoCliente = uploadconfiguracion['sumaPagosReembolsoCliente'];
+        sumaPagosReembolsoTutores = uploadconfiguracion['sumaPagosReembolsoTutores'];
+      });
+    }
 
     Future selectFile() async{
       if(kIsWeb){
@@ -130,37 +139,9 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       pagosProvider.cargarTodosLosPagos(servicioagendadList.expand((servicio) => servicio.pagos).toList());
       // Actualizar los pagos según el código seleccionado
       pagosProvider.actualizarPagosPorCodigo(codigo);
-      actualizarpagos(servicioagendadList);
+      actualizarpagosMain();
     }
 
-    void actualizarpagos(List<ServicioAgendado> servicioagendadListxx) {
-      print("actualizando pagos");
-      sumaPagosClientes = servicioagendadListxx
-          .where((servicio) => servicio.codigo == selectedservicio!.codigo)
-          .map((servicio) => servicio.pagos)
-          .expand((pagos) => pagos)
-          .where((pago) => pago.tipopago == 'CLIENTES')
-          .fold(0, (prev, pago) => prev + pago.valor);
-      sumaPagosTutores = servicioagendadListxx
-          .where((servicio) => servicio.codigo == selectedservicio!.codigo)
-          .map((servicio) => servicio.pagos)
-          .expand((pagos) => pagos)
-          .where((pago) => pago.tipopago == 'TUTOR')
-          .fold(0, (prev, pago) => prev + pago.valor);
-      sumaPagosReembolsoCliente = servicioagendadListxx
-          .where((servicio) => servicio.codigo == selectedservicio!.codigo)
-          .map((servicio) => servicio.pagos)
-          .expand((pagos) => pagos)
-          .where((pago) => pago.tipopago == 'REEMBOLSOCLIENTE')
-          .fold(0, (prev, pago) => prev + pago.valor);
-      sumaPagosReembolsoTutores = servicioagendadListxx
-          .where((servicio) => servicio.codigo == selectedservicio!.codigo)
-          .map((servicio) => servicio.pagos)
-          .expand((pagos) => pagos)
-          .where((pago) => pago.tipopago == 'REEMBOLSOTUTOR')
-          .fold(0, (prev, pago) => prev + pago.valor);
-    }
-  
     @override
     Widget build(BuildContext context) {
       return Stack(
@@ -478,26 +459,22 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     }
   }
 
-class _ContainerPagosDashboard extends StatefulWidget{
+class ContainerPagosDashboard extends StatefulWidget{
   final double currentwidth;
   final bool dataloaded;
-  final List<ServicioAgendado> servicioagendadList;
-  final String selectedCodigo;
 
-  const _ContainerPagosDashboard({
+  const ContainerPagosDashboard({
     Key?key,
     required this.currentwidth,
     required this.dataloaded,
-    required this.servicioagendadList,
-    required this.selectedCodigo,
   }) :super(key: key);
 
   @override
-  _ContainerPagosDashboardState createState() => _ContainerPagosDashboardState();
+  ContainerPagosDashboardState createState() => ContainerPagosDashboardState();
 
 }
 
-class _ContainerPagosDashboardState extends State<_ContainerPagosDashboard> {
+class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
 
 
   @override

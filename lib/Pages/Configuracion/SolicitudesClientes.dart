@@ -1,8 +1,11 @@
+import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 
+import '../../Config/Config.dart';
 import '../../Objetos/Clientes.dart';
 import '../../Objetos/Solicitud.dart';
+import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
 import '../ShowDialogs/SolicitudesDialogs.dart';
@@ -44,16 +47,25 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
   bool dataLoaded = false;
   bool dataLoadedSolicitudes = false;
   Clientes? selectedCliente;
+  List<Tutores> tutoresList = [];
+  Config configuracion = Config();
+
 
   @override
   void initState() {
-    laodtablas(); // Cargar los datos al inicializar el widget
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    configuracion.initConfig().then((_) {
+      setState(() {
+        laodtablas(); // Cargar los datos al inicializar el widget
+      });
+    });
     super.initState();
   }
 
   Future<void> laodtablas() async {
     clienteList = await LoadData().obtenerclientes();
     solicitudList = await LoadData().obtenerSolicitudes();
+    tutoresList = await LoadData().obtenertutores();
     setState(() {
       dataLoaded=true;
     });
@@ -122,26 +134,17 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
                     height: 600,
                     width: 1000,
                     child: ListView.builder(
-                      itemCount: solicitudFiltrada.length,
-                      itemBuilder: (context, index){
-                          Solicitud solicitud = solicitudFiltrada[index];
-
-                        return Container(
-                          height: 50,
-                          child: Card(
-                            child: Row(
-                              children: [
-                                Text(solicitud.idcotizacion.toString()),
-                                Text(solicitud.materia),
-                                Text(solicitud.fechaentrega.toString()),
-                                Text(solicitud.estado),
-                                EstadoServicioDialog(solicitud: solicitud),
-                              ],
-                            ),
-                          ),
+                      itemBuilder: (context, index) {
+                        return CuadroSolicitudes(
+                          solicitudesList: solicitudFiltrada,
+                          height: currentheight,
+                          clienteList: clienteList,
+                          tutoresList: tutoresList,
+                          primarycolor: configuracion.primaryColor,
                         );
-                      }),
-                )
+                      },
+                    ),
+                  ),
               ],
             ),
           ],

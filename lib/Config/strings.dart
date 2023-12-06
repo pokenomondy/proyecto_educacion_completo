@@ -1,6 +1,6 @@
 
 class Strings{
 
-  String appVersion = "1.0.18 ";
+  String appVersion = "1.0.19 ";
   String nombreApp = "Educacion App";
 }

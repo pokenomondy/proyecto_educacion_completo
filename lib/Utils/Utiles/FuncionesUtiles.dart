@@ -1,8 +1,16 @@
+import 'dart:convert';
+
+import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/services.dart';
+import 'package:googleapis/servicemanagement/v1.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../Objetos/AgendadoServicio.dart';
+import '../../Pages/Contabilidad/Pagos.dart';
 import '../Disenos.dart';
+import '../Firebase/StreamBuilders.dart';
 import '../FuncionesMaterial.dart';
 
 class Utiles{
@@ -103,6 +111,45 @@ class Utiles{
     } else{
       return "NO DEBERIA LLEGAR ACA";
     }
+  }
+
+  //Llamemos numero de precio cobrado y etc
+  Future<Map<String, dynamic>> actualizarpagos(ServicioAgendado selectedservicio,BuildContext context) async {
+    print("actualizando pagos");
+    List<ServicioAgendado>? servicioagendadoList = await stream_builders().cargarserviciosagendados();
+    int sumaPagosClientes = servicioagendadoList!
+        .where((servicio) => servicio.codigo == selectedservicio!.codigo)
+        .map((servicio) => servicio.pagos)
+        .expand((pagos) => pagos)
+        .where((pago) => pago.tipopago == 'CLIENTES')
+        .fold(0, (prev, pago) => prev + pago.valor);
+    int sumaPagosTutores = servicioagendadoList!
+        .where((servicio) => servicio.codigo == selectedservicio!.codigo)
+        .map((servicio) => servicio.pagos)
+        .expand((pagos) => pagos)
+        .where((pago) => pago.tipopago == 'TUTOR')
+        .fold(0, (prev, pago) => prev + pago.valor);
+    int sumaPagosReembolsoCliente = servicioagendadoList!
+        .where((servicio) => servicio.codigo == selectedservicio!.codigo)
+        .map((servicio) => servicio.pagos)
+        .expand((pagos) => pagos)
+        .where((pago) => pago.tipopago == 'REEMBOLSOCLIENTE')
+        .fold(0, (prev, pago) => prev + pago.valor);
+    int sumaPagosReembolsoTutores = servicioagendadoList!
+        .where((servicio) => servicio.codigo == selectedservicio!.codigo)
+        .map((servicio) => servicio.pagos)
+        .expand((pagos) => pagos)
+        .where((pago) => pago.tipopago == 'REEMBOLSOTUTOR')
+        .fold(0, (prev, pago) => prev + pago.valor);
+
+    Map<String, dynamic> uploadconfiguracion = {
+      'sumaPagosClientes': sumaPagosClientes,
+      'sumaPagosTutores': sumaPagosTutores,
+      'sumaPagosReembolsoCliente': sumaPagosReembolsoCliente,
+      'sumaPagosReembolsoTutores' : sumaPagosReembolsoTutores,
+    };
+
+    return uploadconfiguracion;
   }
 
 }
