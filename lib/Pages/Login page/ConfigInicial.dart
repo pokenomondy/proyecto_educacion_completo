@@ -30,7 +30,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
 
   @override
   Widget build(BuildContext context) {
-    const double width = 900;
+    const double width = 920;
     return Center(
       child: ItemsCard(
         height: 420,
@@ -42,7 +42,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
             children: [
               //Nombre de empresa
              SizedBox(
-               width: width/2,
+               width: width*0.4,
                child: Column(
                  mainAxisAlignment: MainAxisAlignment.center,
                  children: [
@@ -88,7 +88,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                ),
              ),
               SizedBox(
-                width: width/2,
+                width: width*0.6,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -113,7 +113,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                                   ),
                                   onPressed: () => dialog.showDialog(
                                       context: context,
-                                      builder: (BuildContext context) => theme.ConfirmDialog("lkashdjlksahdkjashdkljashd jhasdkhaskjd kjñhaslkjdhas kljhaskjldhlksad bjklashdlkashd hlkjashdlkjsah  hjkashdkjlhsalkjd ", context)
+                                      builder: (BuildContext context) => tutorial()
                                   )
                               ),
                             )
@@ -132,6 +132,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                             controller: solicitud_empresa,
                           ),
                           MensajeTextBox(
+                            solicitud: false,
                             placeholder: "Ingrese su mensaje de confirmacion predeterminado",
                             controller: confirmacion_empresa,
                           ),
@@ -166,22 +167,37 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
       backgroundColor: theme.primaryColor.withOpacity(0),
       child: ItemsCard(
         margin: 8,
-        width: 320,
-        height: 280,
+        width: 400,
+        height: 420,
         children: [
           Padding(
-              padding: const EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.only(top: 20, bottom: 15),
               child: Text(
-                "Ejemplo Mensaje",
+                "Ejemplo Mensajes",
                 style: theme.styleText(22, true, theme.primaryColor)
               ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 15.0),
-            child: Text(
-              "🔴TIPO SERVICIO = /servicio/\n🔴SOLICITUD = /idcotizacion/\n🔴MATERIA = /materia/\n🔴FECHA ENTREGA = /fechaentrega\n🔴HORA ENTREGA =  /horaentrega\n🔴RESUMEN = /resumen\n🔴INFORMACIÓN CLIENTE = /infocliente\n🔴ARCHIVOS =/urlarchivos/",
-              maxLines: null,
-            ),
+          const _SlideTextBox(
+              Icons: [
+                dialog.Icons.message_outlined,
+                dialog.Icons.messenger_outline,
+              ],
+              children: <Widget> [
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15.0),
+                  child: Text(
+                    "🔴TIPO SERVICIO = /servicio/\n🔴SOLICITUD = /idcotizacion/\n🔴MATERIA = /materia/\n🔴FECHA ENTREGA = /fechaentrega\n🔴HORA ENTREGA =  /horaentrega\n🔴RESUMEN = /resumen\n🔴INFORMACIÓN CLIENTE = /infocliente\n🔴ARCHIVOS =/urlarchivos/",
+                    maxLines: null,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15.0),
+                  child: Text(
+                    "CONFIRMACIONES DE SERVICIOS\n\nCONFIRMACIÓN DE /servicioplural/ DUFY ASESORÍAS\n\n/servicio/ CONFIRMADO\n\nMatería: /materia/\n/rolusuario/: /nombreusuario/\nPrecio: /preciousuario/\nFecha de entrega:/fecha de entrega/\nCódigo de confirmación: /codigo/\nID solicitud confirmada: /idsolicitud/",
+                    maxLines: null,
+                  ),
+                ),
+              ]
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
@@ -217,9 +233,14 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                   },
                 text: colortext
             ),
-            CircleAvatar(
-              backgroundColor: colorcito,
-              radius: 20.0,
+            GestureDetector(
+              onTap: (){
+                changecolordialog(colorcito,onColorChanged);
+              },
+              child: CircleAvatar(
+                backgroundColor: colorcito,
+                radius: 20.0,
+              ),
             ),
           ],
         ),
@@ -279,7 +300,7 @@ class _SlideTextBox extends StatefulWidget{
 
 }
 
-class _SlideTextBoxState extends State<_SlideTextBox>{
+class _SlideTextBoxState extends State<_SlideTextBox> with SingleTickerProviderStateMixin{
 
   final ThemeApp themeApp = ThemeApp();
   late List<bool> activo = [for(int i = 0; i < widget.children.length; i++) i == 0];
@@ -292,14 +313,17 @@ class _SlideTextBoxState extends State<_SlideTextBox>{
         widgetActivo = widget.children[i];
       }
     }
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: hallarBotones(),
-        ),
-        widgetActivo
-      ],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: hallarBotones(),
+          ),
+          widgetActivo
+        ],
+      ),
     );
   }
 
@@ -316,7 +340,8 @@ class _SlideTextBoxState extends State<_SlideTextBox>{
               padding: const EdgeInsets.only(left: 5),
               child: Text(text)
           ),
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
           width: iconSize * 2,
           height: iconSize * 2,
           alignment: Alignment.center,
