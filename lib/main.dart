@@ -74,7 +74,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return (Config.dufyadmon)? const LoginPage(): ConfigInicialPrimerAcceso();//InitPage();//InitPage();
+            return (Config.dufyadmon)? const LoginPage(): ConfigInicialPrimerAcceso();//const InitPage();//InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(

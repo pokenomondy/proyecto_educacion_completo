@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'Config.dart';
 
 class ThemeApp{
   Color primaryColor = const Color(0xFF235FD9);
@@ -12,6 +13,13 @@ class ThemeApp{
   Color whitecolor = const Color(0xFFFFFFFF);
   Color blackColor = const Color(0xFF000000);
   Color grayColor = const Color(0xFF444444);
+
+  ThemeApp(){
+    final Config config = Config();
+    config.initConfig();
+    primaryColor = config.primaryColor;
+    secundaryColor = config.Secundarycolor;
+  }
 
   Widget colorRow(Color color, String text){
     return Padding(

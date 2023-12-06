@@ -115,13 +115,15 @@ class MensajeTextBox extends StatelessWidget{
   final String placeholder;
   final double width;
   final double heigth;
+  final bool solicitud;
 
   const MensajeTextBox({
     Key?key,
     required this.controller,
     required this.placeholder,
-    this.width = 410,
+    this.width = 450,
     this.heigth = 150,
+    this.solicitud = true,
   }):super(key: key);
 
   @override
@@ -131,70 +133,7 @@ class MensajeTextBox extends StatelessWidget{
       width: width,
       child: Column(
         children: [
-          Column(
-              children: [
-                Row(
-                  children: [
-                    PrimaryStyleButton(
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/servicio/";
-                        },
-                        text: "Servicio"
-                    ),
-                    PrimaryStyleButton(
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/idcotizacion/";
-                        },
-                        text: "Id Cotizacion"
-                    ),
-                    PrimaryStyleButton(
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/materia/";
-                        },
-                        text: "Materia"
-                    ),
-                    PrimaryStyleButton(
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/resumen/";
-                        },
-                        text: "Resumen"
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    PrimaryStyleButton(
-                      width: 110,
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/fechaentrega/";
-                        },
-                        text: "Fecha de Entrega"
-                    ),
-                    PrimaryStyleButton(
-                        width: 110,
-                        tamanio: tamanio,
-                        function: (){
-                          controller.text += "/horaentrega/";
-                        },
-                        text: "Hora de Entrega"
-                    ),
-                    PrimaryStyleButton(
-                        tamanio: tamanio,
-                        width: 140,
-                        function: (){
-                          controller.text += "/infocliente/";
-                        },
-                        text: "Informacion Cliente"
-                    ),
-                  ],
-                ),
-              ]
-          ),
+          botones(tamanio),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
             width: width,
@@ -213,6 +152,222 @@ class MensajeTextBox extends StatelessWidget{
         ]
       ),
     );
+  }
+
+  Column botones(double tamanio){
+    if(solicitud){
+      return Column(
+        children: [
+          Row(
+            children: [
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/servicio/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/servicio/".length)
+                    );
+                  },
+                  text: "Servicio"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/idcotizacion/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/idcotizacion/".length)
+                    );
+                  },
+                  text: "Id Cotizacion"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/materia/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/materia/".length)
+                    );
+                  },
+                  text: "Materia"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/resumen/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                      TextPosition(offset: posicion + "/resumen/".length)
+                    );
+                  },
+                  text: "Resumen"
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              PrimaryStyleButton(
+                  width: 110,
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/fechaentrega/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/fechaentrega/".length)
+                    );
+                  },
+                  text: "Fecha de Entrega"
+              ),
+              PrimaryStyleButton(
+                  width: 110,
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/horaentrega/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/horaentrega/".length)
+                    );
+                  },
+                  text: "Hora de Entrega"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  width: 140,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/infocliente/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/infocliente/".length)
+                    );
+                  },
+                  text: "Informacion Cliente"
+              ),
+            ],
+          ),
+        ],
+      );
+    }else{
+      return Column(
+        children: [
+          Row(
+            children: [
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/servicioplural/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/servicioplural/".length)
+                    );
+                  },
+                  text: "Servicio Plural"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/servicio/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/servicio/".length)
+                    );
+                  },
+                  text: "Servicio"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/fecha de entrega/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/fecha de entrega/".length)
+                    );
+                  },
+                  text: "Fecha de Entrega"
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/materia/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/materia/".length)
+                    );
+                  },
+                  text: "Materia"
+              ),
+              PrimaryStyleButton(
+                width: 50,
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/rolusuario/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/rolusuario/".length)
+                    );
+                  },
+                  text: "Rol"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/nombreusuario/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/nombreusuario/".length)
+                    );
+                  },
+                  text: "Nombre Usuario"
+              ),
+              PrimaryStyleButton(
+                  tamanio: tamanio,
+                  function: (){
+                    int posicion = controller.selection.baseOffset;
+
+                    controller.text = "${controller.text.substring(0, posicion)}/codigo/${controller.text.substring(posicion)}";
+
+                    controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: posicion + "/codigo/".length)
+                    );
+                  },
+                  text: "Codigo"
+              ),
+            ],
+          ),
+        ],
+      );
+    }
   }
 
 }
