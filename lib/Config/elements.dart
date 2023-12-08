@@ -1,6 +1,6 @@
 import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 
@@ -369,5 +369,99 @@ class MensajeTextBox extends StatelessWidget{
       );
     }
   }
+
+}
+
+class UtilDialogs{
+
+  final BuildContext context;
+
+  UtilDialogs({
+    required this.context,
+  });
+
+  error (String text) => showDialog(
+      context: context,
+      builder: (BuildContext context) => _errorDialog(text)
+  );
+
+  confirmar (String text, VoidCallback function, [VoidCallback? cancelFunction]) => showDialog(
+        context: context,
+        builder: (BuildContext context) =>  _confirmDialog(text, function, cancelFunction ?? (){})
+  );
+
+  dialog.Dialog _errorDialog(String text){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 200,
+        height: 200,
+        children: [
+          Icon(dialog.Icons.error, size: 70, color: themeApp.redColor,),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Text(text),
+          ),
+          PrimaryStyleButton(
+              width: 100,
+              buttonColor: themeApp.redColor,
+              function: (){
+                Navigator.pop(context);
+              }, text: "Cerrar")
+        ],
+      ),
+    );
+  }
+
+  dialog.Dialog _confirmDialog(String text, VoidCallback function, VoidCallback cancelFunction){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 250,
+        height: 200,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Icon(dialog.Icons.info, size: 70, color: themeApp.primaryColor,),
+          ),
+          dialog.Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Text(
+              text,
+              maxLines: null,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 15.0),
+            width: 180,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  PrimaryStyleButton(
+                      width: 80,
+                      function: (){
+                        Navigator.pop(context);
+                        function();
+                      }, text: "Aceptar"),
+                  PrimaryStyleButton(
+                      width: 80,
+                      buttonColor: themeApp.redColor,
+                      function: (){
+                        Navigator.pop(context);
+                        cancelFunction();
+                      }, text: "Cerrar"),
+                ]
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
 
 }

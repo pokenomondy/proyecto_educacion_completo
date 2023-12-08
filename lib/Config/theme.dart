@@ -14,12 +14,6 @@ class ThemeApp{
   Color blackColor = const Color(0xFF000000);
   Color grayColor = const Color(0xFF444444);
 
-  ThemeApp(){
-    final Config config = Config();
-    config.initConfig();
-    primaryColor = config.primaryColor;
-    secundaryColor = config.Secundarycolor;
-  }
 
   Widget colorRow(Color color, String text){
     return Padding(
