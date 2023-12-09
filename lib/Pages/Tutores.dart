@@ -3,6 +3,7 @@ import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
 import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/CollectionReferences.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
@@ -10,6 +11,7 @@ import 'package:dashboard_admin_flutter/Pages/MainTutores/NotaTutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../Config/Config.dart';
 import 'package:intl/intl.dart';
 import '../Dashboard.dart';
@@ -175,10 +177,15 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   List<Solicitud> solicitudesList = [];
   bool dataLoaded = false;
 
+  List<Tutores> tutoresList = [];
+  String Busqueda = "";
+  Tutores? selectedTutor;
+
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     loadtablas(); // Cargar los datos al inicializar el widget
+    cargartutores();
     super.initState();
   }
 
@@ -191,73 +198,149 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
     print("load tablas ejecutandose");
   }
 
+  Future cargartutores() async{
+    tutoresList = await LoadData().obtenertutores();
+    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
+    tutoresProvider.clearTutores();
+    tutoresProvider.setFiltro('TutorA');
+    tutoresProvider.cargarTodosTutores(tutoresList);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentheight = MediaQuery.of(context).size.height;
+    return Consumer<VistaTutoresProvider>(
+        builder: (context, tutorProvider, child) {
+          List<Tutores> tutores = tutorProvider.tutorseleccionado;
+
+          return Column(
+            children: [
+              contarTutoresRoles(tutoresList),
+              Container(
+                  height: currentheight-180,
+                  child: ListView.builder(
+                      itemCount: tutores.length,
+                      itemBuilder: (context,index) {
+                        Tutores? tutor = tutores[index];
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                          child: material.Container(
+                            color: (tutor.activo) ? material.Colors.green : material.Colors.red,
+                            child: Card(
+                              child:Column(
+                                children: [
+                                  //nombre y numero de wasap
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(child: Text(tutor.nombrewhatsapp)),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final textToCopy = tutor.numerowhatsapp.toString();
+                                          Clipboard.setData(ClipboardData(text: textToCopy));
+                                        },
+                                        child:Text(tutor.numerowhatsapp.toString()),
+
+                                      ),
+                                    ],
+                                  ),
+                                  GestureDetector(
+                                    onTap: (){
+                                      material.Navigator.push(context, material.MaterialPageRoute(
+                                        builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
+                                      ));
+                                    },
+                                    child: Text('add'),
+                                  ),
+                                  //# de materias manejadas
+                                  Text("${tutor.materias.length.toString()} materias registradas"),
+                                  //# de cuentas bancarias registradas
+                                  Text("${tutor.cuentas.length.toString()} cuentas registradas"),
+                                  //nombre del tutor
+                                  Text("${tutor.nombrecompleto}"),
+                                  //carrera y universidad
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(child: Text(tutor.carrera)),
+                                      Expanded(child: Text(tutor.univerisdad)),
+                                    ],
+                                  ),
+                                  Text('Activo? ${tutor.activo}'),
+                                  if(dataLoaded==true)
+                                    Text('ult fecha ${DateFormat('dd/MM/yy').format(ultimaFechaCotizacionTutor(tutor.nombrewhatsapp))}')
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                  )
+              ),
+            ],
+          );
+
+        }
+    );
+  }
+
+  Widget contarTutoresRoles(List<Tutores> tutores){
+    //Nos interesan tutores - activos - inactivos - admin
+    int tutoresActivos = tutores
+        .where((tutor) => tutor.activo == true && tutor.rol == "TUTOR")
+        .length;
+    int administradores = tutores
+        .where((tutor) => tutor.activo == true && tutor.rol == "ADMIN")
+        .length;
+    int tutoreInactivos = tutores
+        .where((tutor) => tutor.activo == false && tutor.rol == "TUTOR")
+        .length;
+
+    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
+
     return Column(
       children: [
-        Text("hay ${widget.tutoresList.length.toString()} Tutores"),
+        Text('$tutoresActivos tutores activos, $tutoreInactivos tutores inactivos'),
+        Text('$administradores administradores activos'),
+        Row(
+          children: [
+            FilledButton(child: Text('Tutor A'), onPressed: () {
+              tutoresProvider.setFiltro('TutorA');
+            }),
+
+            FilledButton(child: Text('Tutor Inac'), onPressed: () {
+              tutoresProvider.setFiltro('TutorInac');
+            }),
+
+            FilledButton(child: Text('ADMON'), onPressed: () {
+              tutoresProvider.setFiltro('ADMON');
+            }),
+          ],
+        ),
         Container(
-            height: currentheight-90,
-            child: ListView.builder(
-                itemCount: widget.tutoresList.length,
-                itemBuilder: (context,index) {
-                  Tutores? tutor = widget.tutoresList[index];
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                    child: material.Container(
-                      color: (tutor.activo) ? material.Colors.green : material.Colors.red,
-                      child: Card(
-                        child:Column(
-                          children: [
-                            //nombre y numero de wasap
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(tutor.nombrewhatsapp)),
-                                GestureDetector(
-                                  onTap: () {
-                                    final textToCopy = tutor.numerowhatsapp.toString();
-                                    Clipboard.setData(ClipboardData(text: textToCopy));
-                                  },
-                                  child:Text(tutor.numerowhatsapp.toString()),
-
-                                ),
-                              ],
-                            ),
-                            GestureDetector(
-                              onTap: (){
-                                material.Navigator.push(context, material.MaterialPageRoute(
-                                  builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
-                                ));
-                              },
-                              child: Text('add'),
-                            ),
-                            //# de materias manejadas
-                            Text("${tutor.materias.length.toString()} materias registradas"),
-                            //# de cuentas bancarias registradas
-                            Text("${tutor.cuentas.length.toString()} cuentas registradas"),
-                            //nombre del tutor
-                            Text("${tutor.nombrecompleto}"),
-                            //carrera y universidad
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(tutor.carrera)),
-                                Expanded(child: Text(tutor.univerisdad)),
-                              ],
-                            ),
-                            Text('Activo? ${tutor.activo}'),
-                            if(dataLoaded==true)
-                              Text('ult fecha ${DateFormat('dd/MM/yy').format(ultimaFechaCotizacionTutor(tutor.nombrewhatsapp))}')
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }
+          height: 30,
+          width: 200,
+          child: AutoSuggestBox<Tutores>(
+            items: tutores.map<AutoSuggestBoxItem<Tutores>>(
+                  (tutor) => AutoSuggestBoxItem<Tutores>(
+                value: tutor,
+                label: tutor.nombrewhatsapp,
+                onFocusChange: (focused) {
+                  if (focused) {
+                  }
+                },
+              ),
             )
+                .toList(),
+            onSelected: (item) {
+              setState(() {
+                print("seleccionado ${item.label}");
+                selectedTutor = item.value; // Actualizar el valor seleccionado
+                tutoresProvider.busquedatutor(selectedTutor!.nombrewhatsapp!);
+              });
+            },
+          ),
         ),
       ],
     );
@@ -857,7 +940,7 @@ class _CrearTutorNuevo extends StatefulWidget{
 
 }
 
-class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
+class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   //Variables para crear tutor
   String nombrewsp = "";
   String nombreCompleto = "";
@@ -872,6 +955,7 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
   List<Carrera> CarrerasList = [];
   List<Universidad> UniversidadList = [];
   bool _cargadodatos = false;
+  CollectionReferencias referencias = CollectionReferencias();
 
   @override
   void initState() {
@@ -1014,9 +1098,9 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
             maxLines: null,
           ),
           //id carpeta
-          FilledButton(child: const Text('Agregar'), onPressed: (){
-            createUserWithEmailAndPassword();
-            //loadDataTablasMaterias();
+          FilledButton(child: const Text('Agregar'), onPressed: ()async{
+            print("crear nuevo usuario");
+            await createUserWithEmailAndPassword();
           }),
         ],
       ),
@@ -1024,29 +1108,93 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo  > {
   }
 
   Future<void> createUserWithEmailAndPassword() async {
+    await referencias.initCollections();
     try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-        email: correogmail,
-        password: passuno,
-      );
-      Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, auth.currentUser!.uid);
-
+      final credential = await referencias.authdireccion!.createUserWithEmailAndPassword(email: correogmail, password: passuno,);
+      print("usuario creado");
+      await Uploads().addinfotutor(nombrewsp, nombreCompleto, numwasa, selectedCarrera!.nombrecarrera, correogmail, selectedUniversidad!.nombreuniversidad, referencias.authdireccion!.currentUser!.uid);
+      referencias.initCollections();
+      referencias.authdireccion!.signOut();
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         setState(() {
-
+          print("contraseña mala");
         });
       } else if (e.code == 'email-already-in-use') {
         setState(() {
-
+          print("email ya usado");
         });
       }
     } catch (e) {
       print(e);
+      print("error no se creo");
     }
   }
 
+}
+
+class VistaTutoresProvider extends ChangeNotifier {
+  List<Tutores> tutorseleccionado = [];
+  List<Tutores> todosLosTutores = [];
+  List<Tutores> get todosLosTutoresSeleccioando => todosLosTutores;
+
+  String filtro = "";
+
+  void cargarTodosTutores(List<Tutores> tutor){
+    todosLosTutores = tutor.toList();
+    cargarTutores();
+    notifyListeners();
+  }
+
+  void setFiltro(String nuevoFiltro) {
+    filtro = nuevoFiltro;
+    cargarTutores();
+    notifyListeners();
+  }
+
+  void cargarTutores() {
+    tutorseleccionado = todosLosTutores
+        .where((tutor) {
+      switch (filtro) {
+        case 'TutorA':
+          return tutor.activo == true && tutor.rol == "TUTOR";
+        case 'TutorInac':
+          return tutor.rol == 'TUTOR' && tutor.activo == false;
+        case 'ADMON':
+          return tutor.rol == 'ADMIN';
+        default:
+          return true; // Sin filtro o filtro desconocido, mostrar todos
+      }
+    })
+        .toList(); // Assign the loaded tutors to todosLosTutores
+    notifyListeners();
+  }
+
+  void busquedatutor(String texto){
+    tutorseleccionado = todosLosTutores
+    .where((tutor) =>
+        tutor.nombrewhatsapp == texto,
+    ).toList();
+    notifyListeners();
+  }
+
+  void modificarTutor(Tutores tutor) {
+    Tutores tutorEnLista = tutorseleccionado.where((tutore) => tutore.uid == tutor.uid).first;
+
+    tutorEnLista.nombrecompleto = tutor.nombrecompleto;
+    tutorEnLista.numerowhatsapp = tutor.numerowhatsapp;
+    tutorEnLista.carrera = tutor.carrera;
+    tutorEnLista.univerisdad = tutor.univerisdad;
+    tutorEnLista.activo = tutor.activo;
+
+    notifyListeners();
+  }
+
+  void clearTutores() {
+    tutorseleccionado.clear(); // Clear the list
+    notifyListeners();
+  }
 }
 
 

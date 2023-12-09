@@ -13,10 +13,12 @@ import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
+import 'Pages/Pruebas/Whatsapp.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
 import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
+import 'Pages/Tutores.dart';
 import 'Pages/pages.dart';
 
 void main() async {
@@ -53,6 +55,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => CuentasProvider()),
         ChangeNotifierProvider(create: (context) => HistorialProvider()),
         ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
+        ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
 
       ],
       child: MyApp(),

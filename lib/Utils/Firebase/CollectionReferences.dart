@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Config/Config.dart';
 
 class CollectionReferencias{
+  //Realtime Data
+  FirebaseDatabase? DatabaseRealtime ;
   //Firebases
   FirebaseFirestore DufyFirestore = FirebaseFirestore.instance;
   FirebaseFirestore LibaFirestore = FirebaseFirestore.instanceFor(app: Firebase.app('LIBADB'));
@@ -42,6 +45,7 @@ class CollectionReferencias{
     String? nombre_empresa = prefs.getString("Nombre_Empresa");
 
     if(Config.dufyadmon==true){
+      DatabaseRealtime = FirebaseDatabase.instance;
       contabilidad = DufyFirestore.collection('CONTABILIDAD');
       solicitudes = DufyFirestore.collection('SOLICITUDES');
       clientes = DufyFirestore.collection('CLIENTES');
@@ -54,7 +58,7 @@ class CollectionReferencias{
       EstadisticaDriveSolicitudes = configuracion!.doc("CONFIGURACION").collection("DRIVESOLICITUDES");
     }else{
       DocumentReference referenceNoDufy = LibaFirestore.collection("EMPRESAS").doc(nombre_empresa);
-
+      DatabaseRealtime = FirebaseDatabase.instanceFor(app: Firebase.app('LIBADB'));
       contabilidad = referenceNoDufy.collection('CONTABILIDAD');
       solicitudes = referenceNoDufy.collection('SOLICITUDES');
       clientes = referenceNoDufy.collection('CLIENTES');

@@ -101,26 +101,7 @@ class DashboardState extends State<Dashboard> {
             openMaxWidth: 50.00,
             openMinWidth: 50.00,
           ),
-          items: <NavigationPaneItem>[
-
-            PaneItem(
-              icon: const Icon(FluentIcons.home),
-              title:  configuracion.panelnavegacion("Solicitudes",_currentPage == 0),
-              body: widget.showSolicitudesNew ?  DetallesServicio(solicitud: widget.solicitud,) : SolicitudesNew(),
-              selectedTileColor:ButtonState.all(configuracion.primaryColor),
-              key: const ValueKey('/home'),
-            ),
-            PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Tutores",_currentPage==1),
-                body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
-                selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
-            PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
-            PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Contable",_currentPage==3), body: ContableDashboard(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
-            PaneItem(icon: const Icon(FluentIcons.home),
-                title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: CentroConfiguracionDash(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
-          ],
+          items: getItems(),
           selected: _currentPage,
           onChanged: (index) => setState(() {
             _currentPage = index;
@@ -129,4 +110,36 @@ class DashboardState extends State<Dashboard> {
       );
     }
   }
+
+  List<NavigationPaneItem> getItems(){
+    if(widget.showTutoresDetalles){
+      return <NavigationPaneItem>[
+        PaneItem(icon: const Icon(FluentIcons.home),
+            title: configuracion.panelnavegacion("Tutores",_currentPage==1),
+            body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
+            selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+      ];
+    }else{
+      return <NavigationPaneItem>[
+        PaneItem(
+          icon: const Icon(FluentIcons.home),
+          title:  configuracion.panelnavegacion("Solicitudes",_currentPage == 0),
+          body: widget.showSolicitudesNew ?  DetallesServicio(solicitud: widget.solicitud,) : SolicitudesNew(),
+          selectedTileColor:ButtonState.all(configuracion.primaryColor),
+          key: const ValueKey('/home'),
+        ),
+        PaneItem(icon: const Icon(FluentIcons.home),
+            title: configuracion.panelnavegacion("Tutores",_currentPage==1),
+            body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
+            selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+        PaneItem(icon: const Icon(FluentIcons.home),
+            title: configuracion.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+        PaneItem(icon: const Icon(FluentIcons.home),
+            title: configuracion.panelnavegacion("Contable",_currentPage==3), body: ContableDashboard(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+        PaneItem(icon: const Icon(FluentIcons.home),
+            title: configuracion.panelnavegacion("Centro Datos",_currentPage==4), body: CentroConfiguracionDash(),selectedTileColor:ButtonState.all(configuracion.primaryColor) ),
+      ];
+    }
+  }
+
 }

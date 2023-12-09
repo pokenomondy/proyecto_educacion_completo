@@ -228,7 +228,7 @@ class DriveApiUsage {
             }
             Uploads().modifyServicioAgendadoEntregado(codigo);
             Utiles().notificacion("ARCHIVO SUBIDO", context, true, "archivo subido");
-            enviarmensajewsp().sendMessageAvisoTrabajoEntregadoAdmin("573161585420", selectedServicio!.codigo, selectedServicio!.cliente, selectedServicio!.fechaentrega.toString(), selectedServicio!.tutor);
+            enviarmensajewsp().sendMessageAvisoTrabajoEntregadoAdmin("573161585420", selectedServicio!);
           }
         }
 

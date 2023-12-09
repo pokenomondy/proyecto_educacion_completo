@@ -52,7 +52,6 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
   String msgsolicitud = "";
   String msgsconfirmacioncliente = "";
 
-
   @override
   void initState() {
     configuracion.initConfig().then((_) {
@@ -84,7 +83,6 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
         width: widget.currentwidth+400,
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               //Nombre de la empresa
@@ -93,10 +91,6 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                 child: Text('Nombre de la empresa : ${configuracion.nombreempresa}',
                   style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
               ),
-              //Primary Color
-              ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
-              //Secundary Color
-              ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
               //Primary Color
               ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
               //Secundary Color
@@ -142,6 +136,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   ],
                 ),
               ),
+              //Mensajes personalizadas
               Column(
                 children: [
                   const Padding(
@@ -149,7 +144,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                     child: Text('------ MENSAJES PERSONALIZADOS -----',
                       style: TextStyle(fontWeight: FontWeight.bold),),
                   ),
-                  Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                  Text("Mensajes de Solicitudes = \n${configuracion.mensaje_solicitd}"),
                   Container(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     width: 200,
@@ -169,7 +164,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                   PrimaryStyleButton(function: (){
                     Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
                   }, text: "Subir mensaje solicitud"),
-                  Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
+                  Text("Mensajes de confirmaciones = \n${configuracion.mensaje_confirmacionCliente}"),
                   Container(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     width: 200,
@@ -209,6 +204,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
       );
     }
   }
+
 
   void signOut() async {
     try {
