@@ -1,18 +1,14 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/Config.dart';
 import '../../Objetos/Objetos Auxiliares/Carreras.dart';
-import '../../Objetos/Objetos Auxiliares/HistorialEstado.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Uploads.dart';
+import 'package:flutter/material.dart' as dialog;
 
 //DIALOGOS AGREGAR NUEVO PROSPECTO CLIENTE
 
@@ -574,17 +570,20 @@ class EstadoServicioDialog extends StatefulWidget {
 }
 
 class EstadoServicioDialogState extends State<EstadoServicioDialog> {
-  List<String> EstadoList = [
+
+  final ThemeApp themeApp = ThemeApp();
+  final List<String> EstadoList = [
     'DISPONIBLE',
     'EXPIRADO',
     'ESPERANDO',
     'NO PODEMOS'
   ];
-  String? selectedEstado = "";
+  late String? selectedEstado = "";
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: GestureDetector(
+    return Container(child: 
+    GestureDetector(
       child: Container(
           height: 30,
           width: 30,
@@ -595,69 +594,76 @@ class EstadoServicioDialogState extends State<EstadoServicioDialog> {
           child: Icon(FluentIcons.add,
             color: Config().primaryColor,
             weight: 30,)),
-      onTap: (){
-        _showDialog(context,widget.solicitud.idcotizacion);
-      },
-    ),);
+      onTap: () => _solicitud(widget.solicitud.idcotizacion, context),
+      ),
+    );
   }
 
-  void _showDialog(BuildContext context, int idcotizacion) async {
-    showDialog(
+  void _solicitud(int idSolicitud, BuildContext context) => showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Cambiar estado del servicio'),
-              content: Column(
+      builder: (BuildContext context) => _dialogSolicitud(idSolicitud, context)
+  );
+
+  dialog.StatefulBuilder _dialogSolicitud(int idSolicitud, BuildContext context){
+    return dialog.StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+      return dialog.Dialog(
+        backgroundColor: themeApp.blackColor.withOpacity(0),
+        child: ItemsCard(
+          width: 350,
+          height: 220,
+          children: [
+            Text("Cambiar Estado Solicitud", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: ComboBox<String>(
+                value: selectedEstado,
+                items: EstadoList.map((String item) {
+                  return ComboBoxItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
+                  }).toList(),
+                onChanged: (text) => setState((){
+                  selectedEstado = text;
+                  print("Estado cambiado a $selectedEstado");
+                }),
+                placeholder: const Text('Seleccionar tipo servicio'),
+              ),
+            ),
+            SizedBox(
+              width: 280,
+              child: Row(
+                mainAxisAlignment:  MainAxisAlignment.spaceBetween,
                 children: [
-                  //seleccionar estado
-                  ComboBox<String>(
-                    value: selectedEstado,
-                    items: EstadoList.map<ComboBoxItem<String>>((e) {
-                      return ComboBoxItem<String>(
-                        child: Text(e),
-                        value: e,
-                      );
-                    }).toList(),
-                    onChanged: (text) {
-                      setState(() {
-                        selectedEstado = text; // Update the local variable
-                      });
-                      print("materia seleccionado $selectedEstado");
+                  PrimaryStyleButton(
+                    text: 'Actualizar Estado',
+                    function: () async {
+                      print("actualizar estado $idSolicitud");
+                      await Uploads().cambiarEstadoSolicitud(idSolicitud, selectedEstado!);
+                      Navigator.pop(context, 'User canceled dialog');
+                      /*
+                                final ahora = DateTime.now();
+                                final Duration duration = ahora.difference(fechasistema);
+                                CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
+                                HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
+                                historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
+                                //Ahora de forma local, cambiemos el estado a ver
+
+                                 */
                     },
-                    placeholder: const Text('Seleccionar tipo servicio'),
+                  ),
+                  PrimaryStyleButton(
+                    width: 100,
+                    text: 'Cancel',
+                    function: () => Navigator.pop(context, 'User canceled dialog'),
                   ),
                 ],
               ),
-              actions: [
-                Button(
-                  child: const Text('Actualizar Estado'),
-                  onPressed: () async {
-                    print("actualizar estado $idcotizacion");
-                    await Uploads().cambiarEstadoSolicitud(idcotizacion, selectedEstado!);
-                    Navigator.pop(context, 'User canceled dialog');
-                    /*
-                    final ahora = DateTime.now();
-                    final Duration duration = ahora.difference(fechasistema);
-                    CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
-                    HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
-                    historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
-                    //Ahora de forma local, cambiemos el estado a ver
-
-                     */
-                  },
-                ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+            )
+          ],
+        ),
+      );
+    });
   }
 
   String _truncateLabel(String label) {

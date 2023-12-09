@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'Config.dart';
 
 class ThemeApp{
   Color primaryColor = const Color(0xFF235FD9);
@@ -8,10 +9,12 @@ class ThemeApp{
   Color buttoncolor = const Color(0xFF1E1E1E);
   Color buttonSecundaryColor = const Color(0xFF0A76FC);
   Color redColor = const Color(0xFFF83636);
+  Color greenColor = const Color(0xFF2CC541);
   Color colorazulventas = const Color(0xFFB7DAFB);
   Color whitecolor = const Color(0xFFFFFFFF);
   Color blackColor = const Color(0xFF000000);
   Color grayColor = const Color(0xFF444444);
+
 
   Widget colorRow(Color color, String text){
     return Padding(
