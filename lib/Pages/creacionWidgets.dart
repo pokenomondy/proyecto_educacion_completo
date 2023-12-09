@@ -12,16 +12,6 @@ class CreacionWidgets extends StatelessWidget{
       child: PrimaryStyleButton(
         text: "Presione",
         function: (){
-          UtilDialogs dialog = UtilDialogs(context: context);
-          dialog.confirmar(
-              "Desea confirmar?",
-                  (){
-                    dialog.error("Confirmado");
-                  },
-              (){
-                dialog.error("No confirmado");
-              }
-          );
         },
       ),
     );

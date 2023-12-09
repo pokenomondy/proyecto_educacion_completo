@@ -375,33 +375,49 @@ class MensajeTextBox extends StatelessWidget{
 class UtilDialogs{
 
   final BuildContext context;
+  final double height;
 
   UtilDialogs({
     required this.context,
+    this.height = 220,
   });
 
-  error (String text) => showDialog(
+  void error (String text, String title) => showDialog(
       context: context,
-      builder: (BuildContext context) => _errorDialog(text)
+      builder: (BuildContext context) => _errorDialog(text, title)
+  );
+  
+  void exito(String text, String title) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _successDialog(text, title)
   );
 
-  confirmar (String text, VoidCallback function, [VoidCallback? cancelFunction]) => showDialog(
+  void confirmar (String text, String title, VoidCallback function, [VoidCallback? cancelFunction]) => showDialog(
         context: context,
-        builder: (BuildContext context) =>  _confirmDialog(text, function, cancelFunction ?? (){})
+        builder: (BuildContext context) =>  _confirmDialog(text, title, function, cancelFunction ?? (){})
   );
 
-  dialog.Dialog _errorDialog(String text){
+  void cargar(String text, String title) => showDialog(
+      context: context,
+      builder: (BuildContext context) => _cargaDialog(text, title)
+  );
+
+  dialog.Dialog _errorDialog(String text, String title){
     final ThemeApp themeApp = ThemeApp();
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
       child: ItemsCard(
         shadow: true,
         width: 200,
-        height: 200,
+        height: height,
         children: [
           Icon(dialog.Icons.error, size: 70, color: themeApp.redColor,),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
             child: Text(text),
           ),
           PrimaryStyleButton(
@@ -415,25 +431,61 @@ class UtilDialogs{
     );
   }
 
-  dialog.Dialog _confirmDialog(String text, VoidCallback function, VoidCallback cancelFunction){
+  dialog.Dialog _successDialog(String text, String title){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 200,
+        height: height,
+        children: [
+          Icon(dialog.Icons.check_circle_rounded, size: 70, color: themeApp.greenColor,),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+            child: Text(text),
+          ),
+          PrimaryStyleButton(
+              width: 100,
+              buttonColor: themeApp.greenColor,
+              function: (){
+                Navigator.pop(context);
+              }, text: "Cerrar")
+        ],
+      ),
+    );
+  }
+
+  dialog.Dialog _confirmDialog(String text, String title, VoidCallback function, VoidCallback cancelFunction){
     final ThemeApp themeApp = ThemeApp();
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
       child: ItemsCard(
         shadow: true,
         width: 250,
-        height: 200,
+        height: height + 10,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
             child: Icon(dialog.Icons.info, size: 70, color: themeApp.primaryColor,),
           ),
-          dialog.Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: Text(
-              text,
-              maxLines: null,
-              textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0,),
+            child: SizedBox(
+              width: 230,
+              child: Text(
+                text,
+                maxLines: null,
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
           Container(
@@ -463,5 +515,32 @@ class UtilDialogs{
     );
   }
 
+  dialog.Dialog _cargaDialog(String text, String title,){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.blackColor.withOpacity(0),
+      child: ItemsCard(
+        width: 260,
+        height: height - 50,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0, bottom: 10.0),
+            child: dialog.CircularProgressIndicator(
+              strokeWidth: 4.0,
+              color: themeApp.primaryColor,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.primaryColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+            child: Text(text),
+          ),
+        ],
+      ),
+    );
+  }
 
 }

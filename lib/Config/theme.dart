@@ -9,6 +9,7 @@ class ThemeApp{
   Color buttoncolor = const Color(0xFF1E1E1E);
   Color buttonSecundaryColor = const Color(0xFF0A76FC);
   Color redColor = const Color(0xFFF83636);
+  Color greenColor = const Color(0xFF2CC541);
   Color colorazulventas = const Color(0xFFB7DAFB);
   Color whitecolor = const Color(0xFFFFFFFF);
   Color blackColor = const Color(0xFF000000);
