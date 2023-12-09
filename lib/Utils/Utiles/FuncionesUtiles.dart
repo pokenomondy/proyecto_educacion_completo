@@ -152,4 +152,7 @@ class Utiles{
     return uploadconfiguracion;
   }
 
+  bool textoToBool(String? value) {
+    return value?.toLowerCase() == 'true';
+  }
 }

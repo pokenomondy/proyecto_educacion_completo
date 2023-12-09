@@ -3,6 +3,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../Config/Config.dart';
+import '../../Utils/EnviarMensajesWhataspp.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
 
@@ -44,6 +46,8 @@ class _PrimaryColumnTutorConfigState extends State<PrimaryColumnTutorConfig> {
   String nombretutor = "";
   String Correo_gmail = "";
 
+  String plantillabuscador = "";
+
   @override
   void initState() {
     print("usuario iod ${currentUser?.uid}");
@@ -79,7 +83,35 @@ class _PrimaryColumnTutorConfigState extends State<PrimaryColumnTutorConfig> {
         //Botón para cerrar sesión
         FilledButton(child: Text('Cerrar sesión'), onPressed: (){
           signOut();
-        })
+        }),
+        //Texbox para ver la plantilla
+        Row(
+          children: [
+            //Plantilla buscador
+            Container(
+              width: widget.currentwidth-120,
+              child: TextBox(
+                decoration: BoxDecoration(
+                  color: Config.secundaryColor,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                onChanged: (value){
+                  setState(() {
+                    plantillabuscador = value;
+                  });
+                },
+                maxLines: null,
+              ),
+            ),
+            //Botón de busqueda
+            FilledButton(
+              onPressed: () async {
+                enviarmensajewsp().getMessageTemplates();
+              },
+              child: Text('Buscar'),
+            ),
+          ],
+        ),
       ],
     );
   }

@@ -128,7 +128,7 @@ class TutorEvaluator {
     double promrespuestaminglobal = tutoresFiltrados.isNotEmpty
         ? tutoresFiltrados
         .map((tutor) => getPromedioRespuesta(tutor.nombrewhatsapp))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
+        .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
         .reduce((a, b) => a < b ? a : b)
         : 0;
 
@@ -229,7 +229,7 @@ class TutorEvaluator {
     double promprecioglobalmin = tutoresFiltrados.isNotEmpty
         ? tutoresFiltrados
         .map((tutor) => getPromedioPrecioTutor(tutor.nombrewhatsapp))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
+        .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
         .reduce((a, b) => a < b ? a : b)
         : 0;
 
@@ -388,7 +388,7 @@ class TutorEvaluator {
     double promprecioagendadomin = tutoresFiltrados.isNotEmpty
         ? tutoresFiltrados
         .map((tutor) => gerpromedioprecioglobalagendado(tutor.nombrewhatsapp))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
+        .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
         .reduce((a, b) => a < b ? a : b)
         : 0;
 
@@ -435,7 +435,7 @@ class TutorEvaluator {
     double prompreciogananciamin = tutoresFiltrados.isNotEmpty
         ? tutoresFiltrados
         .map((tutor) => getpromediogananciasgeneradas(tutor.nombrewhatsapp))
-        .where((cotizaciones) => cotizaciones > 0) // Filtrar valores mayores a cero
+        .where((cotizaciones) => cotizaciones >= 0) // Filtrar valores mayores a cero
         .reduce((a, b) => a < b ? a : b)
         : 0;
 

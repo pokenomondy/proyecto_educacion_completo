@@ -16,6 +16,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Pages/Contabilidad/Pagos.dart';
+import '../../Pages/Tutores.dart';
+import '../Utiles/FuncionesUtiles.dart';
 import 'CollectionReferences.dart';
 import 'Load_Data.dart';
 import 'package:intl/intl.dart';
@@ -222,7 +224,7 @@ class Uploads{
     await contabilidad.doc(codigo).update(uploadinformacion);
   }
 
-  void addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
+  Future addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
     await referencias.initCollections();
     CollectionReference tutor = referencias.tutores!;
     List<Materia> materias = [];
@@ -243,23 +245,35 @@ class Uploads{
     //Ya queda subido el nuevo tutor
   }
   //Modificar infomración de tutor
-  Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num) async{
+  Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num, BuildContext context) async{
     await referencias.initCollections();
     String variable = "";
+    bool activo = false;
     Map<String, dynamic> uploadinformacion = {};
     if(index == 1){
       variable = "nombre completo";
     }else if(index == 2){
       variable = "numero whatsapp";
+    }else if(index == 3){
+      variable = "carrera";
+    }else if(index == 5){
+      variable = "Universidad";
+    }else if(index == 6){
+      variable = "activo";
+      activo = Utiles().textoToBool(texto);
     }
 
-    if(index == 1){
+    if(index == 1 || index == 3 || index == 5){
       uploadinformacion = {
         '$variable': texto,
       };
     }else if(index == 2){
       uploadinformacion = {
         '$variable': num,
+      };
+    }else if(index == 6){
+      uploadinformacion = {
+        '$variable' : activo,
       };
     }
 
@@ -275,7 +289,17 @@ class Uploads{
       tutorEnLista.nombrecompleto = texto;
     }else if(index == 2){
       tutorEnLista.numerowhatsapp =  num;
+    }else if(index == 3){
+      tutorEnLista.carrera = texto;
+    }else if(index == 5){
+      tutorEnLista.univerisdad = texto;
+    }else if(index == 6){
+      tutorEnLista.activo = activo;
     }
+
+    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
+    tutoresProvider.modificarTutor(tutorEnLista);
+
     String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
     prefs.setString('tutores_list', updatedTutoresJson);
   }
@@ -488,10 +512,7 @@ class Uploads{
     await carreraCollection.doc(nombrecarrera).set(newcarrera.toMap());
     //Obtenemos tablas de carreras agregadas
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('carreras_List') ?? '';
-    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-    List carreraList = CarreraData.map((tutorData) =>
-        Carrera.fromJson(tutorData as Map<String, dynamic>)).toList();
+    List<Carrera> carreraList = await LoadData().obtenercarreras();
     carreraList.add(newcarrera);
     //guardar carreras
     String solicitudesJsondos = jsonEncode(carreraList);
@@ -503,15 +524,12 @@ class Uploads{
     CollectionReference universidadCollection = referencias.tablasuniversidades!;
     Universidad newuniversidad = Universidad(nombreuniversidad);
     await universidadCollection.doc(nombreuniversidad).set(newuniversidad.toMap());
-    //Obtenemos tablas de carreras agregadas
+    //universidades en cache
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('universidades_List') ?? '';
-    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-    List carreraList = CarreraData.map((tutorData) =>
-        Universidad.fromJson(tutorData as Map<String, dynamic>)).toList();
-    carreraList.add(newuniversidad);
+    List<Universidad> universidadList = await LoadData().obtenerUniversidades();
+    universidadList.add(newuniversidad);
     //guardar carreras
-    String solicitudesJsondos = jsonEncode(carreraList);
+    String solicitudesJsondos = jsonEncode(universidadList);
     await prefs.setString('universidades_List', solicitudesJsondos);
   }
   //Envíar configuración inicial

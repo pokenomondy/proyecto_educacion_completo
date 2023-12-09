@@ -4,9 +4,12 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:provider/provider.dart' as notify;
 import 'package:provider/provider.dart';
 import '../../Objetos/CuentasBancaraias.dart';
+import '../../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
+import '../../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Uploads.dart';
+import '../../Utils/Utiles/FuncionesUtiles.dart';
 import '../Tutores.dart';
 
 class DetallesTutores extends StatefulWidget {
@@ -68,6 +71,12 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
   String cedula = "";
   String nombreCedula = "";
 
+  List<Carrera> CarrerasList = [];
+  Carrera? selectedCarreraobject;
+
+  List<Universidad> UniversidadList = [];
+  Universidad? selectedUniversidadobject;
+
 
   @override
   void initState() {
@@ -84,6 +93,8 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
 
   Future <void> loaddata()async{
     materiasList = await LoadData().tablasmateria();
+    CarrerasList = await LoadData().obtenercarreras();
+    UniversidadList = await LoadData().obtenerUniversidades();
     setState(() {
       cargadotablamaterias = true;
     });
@@ -217,7 +228,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
     );
   }
 
-  Widget textoymodificable(String text,int index, bool bool){
+  Widget textoymodificable(String text,int index, bool active){
     String ? cambio = "";
     int ? cambionum = 0;
 
@@ -225,6 +236,12 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
       cambio = datoscambiostext;
     }else if(index == 2){
       cambionum = numcelint;
+    }else if(index == 3){
+      cambio = selectedCarreraobject?.nombrecarrera;
+    }else if(index == 5) {
+      cambio = selectedUniversidadobject?.nombreuniversidad;
+    } else if(index == 6){
+      cambio = valores[index];
     }
 
     return Row(
@@ -238,7 +255,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                     bottom: 15, right: 10, top: 5),
                 margin: EdgeInsets.only(left: 10),
                 child: Text("$text : ${valores[index]}",)),
-            if(!bool)
+            if(!active)
               GestureDetector(
                 onTap: (){
                   setState(() {
@@ -283,14 +300,74 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                     maxLines: null,
                   ),
                 ),
+              if(index == 3)
+                Container(
+                  height: 30,
+                  width: 200,
+                  child: AutoSuggestBox<Carrera>(
+                    items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
+                          (carrera) => AutoSuggestBoxItem<Carrera>(
+                        value: carrera,
+                        label: carrera.nombrecarrera,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused #${carrera.nombrecarrera} - ');
+                          }
+                        },
+                      ),
+                    )
+                        .toList(),
+                    onSelected: (item) {
+                      setState(() {
+                        print("seleccionado ${item.label}");
+                        selectedCarreraobject = item.value; // Actualizar el valor seleccionado
+                      });
+                    },
+                  ),
+                ),
+              if(index == 5)
+                Container(
+                  height: 30,
+                  width: 200,
+                  child: AutoSuggestBox<Universidad>(
+                    items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
+                          (universidad) => AutoSuggestBoxItem<Universidad>(
+                        value: universidad,
+                        label: universidad.nombreuniversidad,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused #${universidad.nombreuniversidad} - ');
+                          }
+                        },
+                      ),
+                    )
+                        .toList(),
+                    onSelected: (item) {
+                      setState(() {
+                        print("seleccionado ${item.label}");
+                        selectedUniversidadobject = item.value; // Actualizar el valor seleccionado
+                      });
+                    },
+                  ),
+                ),
+              if(index==6)
+                ToggleSwitch(
+                    checked: Utiles().textoToBool(valores[index]),
+                  onChanged: (bool value) {
+                    setState(() {
+                      valores[index] = value.toString();
+                      cambio = value.toString();
+                      print(cambio);
+                    });
+                  },),
               //actualizar variable
               GestureDetector(
                 onTap: () async{
-                  await Uploads().modifyinfotutor(index, cambio!, widget.tutor,cambionum!);
-                  if(index == 1){
-                    valores[index] = cambio!;
-                  }else if(index ==2){
+                  await Uploads().modifyinfotutor(index, cambio!, widget.tutor,cambionum!,context);
+                  if(index == 2){
                     valores[index] = cambionum!.toString();
+                  }else{
+                    valores[index] = cambio!;
                   }
                   setState(() {
                     editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
@@ -320,6 +397,8 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
       ],
     );
   }
+
+
 }
 
 class SecundaryColumnTutores extends StatefulWidget {
