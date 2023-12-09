@@ -594,81 +594,77 @@ class EstadoServicioDialogState extends State<EstadoServicioDialog> {
           child: Icon(FluentIcons.add,
             color: Config().primaryColor,
             weight: 30,)),
-      onTap: () => showDialog(
-          context: context, 
-          builder: (BuildContext context) => themeApp.errorDialog("Error en #####", context)
-      )
+      onTap: () => _solicitud(widget.solicitud.idcotizacion, context),
       ),
     );
   }
 
-  dialog.Dialog dialogSolicitud(BuildContext context, int idSolicitud){
-    return dialog.Dialog(
-      backgroundColor: themeApp.primaryColor.withOpacity(0),
-      child: dialog.StatefulBuilder(
-        builder: (BuildContext context, StateSetter setState) {
-          return ItemsCard(
-            width: 380,
-            height: 250,
-            children: [
-              Text("Cambiar Estado Solicitud", style: themeApp.styleText(25, true, themeApp.primaryColor),),
-              //seleccionar estado
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: ComboBox<String>(
-                  value: selectedEstado,
-                  items: EstadoList.map<ComboBoxItem<String>>((e) {
-                    return ComboBoxItem<String>(
-                      child: Text(e, style: themeApp.styleText(14, false, themeApp.grayColor),),
-                    );
+  void _solicitud(int idSolicitud, BuildContext context) => showDialog(
+      context: context,
+      builder: (BuildContext context) => _dialogSolicitud(idSolicitud, context)
+  );
+
+  dialog.StatefulBuilder _dialogSolicitud(int idSolicitud, BuildContext context){
+    return dialog.StatefulBuilder(builder: (BuildContext context, StateSetter setState) {
+      return dialog.Dialog(
+        backgroundColor: themeApp.blackColor.withOpacity(0),
+        child: ItemsCard(
+          width: 350,
+          height: 220,
+          children: [
+            Text("Cambiar Estado Solicitud", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: ComboBox<String>(
+                value: selectedEstado,
+                items: EstadoList.map((String item) {
+                  return ComboBoxItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
                   }).toList(),
-                  onChanged: (text) {
-                    setState(() {
-                      selectedEstado = text; // Update the local variable
-                    });
-                    print("materia seleccionado $selectedEstado");
-                  },
-                  placeholder: const Text('Seleccionar tipo servicio'),
-                ),
+                onChanged: (text) => setState((){
+                  selectedEstado = text;
+                  print("Estado cambiado a $selectedEstado");
+                }),
+                placeholder: const Text('Seleccionar tipo servicio'),
               ),
-              SizedBox(
-                width: 280,
-                child: Row(
-                  mainAxisAlignment:  MainAxisAlignment.spaceBetween,
-                  children: [
-                    PrimaryStyleButton(
-                      text: 'Actualizar Estado',
-                      function: () async {
-                        print("actualizar estado $idSolicitud");
-                        await Uploads().cambiarEstadoSolicitud(idSolicitud, selectedEstado!);
-                        Navigator.pop(context, 'User canceled dialog');
-                        /*
-                              final ahora = DateTime.now();
-                              final Duration duration = ahora.difference(fechasistema);
-                              CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
-                              HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
-                              historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
-                              //Ahora de forma local, cambiemos el estado a ver
+            ),
+            SizedBox(
+              width: 280,
+              child: Row(
+                mainAxisAlignment:  MainAxisAlignment.spaceBetween,
+                children: [
+                  PrimaryStyleButton(
+                    text: 'Actualizar Estado',
+                    function: () async {
+                      print("actualizar estado $idSolicitud");
+                      await Uploads().cambiarEstadoSolicitud(idSolicitud, selectedEstado!);
+                      Navigator.pop(context, 'User canceled dialog');
+                      /*
+                                final ahora = DateTime.now();
+                                final Duration duration = ahora.difference(fechasistema);
+                                CollectionReference historialmateria = db.collection("SOLICITUDES").doc(idcotizacion.toString()).collection("HISTORIAL");
+                                HistorialEstado hisotrialnuevo = HistorialEstado(selectedEstado!, duration.inMinutes, DateTime.now());
+                                historialmateria.doc(selectedEstado!).set(hisotrialnuevo.toMap());
+                                //Ahora de forma local, cambiemos el estado a ver
 
-                               */
-                      },
-                    ),
-                    PrimaryStyleButton(
-                      width: 100,
-                      text: 'Cancel',
-                      function: () => Navigator.pop(context, 'User canceled dialog'),
-                    ),
-                  ],
-                ),
-              )
-            ]
-        );
-        }
-      ),
-    );
+                                 */
+                    },
+                  ),
+                  PrimaryStyleButton(
+                    width: 100,
+                    text: 'Cancel',
+                    function: () => Navigator.pop(context, 'User canceled dialog'),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    });
   }
-
-
 
   String _truncateLabel(String label) {
     const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta

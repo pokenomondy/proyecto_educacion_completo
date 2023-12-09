@@ -1,6 +1,6 @@
 import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 
@@ -368,6 +368,179 @@ class MensajeTextBox extends StatelessWidget{
         ],
       );
     }
+  }
+
+}
+
+class UtilDialogs{
+
+  final BuildContext context;
+  final double height;
+
+  UtilDialogs({
+    required this.context,
+    this.height = 220,
+  });
+
+  void error (String text, String title) => showDialog(
+      context: context,
+      builder: (BuildContext context) => _errorDialog(text, title)
+  );
+  
+  void exito(String text, String title) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _successDialog(text, title)
+  );
+
+  void confirmar (String text, String title, VoidCallback function, [VoidCallback? cancelFunction]) => showDialog(
+        context: context,
+        builder: (BuildContext context) =>  _confirmDialog(text, title, function, cancelFunction ?? (){})
+  );
+
+  void cargar(String text, String title) => showDialog(
+      context: context,
+      builder: (BuildContext context) => _cargaDialog(text, title)
+  );
+
+  dialog.Dialog _errorDialog(String text, String title){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 200,
+        height: height,
+        children: [
+          Icon(dialog.Icons.error, size: 70, color: themeApp.redColor,),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+            child: Text(text),
+          ),
+          PrimaryStyleButton(
+              width: 100,
+              buttonColor: themeApp.redColor,
+              function: (){
+                Navigator.pop(context);
+              }, text: "Cerrar")
+        ],
+      ),
+    );
+  }
+
+  dialog.Dialog _successDialog(String text, String title){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 200,
+        height: height,
+        children: [
+          Icon(dialog.Icons.check_circle_rounded, size: 70, color: themeApp.greenColor,),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+            child: Text(text),
+          ),
+          PrimaryStyleButton(
+              width: 100,
+              buttonColor: themeApp.greenColor,
+              function: (){
+                Navigator.pop(context);
+              }, text: "Cerrar")
+        ],
+      ),
+    );
+  }
+
+  dialog.Dialog _confirmDialog(String text, String title, VoidCallback function, VoidCallback cancelFunction){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        shadow: true,
+        width: 250,
+        height: height + 10,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Icon(dialog.Icons.info, size: 70, color: themeApp.primaryColor,),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0,),
+            child: SizedBox(
+              width: 230,
+              child: Text(
+                text,
+                maxLines: null,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 15.0),
+            width: 180,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  PrimaryStyleButton(
+                      width: 80,
+                      function: (){
+                        Navigator.pop(context);
+                        function();
+                      }, text: "Aceptar"),
+                  PrimaryStyleButton(
+                      width: 80,
+                      buttonColor: themeApp.redColor,
+                      function: (){
+                        Navigator.pop(context);
+                        cancelFunction();
+                      }, text: "Cerrar"),
+                ]
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  dialog.Dialog _cargaDialog(String text, String title,){
+    final ThemeApp themeApp = ThemeApp();
+    return dialog.Dialog(
+      backgroundColor: themeApp.blackColor.withOpacity(0),
+      child: ItemsCard(
+        width: 260,
+        height: height - 50,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0, bottom: 10.0),
+            child: dialog.CircularProgressIndicator(
+              strokeWidth: 4.0,
+              color: themeApp.primaryColor,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.primaryColor),),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
+            child: Text(text),
+          ),
+        ],
+      ),
+    );
   }
 
 }
