@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:html';
 import 'dart:math';
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
@@ -793,11 +794,11 @@ class _CrearContainerState extends State<_CrearContainer> {
               stream: LoadData().getsolicitudstream(widget.estado),
               builder: (context, snapshot){
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar las solicitudes'));
+                  return const Center(child: Text('Error al cargar las solicitudes'));
                 }
 
                 if (!snapshot.hasData) {
-                  return Center(child: Text('cargando'));
+                  return const Center(child: Text('cargando'));
                 }
                 List<Solicitud>? solicitudesList = snapshot.data;
                 return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);;
@@ -851,8 +852,8 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   final TextStyle textStyle = TextStyle(
       fontSize: 15.0, color: Config().primaryColor);
   Tutores? selectedTutor;
-  int precio = 0;
-  String comentario = "";
+  final TextEditingController precioTutor = TextEditingController();
+  final TextEditingController comentarioTutor = TextEditingController();
   DateTime fechaconfirmacion = DateTime.now();
 
   final db = FirebaseFirestore.instance;
@@ -955,7 +956,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                           .spaceBetween,
                                       children: [
                                         Container(
-                                            margin: EdgeInsets.only(
+                                            margin: const EdgeInsets.only(
                                                 left: 25, top: 15),
                                             child: Disenos()
                                                 .textocardsolicitudesnobold(
@@ -975,7 +976,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                                   solicitud.fechasistema),
                                               builder: (context, snapshot) {
                                                 if (!snapshot.hasData)
-                                                  return Text('Cargando');
+                                                  return const Text('Cargando');
                                                 Duration duration = snapshot
                                                     .data!;
                                                 return Text(
@@ -1061,9 +1062,10 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                   GestureDetector(
                                     onTap: () {
                                       print("Cotizar por otro tutor");
-                                      cotizarporotrotutordialog(
-                                          context, solicitud.idcotizacion,
-                                          solicitud.fechasistema);
+
+                                      //cotizarporotrotutordialog(context, solicitud.idcotizacion, solicitud.fechasistema);
+                                      cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
+
                                     },
                                     child: Icon(FluentIcons.a_a_d_logo),
                                   ),
@@ -1118,104 +1120,135 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     print("se copio");
   }
 
-  void cotizarporotrotutordialog(BuildContext context, int idcotizacion, DateTime fechasistema) async {
-    showDialog(
+  void cotizarPorOtroTutorDialog(BuildContext context, int idCotizacion, DateTime fechaSistema) => showDialog(
       context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Cotizar por tutor'),
-        content: Column(
-          children: [
-            //tutor
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Seleccionar tutor'),
-                Container(
-                  height: 30,
-                  width: 200,
-                  child: AutoSuggestBox<Tutores>(
-                    items: widget.tutoresList.map<AutoSuggestBoxItem<Tutores>>(
-                          (tutor) => AutoSuggestBoxItem<Tutores>(
-                        value: tutor,
-                        label: tutor.nombrewhatsapp,
-                        onFocusChange: (focused) {
-                          if (focused) {
-                          }
-                        },
-                      ),
-                    )
-                        .toList(),
-                    onSelected: (item) {
-                      setState(() {
-                        print("seleccionado ${item.label}");
-                        selectedTutor = item.value; // Actualizar el valor seleccionado
-                      });
-                    },
-                  ),
-                ),
+      builder: (BuildContext context) => _cotizarPorOtroTutorDialog(context, idCotizacion, fechaSistema)
+  );
 
+  material.Dialog _cotizarPorOtroTutorDialog(BuildContext context, int idCotizacion, DateTime fechaSistema){
+    final ThemeApp themeApp = ThemeApp();
+    const double width = 420;
+    const double height = 400;
+    const double multiplier = 0.8;
+    const double verticalPadding = 5;
+    return material.Dialog(
+      backgroundColor: themeApp.blackColor.withOpacity(0),
+      child: ItemsCard(
+        width: width,
+        height: height,
+        children: [
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding + 5),
+            child: Text("Cotizar por tutor", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+          ),
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Seleccionar tutor:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  SizedBox(
+                    width: width * (multiplier * 0.65),
+                    child: AutoSuggestBox<Tutores>(
+                      items: widget.tutoresList.map<AutoSuggestBoxItem<Tutores>>(
+                            (tutor) => AutoSuggestBoxItem<Tutores>(
+                          value: tutor,
+                          label: tutor.nombrewhatsapp,
+                          onFocusChange: (focused) {
+                            if (focused) {
+                            }
+                          },
+                        ),
+                      )
+                          .toList(),
+                      onSelected: (item) {
+                        setState(() {
+                          print("seleccionado ${item.label}");
+                          selectedTutor = item.value; // Actualizar el valor seleccionado
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Precio tutor:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  RoundedTextField(
+                      width: width * multiplier * 0.65,
+                      controller: precioTutor,
+                      placeholder: "Precio de cotizacion"
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                selectfecha()
               ],
             ),
-            //Precio del tutor
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Precio de tutor'),
-                Container(
-                  width: 200,
-                  child: TextBox(
-                    placeholder: 'Precio de cotización',
-                    onChanged: (value){
-                      setState(() {
-                        precio = int.parse(value);
-                      });
-                    },
-                    maxLines: null,
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Comentarios:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  RoundedTextField(
+                      width: width * multiplier * 0.65,
+                      controller: comentarioTutor,
+                      placeholder: "Comentario"
                   ),
+                ],
+              ),
+            ),
+          ),
+
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PrimaryStyleButton(
+                    function: (){
+                      final DateTime ahora = DateTime.now();
+                      final Duration duration = ahora.difference(fechaSistema);
+                      Uploads().addCotizacion(idCotizacion, int.parse(precioTutor.text), selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, comentarioTutor.text, '', fechaconfirmacion);
+                      Navigator.pop(context, 'User deleted file');
+                    },
+                    text: "Subir precio"
+                ),
+                PrimaryStyleButton(
+                    function: (){
+                      Navigator.pop(context, 'User canceled dialog');
+                    },
+                    text: "Cancelar"
                 ),
               ],
             ),
-            //Fecha maxima de confirmación
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                selectfecha(),
-              ],
-            ),
-            //Comentario
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Comentario'),
-                Container(
-                  width: 200,
-                  child: TextBox(
-                    placeholder: 'Comentario',
-                    onChanged: (value){
-                      setState(() {
-                        comentario = value ;
-                      });
-                    },
-                    maxLines: null,
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-        actions: [
-          Button(
-            child: const Text('Subir precio'),
-            onPressed: () {
-              final DateTime ahora = DateTime.now();
-              final Duration duration = ahora.difference(fechasistema);
-              Uploads().addCotizacion(idcotizacion, precio, selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, comentario, '', fechaconfirmacion);
-              Navigator.pop(context, 'User deleted file');},
-          ),
-          FilledButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-          ),
+          )
+
+
+
         ],
       ),
     );
