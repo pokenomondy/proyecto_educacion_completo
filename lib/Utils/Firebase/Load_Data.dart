@@ -134,7 +134,6 @@ class LoadData {
 
       for (var MateriaDoc in queryMaterias.docs) {
         String nombremateria = MateriaDoc['nombremateria'];
-        print(nombremateria);
 
         Materia newmateria = Materia(nombremateria);
         materiaList.add(newmateria);
@@ -183,8 +182,6 @@ class LoadData {
         String procedencia = ClienteDoc.data().toString().contains('procedencia') ? ClienteDoc.get('procedencia') : 'VIEJO';
         DateTime fechaContacto = ClienteDoc.data().toString().contains('fechaContacto') ? ClienteDoc.get('fechaContacto').toDate() : DateTime(2023,1,1,0,0); //Number
 
-
-        print("$Carrera $Universidadd $nombreCliente $numero");
 
         Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion,procedencia,fechaContacto);
         clientesList.add(newClientes);

@@ -56,6 +56,7 @@ void main() async {
         ChangeNotifierProvider(create: (context) => HistorialProvider()),
         ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
         ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
+        ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
 
       ],
       child: MyApp(),
@@ -78,7 +79,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return (Config.dufyadmon)? const LoginPage(): const InitPage();//InitPage();
+            return (Config.dufyadmon)?  LoginPage(): const InitPage();//InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(

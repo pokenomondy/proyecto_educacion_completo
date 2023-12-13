@@ -251,6 +251,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   bool cargandoservicio = false;
 
 
+
   void main() async {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     await configuracion.initConfig(); // Espera a que initConfig() se complete
@@ -568,8 +569,10 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   }
 
   void validar_antesde_solicitar() async{
+    UtilDialogs dialogs = UtilDialogs(context : context);
     //Validación de fecha, que no sea fecha pasada
     if (fechaentrega.isBefore(DateTime.now())) {
+
       Utiles().notificacion("La fecha de entrega no puede ser menor a hoy", context, false,"Cambien la fecha");
     }else if(selectedMateria == null || selectedCliente == null){
       Utiles().notificacion("Materia o cliente no seleccionado", context, false,"Seleccione cliente o matería");

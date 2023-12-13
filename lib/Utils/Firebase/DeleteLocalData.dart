@@ -27,5 +27,4 @@ class DeleteLocalData{
     print("eliminando clientes local");
     LoadData().obtenerclientes();
   }
-
 }

@@ -74,7 +74,7 @@ class DashboardState extends State<Dashboard> {
     }else if(entraprimeravez == false){
       print("carga porque entra por primera vez");
       return PageCargando();
-    }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+    }else if(configuracion.tiempoActualizacion.inMinutes >= 60000000000000000){
       print("carga por tiempo ${configuracion.tiempoActualizacion.inMinutes}");
       return PageCargando();
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
