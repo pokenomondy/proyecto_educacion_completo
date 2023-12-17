@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-            return (Config.dufyadmon)?  LoginPage(): const InitPage();//InitPage();
+              return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage();
           },
           routes: <RouteBase>[
             ShellRoute(

@@ -19,9 +19,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:googleapis/servicemanagement/v1.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Config/elements.dart';
+import '../Config/strings.dart';
 import '../Dashboard.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/HistorialEstado.dart';
@@ -249,8 +251,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
 
   //Modo de carga
   bool cargandoservicio = false;
-
-
 
   void main() async {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
@@ -534,7 +534,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                       style: Disenos().boton_estilo(),
                       child: const Text('Subir servicio'),
                       onPressed: () {
-                        validar_antesde_solicitar();
+                        validar_antesde_solicitar(context);
                       },
                     ),
                   ],
@@ -568,14 +568,12 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     }
   }
 
-  void validar_antesde_solicitar() async{
+  void validar_antesde_solicitar(BuildContext context) async{
     UtilDialogs dialogs = UtilDialogs(context : context);
-    //Validación de fecha, que no sea fecha pasada
     if (fechaentrega.isBefore(DateTime.now())) {
-
-      Utiles().notificacion("La fecha de entrega no puede ser menor a hoy", context, false,"Cambien la fecha");
+      dialogs.error(Strings().errorfechanovalidadDescripcion, Strings().errorglobalText);
     }else if(selectedMateria == null || selectedCliente == null){
-      Utiles().notificacion("Materia o cliente no seleccionado", context, false,"Seleccione cliente o matería");
+      dialogs.error(Strings().errorMateriaoCliente, Strings().errorglobalText);
     } else{
       setState(() {
         cargandoservicio = true;

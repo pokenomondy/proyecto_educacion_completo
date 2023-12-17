@@ -191,17 +191,42 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                         ],
                       ),
                       //Eliminar base de datos de solicitudesList
-                      PrimaryStyleButton(function: (){
-                        DeleteLocalData().eliminarsolicitudesLocal();
-                      }, text: "Reiniciar las solicitudes"),
-                      PrimaryStyleButton(function: (){
-                        DeleteLocalData().eliinarTutoresLocal();
-                      }, text: "Reiniciar Tutores"),
-                      PrimaryStyleButton(function: (){
-                        DeleteLocalData().eliminarclientesLocal();
-                      }, text: "Reiniciar Clientes"),
+                      Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Text('------ REINICIAR VARIABLES -----',
+                          style: TextStyle(fontWeight: FontWeight.bold),),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          PrimaryStyleButton(function: (){
+                            DeleteLocalData().eliminarsolicitudesLocal();
+                          }, text: "Reiniciar las solicitudes"),
+                          PrimaryStyleButton(function: (){
+                            DeleteLocalData().eliinarTutoresLocal();
+                          }, text: "Reiniciar Tutores"),
+                          PrimaryStyleButton(function: (){
+                            DeleteLocalData().eliminarclientesLocal();
+                          }, text: "Reiniciar Clientes"),
+                        ],
+                      ),
                       //Cerrar sesión
                       PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
+                      //Experimentos
+                      Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Text('------ FUNCIONES EXPERIMENTALES -----',
+                          style: TextStyle(fontWeight: FontWeight.bold),),
+                      ),
+                      //Bases de datos en Stream
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text('Activar datos en tiempo real: (bool tiempo real)',
+                          style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
+                      ),
+                      Text('Esta opción solo activarse, cuando se requieren que los datos esten disponibles en multiples sitemas todo el tiempo,'
+                          'esto puede ser algo riesgoso porque tiene mas inciendcia en bases de datos'),
                     ],
                   ),
                 ],

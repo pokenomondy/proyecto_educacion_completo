@@ -8,4 +8,8 @@ class Strings{
   String errorUsuarionoecnontratdoDescripcion = 'El usuario no fue encontrado';
   String errorcontrasenaequivocadatitle = 'Error, contraseña equivocada';
   String errorcontrasenaequivocadaDescripcion = 'Su contraseña no es correcta, corrijela';
+  String errorglobalText = "Error";
+  String errorfechanovalidadDescripcion = "La fecha no puede ser menor a hoy";
+  String errorcontrasena = "Contraseña de empresa incorrecta, intentelo de nuevo";
+  String errorMateriaoCliente = "Materia o cliente no selecciado, selecciona uno";
 }
