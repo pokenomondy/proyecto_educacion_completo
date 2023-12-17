@@ -47,7 +47,7 @@ class ThemeApp{
         fontSize: tamanio,
         fontWeight: isBold? FontWeight.bold: FontWeight.w300,
         fontFamily: 'Poppins',
-        color: color
+        color: color,
     );
   }
 
