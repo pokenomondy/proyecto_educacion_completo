@@ -13,6 +13,7 @@ import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
+import 'Pages/Pruebas/DashboardAdmin.dart';
 import 'Pages/Pruebas/Whatsapp.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
@@ -79,7 +80,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-              return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage();
+              return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage(); LoginPage() DashboardAdmin();
           },
           routes: <RouteBase>[
             ShellRoute(

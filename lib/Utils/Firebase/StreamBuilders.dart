@@ -6,6 +6,7 @@ import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Cotizaciones.dart';
+import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
 import '../../Objetos/RegistrarPago.dart';
 import 'CollectionReferences.dart';
 
@@ -192,7 +193,7 @@ class stream_builders{
 
   //Podemos configurar filtros de manteneres 2 meses de información o algo así, por si acaso
   // STREAMBUILDER DE SOLICITUDES
-    Stream<List<Solicitud>> getTodasLasSolicitudes() async*{
+  Stream<List<Solicitud>> getTodasLasSolicitudes() async*{
       CollectionReference refsolicitud = referencias.solicitudes!;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool datosDescargados = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
@@ -250,6 +251,33 @@ class stream_builders{
     return solicitudeslist;
   }
 
+  //Configuración de Streambuilders, 3 streambuilders
+  Stream<ConfiguracionPlugins> getstreamConfiguracion() async*{
+    CollectionReference refconfiguracion = referencias.configuracion!;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Stream<QuerySnapshot> queryConfiguracion = refconfiguracion.snapshots();
+    ConfiguracionPlugins? newconfig;
+    await for (QuerySnapshot ConfiguracionSnapshot in queryConfiguracion) {
+
+      for (var ConfiguracionDoc in ConfiguracionSnapshot.docs) {
+        String PrimaryColor = ConfiguracionDoc['PrimaryColor'];
+        String SecundaryColor = ConfiguracionDoc['SecundaryColor'];
+        String idcarpetaPagos = ConfiguracionDoc['idcarpetaPagos'];
+        String idcarpetaSolicitudes = ConfiguracionDoc['idcarpetaSolicitudes'];
+        String nombre_empresa = ConfiguracionDoc['nombre_empresa'];
+        DateTime basicoFecha = ConfiguracionDoc.data().toString().contains('basicoFecha') ? ConfiguracionDoc.get('basicoFecha').toDate() : DateTime.now(); //Number
+        DateTime PagosDriveApiFecha = ConfiguracionDoc.data().toString().contains('PagosDriveApiFecha') ? ConfiguracionDoc.get('PagosDriveApiFecha').toDate() : DateTime.now(); //Number
+        DateTime SolicitudesDriveApiFecha = ConfiguracionDoc.data().toString().contains('SolicitudesDriveApiFecha') ? ConfiguracionDoc.get('SolicitudesDriveApiFecha').toDate() : DateTime.now(); //Number
+        DateTime verificador = ConfiguracionDoc.data().toString().contains('verificador') ? ConfiguracionDoc.get('verificador').toDate() : DateTime.now(); //Number
+        String CONFIRMACION_CLIENTE = ConfiguracionDoc['CONFIRMACION_CLIENTE'];
+        String SOLICITUD = ConfiguracionDoc['SOLICITUD'];
+
+        ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, verificador, CONFIRMACION_CLIENTE, SOLICITUD);
+      }
+      yield newconfig!;
+
+    }
+  }
 
 }
 

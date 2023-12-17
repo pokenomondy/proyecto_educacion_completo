@@ -12,4 +12,7 @@ class Strings{
   String errorfechanovalidadDescripcion = "La fecha no puede ser menor a hoy";
   String errorcontrasena = "Contraseña de empresa incorrecta, intentelo de nuevo";
   String errorMateriaoCliente = "Materia o cliente no selecciado, selecciona uno";
+  String errorvalornulogeneral = "Error, tiene que asginar un valor";
+  String errorvalorigualgeneral = "Error, tiene que asginar un valor diferente al ya asignado anteriormente";
+
 }
