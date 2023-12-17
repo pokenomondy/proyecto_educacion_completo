@@ -1,3 +1,4 @@
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
@@ -30,6 +31,7 @@ class DetallesServicioState extends State<DetallesServicio> {
     final currentwidth = MediaQuery.of(context).size.width;
     final tamanowidth = currentwidth/2 -30;
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         PrimaryColumn(solicitud: widget.solicitud,currentwith: tamanowidth,),
         SecundaryColumn(solicitud: widget.solicitud, currentwith: tamanowidth)
@@ -55,7 +57,7 @@ class PrimaryColumn extends StatefulWidget {
 
 class PrimaryColumnState extends State<PrimaryColumn> {
   String servicio = "";
-  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false];
+  List<bool> editarcasilla = List.generate(10, (index) => false);
   List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
   String? selectedServicio;
   Materia? selectedMateria;
@@ -63,6 +65,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   List<String> valores = [];
   String datoscambiostext = "";
   DateTime cambiarfecha = DateTime.now();
+  final ThemeApp themeApp = ThemeApp();
 
   @override
   void initState() {
@@ -87,27 +90,31 @@ class PrimaryColumnState extends State<PrimaryColumn> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.red,
-      width: widget.currentwith,
-      child: Column(
-        children: [
-          textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
-          textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
-          textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
-          textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
-          textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
-          textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
-          textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
-          textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
-          textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
-          textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
-        ],
-      ),
+    return ItemsCard(
+      alignementColumn: MainAxisAlignment.start,
+      shadow: false,
+      width: widget.currentwith * 0.98,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+          child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+        ),
+        textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
+        textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
+        textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
+        textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
+        textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
+        textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
+        textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
+        textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
+        textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
+        textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
+      ],
     );
   }
 
   Widget textoymodificable(String text, Solicitud solicitud, String servicio,int index, bool bool){
+    const double verticalPadding = 3.0;
     String? cambio = "";
     String valor = valores[index];
 
@@ -132,15 +139,15 @@ class PrimaryColumnState extends State<PrimaryColumn> {
       children: [
         if (!editarcasilla[index])
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
                     width: widget.currentwith-60,
-                    padding: EdgeInsets.only(
-                        bottom: 15, right: 10, top: 5),
-                    margin: EdgeInsets.only(left: 10),
-                    child: Text("$text : $valor",)),
+                    padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
+                    margin: const EdgeInsets.only(left: 15),
+                    child: Text("$text : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)),
                 if(!bool)
                   GestureDetector(
                     onTap: (){
@@ -153,7 +160,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                       });
                       print("oprimido para cambiar");
                     },
-                    child: Icon(FluentIcons.edit),
+                    child: const Icon(FluentIcons.edit),
                   )
               ],
             ),
@@ -162,7 +169,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
           Row(
             children: [
               if(index == 7 || index == 8)
-                Container(
+                SizedBox(
                   width: 100,
                   child: TextBox(
                     placeholder: valor,
@@ -353,20 +360,29 @@ class SecundaryColumn extends StatefulWidget {
 
 class SecundaryColumnState extends State<SecundaryColumn> {
   List<ArchivoResultado> archivosresultados = [];
-
+  final ThemeApp themeApp = ThemeApp();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      width: widget.currentwith,
-      child: Column(
-        children: [
-          //Generar lista de archivos que hay en la carpeta de esta solicitud
-          FilledButton(child: Text('vericiar'), onPressed: (){
-            DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion);
-          }),
-          FutureBuilder(
+    return ItemsCard(
+      shadow: false,
+      cardColor: themeApp.primaryColor,
+      width: widget.currentwith * 0.98,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+          child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+        ),
+        PrimaryStyleButton(
+          width: 130,
+          invert: true,
+            function: (){
+              DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion);
+            },
+            text: "Verificar"
+        ),
+        Expanded(
+          child: FutureBuilder(
               future: DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion),
               builder: (context,snapshot){
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -385,8 +401,8 @@ class SecundaryColumnState extends State<SecundaryColumn> {
                   return _TarjetaArchivos(archivosList: archivosList);
                 }
               }),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -404,14 +420,21 @@ class _TarjetaArchivos extends StatefulWidget{
 }
 
 class _TarjetaArchivosState extends State<_TarjetaArchivos> {
+
+  final ThemeApp themeApp = ThemeApp();
+
   @override
   Widget build(BuildContext context) {
     final currentheight = MediaQuery.of(context).size.height;
-    return Column(
+    const double multiplier = 0.7;
+    return ItemsCard(
+      shadow: false,
+      cardColor: themeApp.primaryColor,
+      height: currentheight * multiplier,
       children: [
         Text("hay ${widget.archivosList?.length.toString()} archivos"),
         SizedBox(
-            height: currentheight-90,
+            height: currentheight * multiplier,
             child: ListView.builder(
                 itemCount: widget.archivosList?.length,
                 itemBuilder: (context,index) {

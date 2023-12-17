@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:html';
 import 'dart:math';
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
@@ -19,6 +20,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Config/elements.dart';
@@ -793,11 +795,11 @@ class _CrearContainerState extends State<_CrearContainer> {
               stream: LoadData().getsolicitudstream(widget.estado),
               builder: (context, snapshot){
                 if (snapshot.hasError) {
-                  return Center(child: Text('Error al cargar las solicitudes'));
+                  return const Center(child: Text('Error al cargar las solicitudes'));
                 }
 
                 if (!snapshot.hasData) {
-                  return Center(child: Text('cargando'));
+                  return const Center(child: Text('cargando'));
                 }
                 List<Solicitud>? solicitudesList = snapshot.data;
                 return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);;
@@ -841,6 +843,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     });
   }
 
+  final ThemeApp themeApp = ThemeApp();
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.abs().toString().padLeft(2, "0");
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
@@ -851,8 +854,8 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   final TextStyle textStyle = TextStyle(
       fontSize: 15.0, color: Config().primaryColor);
   Tutores? selectedTutor;
-  int precio = 0;
-  String comentario = "";
+  final TextEditingController precioTutor = TextEditingController();
+  final TextEditingController comentarioTutor = TextEditingController();
   DateTime fechaconfirmacion = DateTime.now();
 
   final db = FirebaseFirestore.instance;
@@ -955,7 +958,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                           .spaceBetween,
                                       children: [
                                         Container(
-                                            margin: EdgeInsets.only(
+                                            margin: const EdgeInsets.only(
                                                 left: 25, top: 15),
                                             child: Disenos()
                                                 .textocardsolicitudesnobold(
@@ -975,7 +978,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                                   solicitud.fechasistema),
                                               builder: (context, snapshot) {
                                                 if (!snapshot.hasData)
-                                                  return Text('Cargando');
+                                                  return const Text('Cargando');
                                                 Duration duration = snapshot
                                                     .data!;
                                                 return Text(
@@ -995,7 +998,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                         child: Align(
                                             alignment: Alignment.centerLeft,
                                             child: Text(solicitud.resumen,
-                                              textAlign: TextAlign.justify,))),
+                                              textAlign: TextAlign.justify, style: themeApp.styleText(13, false, themeApp.whitecolor),))),
                                   ],
                                 ),
                               ),
@@ -1009,7 +1012,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               //metemos un streambuilder para escuchar numero de cotizaciones
-                              Text("${solicitud.cotizaciones.length} cotizaciones"),
+                              Text("${solicitud.cotizaciones.length} cotizaciones", style: themeApp.styleText(14, false, themeApp.whitecolor),),
                               Disenos().textocardsolicitudesnobold(
                                   solicitud.estado),
                             ],
@@ -1033,18 +1036,21 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                     solicitud.cliente.toString()),
                               ),
                               //Copiar solicitud
-                              FilledButton(
-                                  child: Text('Copiar'), onPressed: () {
-                                copiarSolicitud(
-                                    solicitud.servicio,
-                                    solicitud.idcotizacion,
-                                    solicitud.materia,
-                                    solicitud.fechaentrega,
-                                    solicitud.resumen,
-                                    solicitud.infocliente,
-                                    solicitud.urlArchivos
-                                );
-                              }),
+                              PrimaryStyleButton(
+                                width: 100,
+                                function: (){
+                                  copiarSolicitud(
+                                      solicitud.servicio,
+                                      solicitud.idcotizacion,
+                                      solicitud.materia,
+                                      solicitud.fechaentrega,
+                                      solicitud.resumen,
+                                      solicitud.infocliente,
+                                      solicitud.urlArchivos
+                                  );
+                                },
+                                text: "Copiar"
+                              ),
                               Row(
                                 children: [
                                   //Ver detalles de cotización
@@ -1055,25 +1061,33 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                         builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud,tutor: tutoresVacia,showTutoresDetalles: false,),
                                       ));
                                     },
-                                    child: Icon(FluentIcons.a_a_d_logo),
+                                    child: material.Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                                      child: Icon(material.Icons.info_outline_rounded, color: themeApp.whitecolor,),
+                                    ),
                                   ),
                                   //Cotizar por tutor
                                   GestureDetector(
                                     onTap: () {
                                       print("Cotizar por otro tutor");
-                                      cotizarporotrotutordialog(
-                                          context, solicitud.idcotizacion,
-                                          solicitud.fechasistema);
+                                      cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
+
                                     },
-                                    child: Icon(FluentIcons.a_a_d_logo),
+                                    child: material.Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                                      child: Icon(material.Icons.accessibility, color: themeApp.whitecolor,),
+                                    ),
                                   ),
                                   //Ver cotizaciones
                                   GestureDetector(
                                     onTap: () {
                                       print("Ver cotizaciones");
-                                      vistacotizaciones(context, solicitud);
+                                      vistaCotizaciones(context, solicitud);
                                     },
-                                    child: Icon(FluentIcons.access_logo),
+                                    child: material.Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                                      child: Icon(material.Icons.note_rounded, color: themeApp.whitecolor,),
+                                    ),
                                   ),
                                   //Cambiar estado de servicio
                                   EstadoServicioDialog(solicitud: solicitud,),
@@ -1118,104 +1132,135 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     print("se copio");
   }
 
-  void cotizarporotrotutordialog(BuildContext context, int idcotizacion, DateTime fechasistema) async {
-    showDialog(
+  void cotizarPorOtroTutorDialog(BuildContext context, int idCotizacion, DateTime fechaSistema) => showDialog(
       context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Cotizar por tutor'),
-        content: Column(
-          children: [
-            //tutor
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Seleccionar tutor'),
-                Container(
-                  height: 30,
-                  width: 200,
-                  child: AutoSuggestBox<Tutores>(
-                    items: widget.tutoresList.map<AutoSuggestBoxItem<Tutores>>(
-                          (tutor) => AutoSuggestBoxItem<Tutores>(
-                        value: tutor,
-                        label: tutor.nombrewhatsapp,
-                        onFocusChange: (focused) {
-                          if (focused) {
-                          }
-                        },
-                      ),
-                    )
-                        .toList(),
-                    onSelected: (item) {
-                      setState(() {
-                        print("seleccionado ${item.label}");
-                        selectedTutor = item.value; // Actualizar el valor seleccionado
-                      });
-                    },
-                  ),
-                ),
+      builder: (BuildContext context) => _cotizarPorOtroTutorDialog(context, idCotizacion, fechaSistema)
+  );
 
+  material.Dialog _cotizarPorOtroTutorDialog(BuildContext context, int idCotizacion, DateTime fechaSistema){
+    final ThemeApp themeApp = ThemeApp();
+    const double width = 420;
+    const double height = 400;
+    const double multiplier = 0.8;
+    const double verticalPadding = 5;
+    return material.Dialog(
+      backgroundColor: themeApp.blackColor.withOpacity(0),
+      child: ItemsCard(
+        width: width,
+        height: height,
+        children: [
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding + 5),
+            child: Text("Cotizar por tutor", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+          ),
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Seleccionar tutor:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  SizedBox(
+                    width: width * (multiplier * 0.65),
+                    child: AutoSuggestBox<Tutores>(
+                      items: widget.tutoresList.map<AutoSuggestBoxItem<Tutores>>(
+                            (tutor) => AutoSuggestBoxItem<Tutores>(
+                          value: tutor,
+                          label: tutor.nombrewhatsapp,
+                          onFocusChange: (focused) {
+                            if (focused) {
+                            }
+                          },
+                        ),
+                      )
+                          .toList(),
+                      onSelected: (item) {
+                        setState(() {
+                          print("seleccionado ${item.label}");
+                          selectedTutor = item.value; // Actualizar el valor seleccionado
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Precio tutor:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  RoundedTextField(
+                      width: width * multiplier * 0.65,
+                      controller: precioTutor,
+                      placeholder: "Precio de cotizacion"
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                selectfecha()
               ],
             ),
-            //Precio del tutor
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Precio de tutor'),
-                Container(
-                  width: 200,
-                  child: TextBox(
-                    placeholder: 'Precio de cotización',
-                    onChanged: (value){
-                      setState(() {
-                        precio = int.parse(value);
-                      });
-                    },
-                    maxLines: null,
+          ),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: material.SizedBox(
+              width: width * multiplier,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Comentarios:", style: themeApp.styleText(12, false, themeApp.blackColor),),
+                  RoundedTextField(
+                      width: width * multiplier * 0.65,
+                      controller: comentarioTutor,
+                      placeholder: "Comentario"
                   ),
+                ],
+              ),
+            ),
+          ),
+
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PrimaryStyleButton(
+                    function: (){
+                      final DateTime ahora = DateTime.now();
+                      final Duration duration = ahora.difference(fechaSistema);
+                      Uploads().addCotizacion(idCotizacion, int.parse(precioTutor.text), selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, comentarioTutor.text, '', fechaconfirmacion);
+                      Navigator.pop(context, 'User deleted file');
+                    },
+                    text: "Subir precio"
+                ),
+                PrimaryStyleButton(
+                    function: (){
+                      Navigator.pop(context, 'User canceled dialog');
+                    },
+                    text: "Cancelar"
                 ),
               ],
             ),
-            //Fecha maxima de confirmación
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                selectfecha(),
-              ],
-            ),
-            //Comentario
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Comentario'),
-                Container(
-                  width: 200,
-                  child: TextBox(
-                    placeholder: 'Comentario',
-                    onChanged: (value){
-                      setState(() {
-                        comentario = value ;
-                      });
-                    },
-                    maxLines: null,
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-        actions: [
-          Button(
-            child: const Text('Subir precio'),
-            onPressed: () {
-              final DateTime ahora = DateTime.now();
-              final Duration duration = ahora.difference(fechasistema);
-              Uploads().addCotizacion(idcotizacion, precio, selectedTutor!.uid, selectedTutor!.nombrewhatsapp, duration.inMinutes, comentario, '', fechaconfirmacion);
-              Navigator.pop(context, 'User deleted file');},
-          ),
-          FilledButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-          ),
+          )
+
+
+
         ],
       ),
     );
@@ -1260,74 +1305,115 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     );
   }
 
-  void vistacotizaciones(BuildContext context, Solicitud solicitud) async {
-    print("id solicitud ${solicitud.idcotizacion}");
-    showDialog(
-      context: context,
-      builder: (context) => ContentDialog(
-        title: const Text('Cotizaciones de servicio'),
-        content:
-        Column(
-          children: [
-          Container(
-          height: 350,
-          child: ListView.builder(
-              itemCount: solicitud.cotizaciones.length,
-              itemBuilder: (context,subIndex){
-                Cotizacion cotizacion = solicitud.cotizaciones[subIndex];
+  void vistaCotizaciones(BuildContext context, Solicitud solicitud) => showDialog(
+      context: context, 
+      builder: (BuildContext context) => _vistaCotizaciones(context, solicitud)
+  );
+  
+  material.Dialog _vistaCotizaciones(BuildContext context, Solicitud solicitud){
+    const double horizontalPadding = 20;
 
-                return Container(
-                  height: 150,
-                  child: Card(
-                    child:
-                    Column(
+    return material.Dialog(
+      backgroundColor: themeApp.blackColor.withOpacity(0),
+      child: ItemsCard(
+        width: 400,
+        height: 450,
+        children: [
+          material.Padding(
+            padding: const EdgeInsets.only(top: 20.0),
+            child: Text("Cotizaciones de servicio", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+          ),
+
+          Expanded(
+            child: ListView.builder(
+                itemCount: solicitud.cotizaciones.length,
+                itemBuilder: (context, index){
+                  Cotizacion cotizacion = solicitud.cotizaciones[index];
+
+                  return material.Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                    child: ItemsCard(
+                      shadow: false,
+                      cardColor: themeApp.grayColor.withOpacity(0.05),
+                      width: 380,
+                      height: 100,
                       children: [
-                        //Nombre de tutor y precio cobrado
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(child: Text(cotizacion.nombretutor)),
-                            Expanded(child: Text(cotizacion.cotizacion.toString()))
-                          ],
+                        material.Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text(cotizacion.nombretutor, style: themeApp.styleText(14, false, themeApp.blackColor),)),
+                              Expanded(child: Text(cotizacion.cotizacion.toString(), style: themeApp.styleText(14, false, themeApp.blackColor),))
+                            ],
+                          ),
                         ),
-                        //Tiempo en dar respuesta
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(child: Text("${cotizacion.tiempoconfirmacion.toString()} minutos")),
-                            Expanded(child: Text('Fecha max confirmación')),
-                            GestureDetector(child: Icon(FluentIcons.add),
-                              onTap: () async {
-                                print("Vamos a agendar con el tutor");
-                                //caragamos el dialog y despues de cargar el Dialog vamos  a confuirmar la solicitud
-                                identificadorcodigo(solicitud.servicio);
-                                codigocontabilidad(solicitud);
-                                agendartrabajo(context,solicitud,cotizacion);
-                              },
-                            )
-                          ],
-                        ),
-                        Text(cotizacion.comentariocotizacion!),
-                      ],
-                    ),
 
-                  ),
-                );
+                        material.Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: Text("${cotizacion.tiempoconfirmacion.toString()} minutos", style: themeApp.styleText(14, false, themeApp.blackColor),)),
+                              Expanded(child: Text('Fecha max confirmación', style: themeApp.styleText(14, false, themeApp.blackColor),)),
+                              GestureDetector(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: themeApp.primaryColor,
+                                    borderRadius: BorderRadius.circular(80)
+                                  ),
+                                  height: 25,
+                                  width: 25,
+                                  child: Icon(FluentIcons.add, color: themeApp.whitecolor, size: 12,)
+                                ),
+                                onTap: () async {
+                                  identificadorcodigo(solicitud.servicio);
+                                  codigocontabilidad(solicitud);
+                                  agendartrabajo(context,solicitud,cotizacion);
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+
+                        material.Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                          child: Text(cotizacion.comentariocotizacion!, style: themeApp.styleText(14, false, themeApp.blackColor),),
+                        ),
+
+                      ]
+                ),
+              );
               }
+            ),
           ),
-        ),
-          ],
-        ),
-        actions: [
-          Button(
-              child: const Text('Subir precio'),
-              onPressed: () {
-              }
+
+          material.Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              material.Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 20.0),
+                child: PrimaryStyleButton(
+                    function: (){
+
+                    },
+                    text: "Subir precio"
+                ),
+              ),
+
+              material.Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8.0),
+                child: PrimaryStyleButton(
+                  width: 120,
+                  function: (){
+                    Navigator.pop(context);
+                  }, text: "Cancelar"
+                ),
+              )
+            ],
           ),
-          FilledButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-          ),
+
+
         ],
       ),
     );

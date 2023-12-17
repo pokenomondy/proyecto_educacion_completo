@@ -414,7 +414,7 @@ class UtilDialogs{
           Icon(dialog.Icons.error, size: 70, color: themeApp.redColor,),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3.0),
-            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor),),
+            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor), textAlign: TextAlign.center,),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
