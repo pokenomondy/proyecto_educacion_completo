@@ -74,8 +74,8 @@ class DashboardState extends State<Dashboard> {
       return const Center(child: CircularProgressIndicator()); // Ejemplo de indicador de carga
     }else if(entraprimeravez == false){
       print("carga porque entra por primera vez");
-      return const PageCargando();
-    }else if(configuracion.tiempoActualizacion.inMinutes >= 300){
+      return PageCargando();
+    }else if(configuracion.tiempoActualizacion.inMinutes >= 60000000000000000){
       print("carga por tiempo ${configuracion.tiempoActualizacion.inMinutes}");
       return const PageCargando();
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){

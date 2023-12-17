@@ -3,6 +3,7 @@ import "package:dashboard_admin_flutter/Pages/Login%20page/LoginPage.dart";
 import "package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart";
 import "package:flutter/material.dart";
 import "package:shared_preferences/shared_preferences.dart";
+import "../Config/elements.dart";
 import "../Config/theme.dart";
 
 class InitPage extends StatefulWidget{
@@ -13,7 +14,6 @@ class InitPage extends StatefulWidget{
 
 class InitPageState extends State<InitPage>{
   List<Map<String, dynamic>> listaClaves = [];
-
 
   @override
   void initState() {
@@ -29,7 +29,6 @@ class InitPageState extends State<InitPage>{
       _redireccionALogin(nombre_empresa);
     }
   }
-
 
   @override
   Widget build(BuildContext context){
@@ -74,7 +73,7 @@ class InitPageState extends State<InitPage>{
   }
 
   void verificarEmpresa(String contrasena) async {
-    // Verificar si la contraseña está en la lista de claves
+    UtilDialogs dialogs = UtilDialogs(context : context);
     bool contrasenaCorrecta = false;
     String nombreEmpresa = '';
 
@@ -93,6 +92,7 @@ class InitPageState extends State<InitPage>{
       prefs.setString("Nombre_Empresa", nombreEmpresa);
       RedireccionaALogin();
     } else {
+      dialogs.error(Strings().errorcontrasena, 'Error');
       print("Contraseña incorrecta. Inténtelo de nuevo.");
     }
   }

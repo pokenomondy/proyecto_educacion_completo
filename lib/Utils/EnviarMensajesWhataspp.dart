@@ -1,61 +1,15 @@
 import 'dart:convert';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
-import '../Config/Config.dart';
-import '../Config/Config.dart';
+import 'package:intl/intl.dart';
 
 
 class enviarmensajewsp{
   String tokenwsp = "";
   String apiurl =  "";
   Config configuracion = Config();
-
-  //Listar plantillas, obtenerlas
-  Future<List<Map<String, dynamic>>> getMessageTemplates() async {
-    try {
-      print(tokenwsp);
-      print(apiurl);
-
-      final headers = {
-        'Authorization': 'Bearer ${tokenwsp}',
-        'Content-Type': 'application/json',
-      };
-
-      final response = await http.get(Uri.parse(apiurl), headers: headers);
-
-      print(response.body);
-
-      if (response.statusCode == 200) {
-        // Convierte la respuesta JSON a una lista de mapas y devuelve el resultado
-        final responseData = jsonDecode(response.body);
-
-        if (responseData.containsKey("data") && responseData["data"] is List) {
-          // La clave "data" existe y es una lista
-          return List<Map<String, dynamic>>.from(responseData["data"]);
-        } else {
-          print('Error: La respuesta JSON no contiene una lista en la clave "data".');
-          return [];
-        }
-      } else {
-        // Maneja el error según tus necesidades
-        print('Error al obtener las plantillas: ${response.statusCode}');
-        print('Error al obtener las plantillas: ${response.body}');
-        return [];
-      }
-    } catch (e) {
-      // Maneja el error según tus necesidades
-      print('Error al obtener las plantillas: $e');
-      return [];
-    }
-  }
-
-
-
-
-
-
-
 
   enviarmensajewsp() {
     initenviarmensajewsp() ;
@@ -108,6 +62,99 @@ class enviarmensajewsp{
     }
 
   }
+
+  //Listar plantillas, obtenerlas
+  Future<List<Map<String, dynamic>>> getMessageTemplates() async {
+    try {
+      print(tokenwsp);
+      print(apiurl);
+
+      final headers = {
+        'Authorization': 'Bearer ${tokenwsp}',
+        'Content-Type': 'application/json',
+      };
+
+      final response = await http.get(Uri.parse(apiurl), headers: headers);
+
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        // Convierte la respuesta JSON a una lista de mapas y devuelve el resultado
+        final responseData = jsonDecode(response.body);
+
+        if (responseData.containsKey("data") && responseData["data"] is List) {
+          // La clave "data" existe y es una lista
+          return List<Map<String, dynamic>>.from(responseData["data"]);
+        } else {
+          print('Error: La respuesta JSON no contiene una lista en la clave "data".');
+          return [];
+        }
+      } else {
+        // Maneja el error según tus necesidades
+        print('Error al obtener las plantillas: ${response.statusCode}');
+        print('Error al obtener las plantillas: ${response.body}');
+        return [];
+      }
+    } catch (e) {
+      // Maneja el error según tus necesidades
+      print('Error al obtener las plantillas: $e');
+      return [];
+    }
+  }
+
+  //Enviar mensaje de wahtsapp sin plantilla, solo texto
+  Future enviarmensajetexto(int phoneNumber,String texto) async{
+    final payload = {
+      "messaging_product": "whatsapp",
+      "recipient_type": "individual",
+      'to': phoneNumber.toString(),
+      "type": "text",
+      "text": {
+        "preview_url": false,
+        "body": texto,
+      }
+    };
+    final headers = {
+      'Authorization': 'Bearer ${tokenwsp}',
+      'Content-Type': 'application/json'
+    };
+    final response = await http.post(Uri.parse(apiurl), headers: headers, body: jsonEncode(payload));
+    if (response.statusCode == 200) {
+      print('Mensaje enviado con éxito');
+      print(response.body);
+      //vamos a guardar el mensaje de texto, en la base de datos
+      DateTime fechanombre = DateTime.now();
+      String fechaformato = DateFormat('ddMMyyyyhhmmss').format(fechanombre);
+      Map<String, dynamic> responseBody = json.decode(response.body);
+      String messageId = responseBody['messages'][0]['id'];
+      final upload_data = {
+        "archivo": "urlarchivo",
+        "messages": {
+          "from": phoneNumber,
+          "id": messageId,
+          'text':{
+            'body':texto,
+          },
+          'timestamp' : (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+          'type' : 'text',
+        },
+        "usuario_mensaje": "ADMIN",
+      };
+      DatabaseReference databaseReference = FirebaseDatabase.instance.reference();
+      databaseReference.child(phoneNumber.toString()).child("MENSAJES").child(fechaformato).set(upload_data).then((value) {
+        print('Datos cargados exitosamente');
+      }).catchError((error) {
+        print('Error al cargar los datos: $error');
+      });
+
+    } else {
+      print('Error al enviar el mensaje: ${response.statusCode}');
+      print(response.body);
+    }
+  }
+
+
+
 
 
   void CreatePlantilla() async{

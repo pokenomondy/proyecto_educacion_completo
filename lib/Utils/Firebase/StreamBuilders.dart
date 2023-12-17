@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
+import '../../Objetos/Cotizaciones.dart';
 import '../../Objetos/RegistrarPago.dart';
 import 'CollectionReferences.dart';
 
@@ -126,7 +128,7 @@ class stream_builders{
     return clientesList;
   }
 
-  //Obtener contabilidad en stream, servicios AGENDADOA
+  //Obtener contabilidad en stream, Serbivio agendado de tutor
   Stream<List<ServicioAgendado>> getServiciosAgendadosTutor(String nombretutor) async* {
     CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -188,6 +190,67 @@ class stream_builders{
     return clientesList;
   }
 
+  //Podemos configurar filtros de manteneres 2 meses de información o algo así, por si acaso
+  // STREAMBUILDER DE SOLICITUDES
+    Stream<List<Solicitud>> getTodasLasSolicitudes() async*{
+      CollectionReference refsolicitud = referencias.solicitudes!;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool datosDescargados = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
+
+      Stream<QuerySnapshot> querySolicitud = refsolicitud.snapshots();
+      await for (QuerySnapshot solicitudSnapshot in querySolicitud) {
+        List<Solicitud> solicitudList = [];
+
+        for (var solicitudDoc in solicitudSnapshot.docs) {
+          String servicio = solicitudDoc['Servicio'];
+          int idcotizacion = solicitudDoc['idcotizacion'];
+          String materia = solicitudDoc['materia'];
+          DateTime fechaentrega = solicitudDoc['fechaentrega'].toDate();
+          String resumen = solicitudDoc['resumen'];
+          String infocliente = solicitudDoc['infocliente'];
+          int cliente = solicitudDoc['cliente'];
+          DateTime fechasistema = solicitudDoc['fechasistema'].toDate();
+          String estado = solicitudDoc['Estado'];
+          DateTime fechaactualizacion = solicitudDoc.data().toString().contains('fechaactualizacion') ? solicitudDoc.get('fechaactualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
+          String urlarchivo = solicitudDoc.data().toString().contains('archivos') ? solicitudDoc.get('archivos') : 'No tiene Archivos';
+          DateTime actualizarsolicitudes = solicitudDoc.data().toString().contains('actualizarsolicitudes') ? solicitudDoc.get('actualizarsolicitudes').toDate() : DateTime(2023,1,1,0,0); //Number
+          List<Cotizacion> cotizaciones = [];
+          if (solicitudDoc.data() != null && solicitudDoc.data().toString().contains('cotizaciones')) {
+            var CotizacionData = solicitudDoc['cotizaciones'] as List<dynamic>;
+            cotizaciones = CotizacionData.map((CotizaDato) {
+              int cotizacionTutor = CotizaDato['Cotizacion'];
+              String uidtutor = CotizaDato['uidtutor'];
+              String nombretutor = CotizaDato['nombretutor'];
+              int tiempoconfirmacion = CotizaDato['Tiempo confirmacion'];
+              String comentariocotizacion = CotizaDato['Comentario Cotización'];
+              String Agenda = CotizaDato['Agenda'];
+              DateTime fechaconfirmacion = CotizaDato['fechaconfirmacion'] != null ? RegistrarPago.convertirTimestamp(CotizaDato['fechaconfirmacion']) : DateTime.now();
+
+              Cotizacion newcotizacion = Cotizacion(cotizacionTutor, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
+              return newcotizacion;
+            }).toList();
+          }
+          Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones,fechaactualizacion,urlarchivo,actualizarsolicitudes);
+          solicitudList.add(newsolicitud);
+        }
+
+        String solicitudesJson = jsonEncode(solicitudList);
+        await prefs.setString('solicitudes_list_stream', solicitudesJson);
+        await prefs.setBool('cheched_solicitudes_descargadas_stream', true);
+
+        yield solicitudList;
+      }
+    }
+  Future<List<Solicitud>?> cargarsolicitudes() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String solicitudesJson = prefs.getString('solicitudes_list_stream') ?? '';
+    List<dynamic> clienteData = jsonDecode(solicitudesJson);
+    List<Solicitud> solicitudeslist = clienteData.map((clienteData) =>
+        Solicitud.fromJson(clienteData as Map<String, dynamic>)).toList();
+    return solicitudeslist;
+  }
+
+
 }
 
-//
+

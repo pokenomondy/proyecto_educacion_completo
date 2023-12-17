@@ -14,7 +14,6 @@ import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Config/theme.dart';
 
-
 class PageCargando extends StatefulWidget {
 
   const PageCargando({Key? key,
