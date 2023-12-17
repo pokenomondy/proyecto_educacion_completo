@@ -4,6 +4,7 @@ import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
@@ -70,13 +71,13 @@ class DashboardState extends State<Dashboard> {
     if (!configloaded && !configloadedos) {
       print("Cargando configuración inicial");
       // Configuración aún no cargada, muestra un indicador de carga o contenido temporal
-      return Text('cargando'); // Ejemplo de indicador de carg
+      return const Center(child: CircularProgressIndicator()); // Ejemplo de indicador de carga
     }else if(entraprimeravez == false){
       print("carga porque entra por primera vez");
       return PageCargando();
     }else if(configuracion.tiempoActualizacion.inMinutes >= 60000000000000000){
       print("carga por tiempo ${configuracion.tiempoActualizacion.inMinutes}");
-      return PageCargando();
+      return const PageCargando();
     }else if(configuracion.basicofecha.isBefore(DateTime.now())){
       return Text('Se acabo tu Licencia, expiro el ${DateFormat('dd/MM/yyyy hh:mma').format(configuracion.basicofecha)}');
     }else if(currentUser == null || configuracion.rol == "TUTOR" ){
@@ -90,8 +91,8 @@ class DashboardState extends State<Dashboard> {
             margin:  const EdgeInsets.only(left: 20),
             child:   Row(
               children: [
-                Text(configuracion.nombreempresa, style: TextStyle(fontSize: 32),),
-                Text("Dufy Amor", style: TextStyle(fontSize: 15),),
+                Text(configuracion.nombreempresa, style: const TextStyle(fontSize: 32),),
+                const Text("Dufy Amor", style: TextStyle(fontSize: 15),),
               ],
             ),
           ),

@@ -584,16 +584,20 @@ class EstadoServicioDialogState extends State<EstadoServicioDialog> {
   Widget build(BuildContext context) {
     return Container(child: 
     GestureDetector(
-      child: Container(
-          height: 30,
-          width: 30,
-          decoration: BoxDecoration(
-            color: Config.secundaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Icon(FluentIcons.add,
-            color: Config().primaryColor,
-            weight: 30,)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        child: Container(
+            height: 23,
+            width: 23,
+            decoration: BoxDecoration(
+              color: themeApp.whitecolor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Icon(FluentIcons.add,
+              color: themeApp.primaryColor,
+              size: 12,
+              )),
+      ),
       onTap: () => _solicitud(widget.solicitud.idcotizacion, context),
       ),
     );
