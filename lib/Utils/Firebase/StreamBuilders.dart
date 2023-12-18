@@ -3,17 +3,22 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Cotizaciones.dart';
+import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
 import '../../Objetos/RegistrarPago.dart';
+import '../../Providers/Providers.dart';
 import 'CollectionReferences.dart';
+import 'package:rxdart/rxdart.dart';
 
 class stream_builders{
   CollectionReferencias referencias =  CollectionReferencias();
 
   //Streambuilders de servicios agendados
-  Stream<List<ServicioAgendado>> getServiciosAgendados() async* {
+  Stream<List<ServicioAgendado>> getServiciosAgendados(BuildContext context) async* {
     CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('checked_serviciosAgendados') ?? false;
@@ -22,7 +27,7 @@ class stream_builders{
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
       List<ServicioAgendado> serviciosAgendadosList = [];
 
-      print("llamando contabilidad desde stream");
+      print("Ejecutando Contabilidad Stream");
 
       // First, load the basic information without payments
       for (var servicio in servicioSnapshot.docs) {
@@ -114,7 +119,8 @@ class stream_builders{
       String solicitudesJson = jsonEncode(serviciosAgendadosList);
       await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
       await prefs.setBool('checked_serviciosAgendados', true);
-
+      final ConfiguracionProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+      ConfiguracionProvider.cargarTodosLosServicios(serviciosAgendadosList);
       yield serviciosAgendadosList;
 
     }
@@ -192,7 +198,7 @@ class stream_builders{
 
   //Podemos configurar filtros de manteneres 2 meses de información o algo así, por si acaso
   // STREAMBUILDER DE SOLICITUDES
-    Stream<List<Solicitud>> getTodasLasSolicitudes() async*{
+  Stream<List<Solicitud>> getTodasLasSolicitudes() async*{
       CollectionReference refsolicitud = referencias.solicitudes!;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool datosDescargados = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
@@ -250,6 +256,66 @@ class stream_builders{
     return solicitudeslist;
   }
 
+  //Configuración de Streambuilders, 3 streambuilders
+  Stream<ConfiguracionPlugins> getstreamConfiguracion(BuildContext context) async*{
+    CollectionReference refconfiguracion = referencias.configuracion!;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool datosDescargados = prefs.getBool('cached_configuracion_descargadas') ?? false;
+    ConfiguracionPlugins? newconfig;
+    Stream<DocumentSnapshot> queryConfiguracion = refconfiguracion.doc("CONFIGURACION").snapshots();
+    Stream<DocumentSnapshot> queryPlugins = refconfiguracion.doc("Plugins").snapshots();
+    Stream<DocumentSnapshot> queryMensajes = refconfiguracion.doc("MENSAJES").snapshots();
+    final combinedStream = CombineLatestStream.combine3(
+        queryConfiguracion,
+        queryPlugins,
+        queryMensajes,
+            (configuracion, plugins, mensajes) => {
+          'configuracion': configuracion,
+          'plugins': plugins,
+          'mensajes': mensajes,
+        },
+      );
+    await for (Map<String, dynamic> snapshots in combinedStream) {
+      Map<String, dynamic> dataConfiguracion = snapshots['configuracion'].data() as Map<String, dynamic>;
+      Map<String, dynamic> dataPlugins = snapshots['plugins'].data() as Map<String, dynamic>;
+      Map<String, dynamic> dataMensajes = snapshots['mensajes'].data() as Map<String, dynamic>;
+      print("ejectuando Configuración Stream");
+
+      //documetno configuración
+      String PrimaryColor = dataConfiguracion['Primarycolor'] ?? '';
+      String SecundaryColor = dataConfiguracion['Secundarycolor'] ?? '';
+      String idcarpetaPagos = dataConfiguracion['idcarpetaPagos'] ?? '';
+      String idcarpetaSolicitudes = dataConfiguracion['idcarpetaSolicitudes'] ?? '';
+      String nombre_empresa = dataConfiguracion['nombre_empresa'] ?? '';
+
+      //documento plugins
+      DateTime basicoFecha = dataPlugins.containsKey('basicoFecha') ? dataPlugins['basicoFecha'].toDate() : DateTime.now();
+      DateTime PagosDriveApiFecha = dataPlugins.containsKey('PagosDriveApiFecha') ? dataPlugins['PagosDriveApiFecha'].toDate() : DateTime.now();
+      DateTime SolicitudesDriveApiFecha = dataPlugins.containsKey('SolicitudesDriveApiFecha') ? dataPlugins['SolicitudesDriveApiFecha'].toDate() : DateTime.now();
+
+      //Documento mensajes
+      String CONFIRMACION_CLIENTE = dataMensajes['CONFIRMACION_CLIENTE'] ?? '';
+      String SOLICITUD = dataMensajes['SOLICITUD'] ?? '';
+
+      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD);
+
+      String configJson = jsonEncode(newconfig);
+      await prefs.setString('configuracion_list_stream', configJson);
+      await prefs.setBool('cheched_solicitudes_descargadas_stream', true);
+      //carguemos a provider
+      final ConfiguracionProvider = Provider.of<ConfiguracionAplicacion>(context, listen: false);
+      ConfiguracionProvider.cargarConfiguracion(newconfig);
+      yield newconfig!;
+    }
+  }
+  Future<List<ConfiguracionPlugins>?> cargarconfiguracion() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String solicitudesJson = prefs.getString('configuracion_list_stream') ?? '';
+    List<dynamic> clienteData = jsonDecode(solicitudesJson);
+    List<ConfiguracionPlugins> configuracionPlugins = clienteData.map((clienteData) =>
+        ConfiguracionPlugins.fromJson(clienteData as Map<String, dynamic>)).toList();
+    return configuracionPlugins;
+  }
 
 }
 

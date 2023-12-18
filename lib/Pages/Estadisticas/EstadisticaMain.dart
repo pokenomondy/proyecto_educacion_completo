@@ -400,7 +400,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$percetnsolicitudes"),
+                            Disenos().textonuevasolicitudazul("${percetnsolicitudes.toStringAsFixed(2)}"),
                             Disenos().textonuevasolicitudazul("% solicitudes agendadas"),
                           ],
                         ),

@@ -13,6 +13,7 @@ import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
+import 'Pages/Pruebas/DashboardAdmin.dart';
 import 'Pages/Pruebas/Whatsapp.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
@@ -20,6 +21,7 @@ import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
 import 'Pages/Tutores.dart';
 import 'Pages/pages.dart';
+import 'Providers/Providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,12 @@ void main() async {
         ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
 
+        //Nuevos notificadores creados
+        //Configuración
+        ChangeNotifierProvider(create: (context) => ConfiguracionAplicacion()),
+        //Contabilidad
+        ChangeNotifierProvider(create: (context) => ContabilidadProvider()),
+
       ],
       child: MyApp(),
     ),
@@ -79,7 +87,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-              return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage();
+              return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage(); LoginPage() DashboardAdmin();
           },
           routes: <RouteBase>[
             ShellRoute(

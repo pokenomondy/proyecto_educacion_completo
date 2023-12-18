@@ -1,14 +1,19 @@
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../Objetos/Solicitud.dart';
+import '../../Providers/Providers.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Utils/Firebase/Uploads.dart';
+import '../../Utils/Utiles/FuncionesUtiles.dart';
 
 class ConfiguracionDatos extends StatefulWidget {
   const ConfiguracionDatos({super.key});
@@ -47,195 +52,184 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
   String msgsolicitud = "";
   String msgsconfirmacioncliente = "";
 
-
   @override
   void initState() {
-    configuracion.initConfig().then((_) {
-      setState(() {
-        configloaded = true;
-      });
-    });
     super.initState();
-  }
-
-  void actualizarsolicitudes() async{
-    print("obtener solicitudes");
-    await LoadData().obtenerSolicitudes(
-      onSolicitudAdded: (Solicitud nuevaSolicitud) {
-        setState(() {
-          solicitudesList.add(nuevaSolicitud);
-          numsolicitudes = solicitudesList.length + 471;
-        });
-      },
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     final currentheight = MediaQuery.of(context).size.height;
-    if (!configloaded) {
-      return const Text('cargando'); // Ejemplo de indicador de carga
-    }else{
-      return Column(
-        children: [
-          Container(
-            width: widget.currentwidth+400,
-            height: currentheight-110,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Column(
+    return Consumer<ConfiguracionAplicacion>(
+        builder: (context, ConfigProvider, child) {
+          ConfiguracionPlugins? configuracioncargada = ConfigProvider.config;
+
+          return Column(
+            children: [
+              Container(
+                width: widget.currentwidth+400,
+                height: currentheight-110,
+                child: SingleChildScrollView(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      //Nombre de la empresa
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text('Nombre de la empresa : ${configuracion.nombreempresa}',
-                          style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
-                      ),
-                      //Primary Color
-                      ThemeApp().colorRow(configuracion.primaryColor, "Primary Color: "),
-                      //Secundary Color
-                      ThemeApp().colorRow(configuracion.Secundarycolor, "Secundary Color: "),
-                      //Solicitudes con Drive Api
-                      if(configuracion.SolicitudesDriveApi==true)
-                        Column(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 10),
-                              child: Text('------ SOLICITUDES DRIVE API PLUGIN -----',
-                                style: TextStyle(fontWeight: FontWeight.bold),),
-                            ),
-                            Text("id carpeta solicitudes = ${configuracion.idcarpetaSolicitudes}")
-                          ],
-                        ),
-                      //Pagos con Drive Api
-                      if(configuracion.PagosDriveApi==true)
-                        Column(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 10),
-                              child: Text('------ PAGOS DRIVE API PLUGIN -----',
-                                style: TextStyle(fontWeight: FontWeight.bold),),
-                            ),
-                            Text("id carpeta pagos = ${configuracion.idcarpetaPagos}")
-                          ],
-                        ),
-                      //Plugins con fechas de validez del programa
-                      Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CartaPlugin(function: (){
-                              print("Sistema basico");
-                            }, titulo: "Sistema Básico", activacion: configuracion.basicoNormal, fecha: configuracion.basicofecha, ),
-                            CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: configuracion.SolicitudesDriveApi, fecha: configuracion.SolicitudesDriveApiFecha),
-                            CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: configuracion.PagosDriveApi, fecha: configuracion.PagosDriveApiFecha),
-                            //Tutores
-                            CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
-
-                          ],
-                        ),
-                      ),
                       Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          const Padding(
+                          //Nombre de la empresa
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text('Nombre de la empresa : ${configuracioncargada!.nombre_empresa}',
+                              style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
+                          ),
+                          //Primary Color
+                          ThemeApp().colorRow(Utiles().hexToColor(configuracioncargada!.PrimaryColor), "Primary Color: "),
+                          //Secundary Color
+                          ThemeApp().colorRow(Utiles().hexToColor(configuracioncargada!.SecundaryColor), "Secundary Color: "),
+                          //Solicitudes con Drive Api
+                          if(obtenerBool(configuracioncargada.SolicitudesDriveApiFecha)==true)
+                            Column(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 10),
+                                  child: Text('------ SOLICITUDES DRIVE API PLUGIN -----',
+                                    style: TextStyle(fontWeight: FontWeight.bold),),
+                                ),
+                                Text("id carpeta solicitudes = ${configuracioncargada.idcarpetaSolicitudes}")
+                              ],
+                            ),
+                          //Pagos con Drive Api
+                          if(obtenerBool(configuracioncargada.PagosDriveApiFecha)==true)
+                            Column(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 10),
+                                  child: Text('------ PAGOS DRIVE API PLUGIN -----',
+                                    style: TextStyle(fontWeight: FontWeight.bold),),
+                                ),
+                                Text("id carpeta pagos = ${configuracioncargada.idcarpetaPagos}")
+                              ],
+                            ),
+                          //Plugins con fechas de validez del programa
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CartaPlugin(function: (){
+                                  print("Sistema basico");
+                                }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada!.basicoFecha), fecha: configuracioncargada!.basicoFecha, ),
+                                CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.SolicitudesDriveApiFecha), fecha: configuracioncargada!.SolicitudesDriveApiFecha),
+                                CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.PagosDriveApiFecha), fecha: configuracioncargada!.PagosDriveApiFecha),
+                                //Tutores
+                                CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
+
+                              ],
+                            ),
+                          ),
+                          Column(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 10),
+                                child: Text('------ MENSAJES PERSONALIZADOS -----',
+                                  style: TextStyle(fontWeight: FontWeight.bold),),
+                              ),
+                              Text("Mensajes de Solicitudes = ${configuracioncargada!.SOLICITUD}"),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                width: 200,
+                                child: TextBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  placeholder: 'Mensaje solicitdes',
+                                  onChanged: (value){
+                                    setState(() {
+                                      msgsolicitud = value;
+                                    });
+                                  },
+                                  maxLines: null,
+                                ),
+                              ),
+                              PrimaryStyleButton(function: (){
+                                Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
+                              }, text: "Subir mensaje solicitud"),
+                              Text("Mensajes de Solicitudes = ${configuracioncargada!.CONFIRMACION_CLIENTE}"),
+                              Container(
+                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                width: 200,
+                                child: TextBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  placeholder: 'Mensaje Confirmaciones clientes',
+                                  onChanged: (value){
+                                    setState(() {
+                                      msgsconfirmacioncliente = value;
+                                    });
+                                  },
+                                  maxLines: null,
+                                ),
+                              ),
+                              PrimaryStyleButton(function: (){
+                                Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
+                              }, text: "Subir mensaje confirmacion"),
+                            ],
+                          ),
+                          //Eliminar base de datos de solicitudesList
+                          Padding(
                             padding: EdgeInsets.only(top: 10),
-                            child: Text('------ MENSAJES PERSONALIZADOS -----',
+                            child: Text('------ REINICIAR VARIABLES -----',
                               style: TextStyle(fontWeight: FontWeight.bold),),
                           ),
-                          Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            width: 200,
-                            child: TextBox(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              placeholder: 'Mensaje solicitdes',
-                              onChanged: (value){
-                                setState(() {
-                                  msgsolicitud = value;
-                                });
-                              },
-                              maxLines: null,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              PrimaryStyleButton(function: (){
+                                DeleteLocalData().eliminarsolicitudesLocal();
+                              }, text: "Reiniciar las solicitudes"),
+                              PrimaryStyleButton(function: (){
+                                DeleteLocalData().eliinarTutoresLocal();
+                              }, text: "Reiniciar Tutores"),
+                              PrimaryStyleButton(function: (){
+                                DeleteLocalData().eliminarclientesLocal();
+                              }, text: "Reiniciar Clientes"),
+                            ],
                           ),
-                          PrimaryStyleButton(function: (){
-                            Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
-                          }, text: "Subir mensaje solicitud"),
-                          Text("Mensajes de Solicitudes = ${configuracion.mensaje_solicitd}"),
-                          Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            width: 200,
-                            child: TextBox(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              placeholder: 'Mensaje Confirmaciones clientes',
-                              onChanged: (value){
-                                setState(() {
-                                  msgsconfirmacioncliente = value;
-                                });
-                              },
-                              maxLines: null,
-                            ),
+                          //Cerrar sesión
+                          PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
+                          //Experimentos
+                          Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text('------ FUNCIONES EXPERIMENTALES -----',
+                              style: TextStyle(fontWeight: FontWeight.bold),),
                           ),
-                          PrimaryStyleButton(function: (){
-                            Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
-                          }, text: "Subir mensaje confirmacion"),
+                          //Bases de datos en Stream
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text('Activar datos en tiempo real: (bool tiempo real)',
+                              style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
+                          ),
+                          Text('Esta opción solo activarse, cuando se requieren que los datos esten disponibles en multiples sitemas todo el tiempo,'
+                              'esto puede ser algo riesgoso porque tiene mas inciendcia en bases de datos'),
                         ],
                       ),
-                      //Eliminar base de datos de solicitudesList
-                      Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: Text('------ REINICIAR VARIABLES -----',
-                          style: TextStyle(fontWeight: FontWeight.bold),),
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          PrimaryStyleButton(function: (){
-                            DeleteLocalData().eliminarsolicitudesLocal();
-                          }, text: "Reiniciar las solicitudes"),
-                          PrimaryStyleButton(function: (){
-                            DeleteLocalData().eliinarTutoresLocal();
-                          }, text: "Reiniciar Tutores"),
-                          PrimaryStyleButton(function: (){
-                            DeleteLocalData().eliminarclientesLocal();
-                          }, text: "Reiniciar Clientes"),
-                        ],
-                      ),
-                      //Cerrar sesión
-                      PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
-                      //Experimentos
-                      Padding(
-                        padding: EdgeInsets.only(top: 10),
-                        child: Text('------ FUNCIONES EXPERIMENTALES -----',
-                          style: TextStyle(fontWeight: FontWeight.bold),),
-                      ),
-                      //Bases de datos en Stream
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text('Activar datos en tiempo real: (bool tiempo real)',
-                          style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
-                      ),
-                      Text('Esta opción solo activarse, cuando se requieren que los datos esten disponibles en multiples sitemas todo el tiempo,'
-                          'esto puede ser algo riesgoso porque tiene mas inciendcia en bases de datos'),
                     ],
                   ),
-                ],
-              ),
-            ),
-          )
-        ],
-      );
-    }
+                ),
+              )
+            ],
+          );
+        }
+    );
+  }
+
+  bool obtenerBool(DateTime fecha) {
+    DateTime fechaActual = DateTime.now();
+    return fecha.isAfter(fechaActual);
   }
 
   void signOut() async {
