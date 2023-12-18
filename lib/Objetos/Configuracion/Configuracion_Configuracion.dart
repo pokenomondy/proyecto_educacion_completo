@@ -7,7 +7,17 @@ class ConfiguracionPlugins{
   String idcarpetaSolicitudes = "";
   String nombre_empresa = "";
 
-  ConfiguracionPlugins(this.PrimaryColor,this.SecundaryColor,this.idcarpetaPagos,this.idcarpetaSolicitudes,this.nombre_empresa);
+  //Plugins - Aca se agregan mas si se necesitan
+  DateTime PagosDriveApiFecha = DateTime.now();
+  DateTime SolicitudesDriveApiFecha = DateTime.now();
+  DateTime basicoFecha = DateTime.now();
+
+  //Mensajes personalizados
+  String CONFIRMACION_CLIENTE = "";
+  String SOLICITUD = "";
+
+  ConfiguracionPlugins(this.PrimaryColor,this.SecundaryColor,this.idcarpetaPagos,this.idcarpetaSolicitudes,this.nombre_empresa,
+      this.PagosDriveApiFecha,this.SolicitudesDriveApiFecha,this.basicoFecha,this.CONFIRMACION_CLIENTE,this.SOLICITUD);
 
   Map<String,dynamic> toMap(){
     return{
@@ -16,6 +26,11 @@ class ConfiguracionPlugins{
       'idcarpetaPagos' : idcarpetaPagos,
       'idcarpetaSolicitudes' : idcarpetaSolicitudes,
       'nombre_empresa' : nombre_empresa,
+      'PagosDriveApiFecha' : PagosDriveApiFecha,
+      'SolicitudesDriveApiFecha' : SolicitudesDriveApiFecha,
+      'basicoFecha' : basicoFecha,
+      'CONFIRMACION_CLIENTE' : CONFIRMACION_CLIENTE,
+      'SOLICITUD' : SOLICITUD,
     };
   }
 
@@ -26,6 +41,11 @@ class ConfiguracionPlugins{
       'idcarpetaPagos' : idcarpetaPagos,
       'idcarpetaSolicitudes' : idcarpetaSolicitudes,
       'nombre_empresa' : nombre_empresa,
+      'PagosDriveApiFecha' : PagosDriveApiFecha.toIso8601String(),
+      'SolicitudesDriveApiFecha' : SolicitudesDriveApiFecha.toIso8601String(),
+      'basicoFecha' : basicoFecha.toIso8601String(),
+      'CONFIRMACION_CLIENTE' : CONFIRMACION_CLIENTE,
+      'SOLICITUD' : SOLICITUD,
     };
   }
 
@@ -36,6 +56,11 @@ class ConfiguracionPlugins{
         json['idcarpetaPagos'],
         json['idcarpetaSolicitudes'],
         json['nombre_empresa'],
+        DateTime.parse(json['PagosDriveApiFecha']),
+        DateTime.parse(json['SolicitudesDriveApiFecha']),
+        DateTime.parse(json['basicoFecha']),
+        json['CONFIRMACION_CLIENTE'],
+        json['SOLICITUD'],
     );
   }
 }

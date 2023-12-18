@@ -21,6 +21,7 @@ import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
 import 'Pages/Tutores.dart';
 import 'Pages/pages.dart';
+import 'Providers/Providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +59,12 @@ void main() async {
         ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
         ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
+
+        //Nuevos notificadores creados
+        //Configuración
+        ChangeNotifierProvider(create: (context) => ConfiguracionAplicacion()),
+        //Contabilidad
+        ChangeNotifierProvider(create: (context) => ContabilidadProvider()),
 
       ],
       child: MyApp(),

@@ -11,7 +11,6 @@ class DashboardAdminState extends State<DashboardAdmin> {
   String nombreempresa = "";
   String contrasena = "";
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
