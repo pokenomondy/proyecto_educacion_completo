@@ -14,11 +14,19 @@ class InitPage extends StatefulWidget{
 
 class InitPageState extends State<InitPage>{
   List<Map<String, dynamic>> listaClaves = [];
+  bool _isDisposed = false;
+
 
   @override
   void initState() {
     loadclaves();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
   }
 
   Future loadclaves() async{
@@ -98,19 +106,22 @@ class InitPageState extends State<InitPage>{
   }
 
   void RedireccionaALogin() async {
-    // Si no está vacío, redirige a LoginPage
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
-    );
-  }
-
-  void _redireccionALogin(String nameEmpresa) async{
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!_isDisposed) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => LoginPage()),
       );
+    }
+  }
+
+  void _redireccionALogin(String nameEmpresa) async{
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isDisposed) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
     });
   }
 }

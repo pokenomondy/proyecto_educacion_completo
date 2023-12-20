@@ -114,9 +114,7 @@ class Utiles{
   }
 
   //Llamemos numero de precio cobrado y etc
-  Future<Map<String, dynamic>> actualizarpagos(ServicioAgendado selectedservicio,BuildContext context) async {
-    print("actualizando pagos");
-    List<ServicioAgendado>? servicioagendadoList = await stream_builders().cargarserviciosagendados();
+  Future<Map<String, dynamic>> actualizarpagos(ServicioAgendado selectedservicio,BuildContext context,List<ServicioAgendado> servicioagendadoList) async {
     int sumaPagosClientes = servicioagendadoList!
         .where((servicio) => servicio.codigo == selectedservicio!.codigo)
         .map((servicio) => servicio.pagos)

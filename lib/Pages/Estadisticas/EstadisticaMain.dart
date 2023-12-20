@@ -1,11 +1,13 @@
 import 'package:dashboard_admin_flutter/Utils/EnviarMensajesWhataspp.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:googleapis/cloudsearch/v1.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/whatsapp.dart';
 import '../../Config/Config.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Solicitud.dart';
+import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/StreamBuilders.dart';
@@ -71,34 +73,12 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
     super.initState();
   }
 
-  void reiniciarvariables(){
-    estadoCounts = {
-      "AGENDADO": 0,
-      "DISPONIBLE": 0,
-      "EXPIRADO": 0,
-      "ESPERANDO": 0,
-      'NO PODEMOS': 0,
-      'NO CLASIFICADO': 0,
-    };
-    totalestado = 0;
-    percentagendado = 0;
-    percendisponible = 0;
-    percenexpirado = 0;
-    percenteserando = 0;
-    percentrechazado = 0;
-    contesolicitudfiltro = 0;
-    conteoServiciosAgendadofiltro = 0;
-    ventasobtenidas = 0;
-    costotutoresobtenido = 0;
-    gananciasobtenidas = 0;
-    percentganacia = 0.0;
-    percetnsolicitudes = 0.0;
-  }
-
   Future<void> loadDataTablasMaterias() async {
+    print("cargando tablas amterias");
+    final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
     reiniciarvariables();
-    solicitudesList = await LoadData().obtenerSolicitudes();
-    servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
+    //solicitudesList = await LoadData().obtenerSolicitudes();
+    servicioagendadoList = contabilidadProvider.todoslosServiciosAgendados;
 
     for (var solicitud in solicitudesList) {
       estadoCounts[solicitud.estado] = estadoCounts[solicitud.estado]! + 1;
@@ -121,7 +101,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
         gananciasobtenidas = ventasobtenidas - costotutoresobtenido;
         percentganacia = gananciasobtenidas/ventasobtenidas * 100;
         percetnsolicitudes = conteoServiciosAgendadofiltro/contesolicitudfiltro * 100;
-    }
+      }
     }
 
     setState(() {
@@ -130,6 +110,30 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
       dataloaded = true;
       print("data loaded is true");
     });
+  }
+
+  void reiniciarvariables(){
+    estadoCounts = {
+      "AGENDADO": 0,
+      "DISPONIBLE": 0,
+      "EXPIRADO": 0,
+      "ESPERANDO": 0,
+      'NO PODEMOS': 0,
+      'NO CLASIFICADO': 0,
+    };
+    totalestado = 0;
+    percentagendado = 0;
+    percendisponible = 0;
+    percenexpirado = 0;
+    percenteserando = 0;
+    percentrechazado = 0;
+    contesolicitudfiltro = 0;
+    conteoServiciosAgendadofiltro = 0;
+    ventasobtenidas = 0;
+    costotutoresobtenido = 0;
+    gananciasobtenidas = 0;
+    percentganacia = 0.0;
+    percetnsolicitudes = 0.0;
   }
 
   void _procesarSolicitudesPorDia() {
@@ -213,7 +217,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                               child: Center(child: Disenos().textonuevasolicitudazul(fecha_actual_filtro.year.toString())),
 
                             ),
-                        ],),
+                          ],),
                       ),
                       Container(
                         margin: EdgeInsets.only(top: margen_solicitud),
@@ -256,7 +260,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                           ],),
                       ),
                       Container(
-                        width: 250,
+                          width: 250,
                           child: selectfecha()
                       ),
                     ],
@@ -400,7 +404,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Disenos().textonuevasolicitudazul("$percetnsolicitudes"),
+                            Disenos().textonuevasolicitudazul("${percetnsolicitudes.toStringAsFixed(2)}"),
                             Disenos().textonuevasolicitudazul("% solicitudes agendadas"),
                           ],
                         ),
@@ -422,9 +426,9 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                       primaryXAxis: DateTimeAxis(
                         labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
                         intervalType: DateTimeIntervalType.days,
-                          interval: 6,
-                          minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
-                          maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
+                        interval: 6,
+                        minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
+                        maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
                       ),
                       series: <ChartSeries>[
                         LineSeries<MapEntry<DateTime, int>, DateTime>(
@@ -457,13 +461,13 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
                       tooltipBehavior: _tooltipBehavior,
                       series: <ChartSeries>[
                         LineSeries<MapEntry<DateTime, int>, DateTime>(
-                            dataSource: GananciasporDia.entries.toList(),
-                            xValueMapper: (entry, _) => entry.key,
-                            yValueMapper: (entry, _) => entry.value,
-                            name: "Solicitudes",
-                            width: 2,
-                            markerSettings: const MarkerSettings(isVisible: true),
-                            dataLabelSettings: DataLabelSettings(
+                          dataSource: GananciasporDia.entries.toList(),
+                          xValueMapper: (entry, _) => entry.key,
+                          yValueMapper: (entry, _) => entry.value,
+                          name: "Solicitudes",
+                          width: 2,
+                          markerSettings: const MarkerSettings(isVisible: true),
+                          dataLabelSettings: DataLabelSettings(
                             labelAlignment: ChartDataLabelAlignment.top,
                             labelPosition: ChartDataLabelPosition.outside,
                           ),

@@ -5,9 +5,11 @@ import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView,Colors;
 import 'package:flutter/material.dart' as dialog;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
 
+import '../../Providers/Providers.dart';
 import '../../Utils/Calendario/CalendarioEstilo.dart';
 
 class CalendarioData extends StatefulWidget{
@@ -106,60 +108,53 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
             Column(
               children: [
                 if(datosDescargados == false)
-                  StreamBuilder<List<ServicioAgendado>>(
-                    stream: stream_builders().getServiciosAgendados(),
-                    builder: (context, snapshot) {
-                      List<ServicioAgendado>? servicioagendadoList = [];
-                      if (snapshot.hasError) {
-                        return Center(
-                            child: Text('Error al cargar las solicitudes'));
-                      }
-                      if (!snapshot.hasData) {
-                        return Center(child: Text('cargando'));
-                      }
-                      servicioagendadoList = snapshot.data;
-                      List<Appointment>? meetings = servicioagendadoList
-                          ?.map((servicio) {
-                        final appointment = Appointment(
-                          startTime: CalendarioStyle().tiempotarjetastart(servicio),
-                          endTime: CalendarioStyle().tiempotarjetaend(servicio),
-                          subject: "${servicio.identificadorcodigo} ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
-                          notes: servicio.materia,
-                          color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
-                        );
-                        appointmentToServicioMap[appointment] = servicio;
-                        return appointment;
-                      }).toList();
+                  Consumer<ContabilidadProvider>(
+                      builder: (context, contabilidadProvider, child) {
+                        List<ServicioAgendado> servicioagendadoList = contabilidadProvider.todoslosServiciosAgendados;
 
-                      return Container(
-                        height: currentheight-50,
-                        child: SfCalendar(
-                          controller: _calendarController,
-                          showDatePickerButton: true,
-                          allowedViews: _vistascalendario,
-                          dataSource: meetings != null ? _DataSource(meetings!) : null,
-                          initialDisplayDate: DateTime.now(),
-                          initialSelectedDate: DateTime.now(),
-                          showNavigationArrow: true,
-                          monthViewSettings: MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
-                          scheduleViewSettings: ScheduleViewSettings(
-                              appointmentItemHeight: 70,
-                              monthHeaderSettings: MonthHeaderSettings(
-                                  monthFormat: 'MMMM, yyyy',
-                                  height: 100,
-                                  textAlign: TextAlign.left,
-                                  backgroundColor: dialog.Colors.green,
-                                  monthTextStyle: TextStyle(
-                                      color: dialog.Colors.red,
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.w400))
+                        List<Appointment>? meetings = servicioagendadoList
+                            ?.map((servicio) {
+                          final appointment = Appointment(
+                            startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                            endTime: CalendarioStyle().tiempotarjetaend(servicio),
+                            subject: "${servicio.identificadorcodigo} ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
+                            notes: servicio.materia,
+                            color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
+                          );
+                          appointmentToServicioMap[appointment] = servicio;
+                          return appointment;
+                        }).toList();
+
+                        return Container(
+                          height: currentheight-50,
+                          child: SfCalendar(
+                            controller: _calendarController,
+                            showDatePickerButton: true,
+                            allowedViews: _vistascalendario,
+                            dataSource: meetings != null ? _DataSource(meetings!) : null,
+                            initialDisplayDate: DateTime.now(),
+                            initialSelectedDate: DateTime.now(),
+                            showNavigationArrow: true,
+                            monthViewSettings: MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
+                            scheduleViewSettings: ScheduleViewSettings(
+                                appointmentItemHeight: 70,
+                                monthHeaderSettings: MonthHeaderSettings(
+                                    monthFormat: 'MMMM, yyyy',
+                                    height: 100,
+                                    textAlign: TextAlign.left,
+                                    backgroundColor: dialog.Colors.green,
+                                    monthTextStyle: TextStyle(
+                                        color: dialog.Colors.red,
+                                        fontSize: 25,
+                                        fontWeight: FontWeight.w400))
+                            ),
+                            onTap: (CalendarTapDetails details) {
+                              CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
+                            },
                           ),
-                          onTap: (CalendarTapDetails details) {
-                            CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
-                          },
-                        ),
-                      );
-                    },
+                        );
+
+                      }
                   ),
                 if(datosDescargados == true)
                   Text('Descargados'),

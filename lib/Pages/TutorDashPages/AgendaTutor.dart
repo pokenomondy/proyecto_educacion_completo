@@ -82,7 +82,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
       children: [
         if(llamarstream==true)
         StreamBuilder<List<ServicioAgendado>>(
-          stream: stream_builders().getServiciosAgendadosTutor(nombretutor),
+          stream: stream_builders().getServicidosAgendadosTutor(nombretutor),
           builder: (context, snapshot){
             List<ServicioAgendado>? servicioagendadoList= [];
             if (snapshot.hasError) {

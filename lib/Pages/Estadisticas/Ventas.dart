@@ -33,7 +33,7 @@ class _VentasState extends State<Ventas> {
 
   Future<void> loadDataTablasMaterias() async {
     //solicitudesList = await LoadData().obtenerSolicitudes();
-    servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
+    //servicioagendadoList = (await stream_builders().cargarserviciosagendados())!;
     //contabilidad arreglos
     for(ServicioAgendado contabilidad in servicioagendadoList){
       //sumanos numro de servicios

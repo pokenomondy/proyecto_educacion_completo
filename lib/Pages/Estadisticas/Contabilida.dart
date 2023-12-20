@@ -33,7 +33,7 @@ class _CrearContainerState extends State<CrearContabilidad> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
+    //serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       carguelistas = true;
     });
@@ -281,7 +281,7 @@ class _CrearSolicitudesState extends State<CrearSolciitudes> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    solicitudesList = await LoadData().obtenerSolicitudes();
+    //solicitudesList = await LoadData().obtenerSolicitudes();
     setState(() {
       carguelistas = true;
     });
@@ -518,7 +518,7 @@ class _PagosDatosState extends State<PagosDatos> {
   }
 
   Future<void> loadpagos() async {
-    contabilidadList = (await stream_builders().cargarserviciosagendados())!;
+    //contabilidadList = (await stream_builders().cargarserviciosagendados())!;
 // Recorre la lista de contabilidadList
     contabilidadList.forEach((servicioAgendado) {
       print(servicioAgendado.codigo);

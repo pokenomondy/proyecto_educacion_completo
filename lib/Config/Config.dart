@@ -41,58 +41,11 @@ class Config {
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
-    configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
-    configuracion_plugins = await LoadData().configuracion_plugins() as Map<String, dynamic>;
+    //Toca cargar el streambuilder aca para cargar los datos
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       rol = await LoadData().verificar_rol(currentUser);
     } else {
-      // Manejar el caso en que currentUser es nulo.
-    }
-    configuracion_mensajes = await LoadData().configuracion_mensajes();
-    tiempoActualizacion = await LoadData().tiempoactualizacion();
-
-    // Verificar si 'nombre_empresa' existe y no es nulo
-    if (configuracion_inicial.containsKey('nombre_empresa')) {
-      nombreempresa = configuracion_inicial['nombre_empresa'];
-      primaryColor = Utiles().hexToColor(configuracion_inicial['Primarycolor']);
-      Secundarycolor = Utiles().hexToColor(configuracion_inicial['Secundarycolor']);
-      idcarpetaPagos = configuracion_inicial['idcarpetaPagos'];
-      idcarpetaSolicitudes = configuracion_inicial['idcarpetaSolicitudes'];
-
-    } else {
-    }
-    //se puede verificar cada día, como va esto, por si acaso, para ir borrando la base de datos y todo eso, etc
-    if(configuracion_plugins.containsKey('basicoFecha')){
-      basicofecha = configuracion_plugins['basicoFecha'] != null
-          ? DateTime.parse(configuracion_plugins['basicoFecha'])
-          : DateTime.now();
-      if(basicofecha.isAfter(DateTime.now())){
-        basicoNormal = true;
-      }else{
-        basicoNormal = false;
-      }
-      SolicitudesDriveApiFecha = configuracion_plugins['SolicitudesDriveApiFecha'] != null
-          ? DateTime.parse(configuracion_plugins['SolicitudesDriveApiFecha'])
-          : DateTime.now();
-      if(SolicitudesDriveApiFecha.isAfter(DateTime.now())){
-        SolicitudesDriveApi = true;
-      }else{
-        SolicitudesDriveApi = false;
-      }
-      PagosDriveApiFecha = configuracion_plugins['PagosDriveApiFecha'] != null
-          ? DateTime.parse(configuracion_plugins['PagosDriveApiFecha'])
-          : DateTime.now();
-      if(PagosDriveApiFecha.isAfter(DateTime.now())){
-        PagosDriveApi = true;
-      }else{
-        PagosDriveApi = false;
-      }
-    }
-
-    if(configuracion_mensajes.containsKey('SOLICITUDES')){
-      mensaje_solicitd = configuracion_mensajes['SOLICITUDES'];
-      mensaje_confirmacionCliente = configuracion_mensajes['CONFIRMACION_CLIENTE'];
     }
   }
 
@@ -114,13 +67,7 @@ class Config {
   //wsp token importante
   String tokenwsp = "EAAOWePbAwZCcBO3qCZB9mcNoAwqBOyw5JnPxQ6K22HCkJRtyZC7m4BjnsztuIGpEEaqGim9Pi1Avtte7iq3wjxN1WmNAjWRvQaYd0HZBOlNRcZCmRZAFAG4XaudmPt1qbBznsHNNjpL2IN1MkpOHow6iw3OWYvkaeZBKeOys99E1EGNibxpI550x7OpBUmrR4JqOD3ZAaieXZCZC4WFOCn";
   String apiurl =  "https://graph.facebook.com/v17.0/134108179779463/messages";
-  //IMPORTANTES, Esto cuando este en true, significa que el que esta conectado es DufyAsesorías principal, cuando sea false
-  //es porque esta conectado cualquiera de nuestros clientes, esto para hacer un sistema unico para cada cliente.
   static const bool dufyadmon = false;
-  //Para cambiar de base de datos, se debe cambiar esto a false, y luego se debe cambiar el inicializador del main, con eso ya estaría
-  //correcto.
-
-
 
   material.Text panelnavegacion(String text,bool isexpanded){
     Color textcolor = (isexpanded) ? Config.secundaryColor : primaryColor;
