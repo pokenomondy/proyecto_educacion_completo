@@ -8,8 +8,10 @@ class Clientes{
   //Nuevas variables
   String procedencia = "";
   DateTime fechaContacto = DateTime.now();
+  int ultimaModificacion = 1672534800;
 
-  Clientes(this.carrera,this.universidad,this.nombreCliente,this.numero,this.nombrecompletoCliente, this.fechaActualizacion,this.procedencia,this.fechaContacto);
+
+  Clientes(this.carrera,this.universidad,this.nombreCliente,this.numero,this.nombrecompletoCliente, this.fechaActualizacion,this.procedencia,this.fechaContacto,this.ultimaModificacion);
 
   Map<String,dynamic> toMap(){
     return{
@@ -21,6 +23,7 @@ class Clientes{
       'fechaActualizacion' : fechaActualizacion,
       'procedencia' : procedencia,
       'fechaContacto' : fechaContacto,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -34,6 +37,7 @@ class Clientes{
       'fechaActualizacion' : fechaActualizacion.toIso8601String(),
       'procedencia' : procedencia,
       'fechaContacto' : fechaContacto.toIso8601String(),
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -47,6 +51,7 @@ class Clientes{
       DateTime.parse(json['fechaActualizacion']),
       json['procedencia'],
       DateTime.parse(json['fechaContacto']),
+      json['ultimaModificacion'],
     );
   }
 }

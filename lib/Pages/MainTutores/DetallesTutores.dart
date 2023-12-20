@@ -92,9 +92,9 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
   }
 
   Future <void> loaddata()async{
-    materiasList = await LoadData().tablasmateria();
-    CarrerasList = await LoadData().obtenercarreras();
-    UniversidadList = await LoadData().obtenerUniversidades();
+    //materiasList = await LoadData().tablasmateria();
+    //CarrerasList = await LoadData().obtenercarreras();
+    //UniversidadList = await LoadData().obtenerUniversidades();
     setState(() {
       cargadotablamaterias = true;
     });

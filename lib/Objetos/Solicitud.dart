@@ -17,6 +17,7 @@ class Solicitud {
   DateTime fechaactualizacion = DateTime.now(); //fecha de verificación, si esta cambia, se debe solo leer esta para ver si se debe actualizar
   String urlArchivos = "";
   DateTime actualizarsolicitudes = DateTime.now();
+  int ultimaModificacion = 1672534800;
 
 
   Solicitud(
@@ -32,7 +33,8 @@ class Solicitud {
       this.cotizaciones,
       this.fechaactualizacion,
       this.urlArchivos,
-      this.actualizarsolicitudes
+      this.actualizarsolicitudes,
+      this.ultimaModificacion,
       );
 
   // Constructor para crear una Solicitud vacía con valores predeterminados
@@ -49,7 +51,8 @@ class Solicitud {
         infocliente = "",
         fechaactualizacion = DateTime.now(),
         urlArchivos = "",
-        actualizarsolicitudes = DateTime.now();
+        actualizarsolicitudes = DateTime.now(),
+        ultimaModificacion = 0;
 
   Map<String, dynamic> toMap() {
     return {
@@ -66,6 +69,7 @@ class Solicitud {
       'archivos':urlArchivos,
       'actualizarsolicitudes' : actualizarsolicitudes,
       'cotizaciones' : cotizaciones,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -86,6 +90,7 @@ class Solicitud {
       DateTime.parse(json['fechaactualizacion']),
       json['archivos'],
       DateTime.parse(json['actualizarsolicitudes']),
+      json['ultimaModificacion'],
     );
   }
 
@@ -104,6 +109,7 @@ class Solicitud {
       'fechaactualizacion': fechaactualizacion.toIso8601String(),
       'archivos' : urlArchivos,
       'actualizarsolicitudes' : actualizarsolicitudes.toIso8601String(),
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 }

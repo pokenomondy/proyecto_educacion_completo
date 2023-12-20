@@ -61,8 +61,8 @@ class PrimaryColumnVariablesState extends State<PrimaryColumnVariables> {
   }
 
   Future<void> loadtablas() async {
-    CarrerasList = await LoadData().obtenercarreras();
-    UniversidadList = await LoadData().obtenerUniversidades();
+    //CarrerasList = await LoadData().obtenercarreras();
+    //UniversidadList = await LoadData().obtenerUniversidades();
     setState(() {
       carguecompleta = true;
     });

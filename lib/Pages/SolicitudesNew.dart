@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:googleapis/servicemanagement/v1.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Config/elements.dart';
 import '../Config/strings.dart';
@@ -31,6 +32,7 @@ import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/HistorialEstado.dart';
 import '../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../Objetos/Tutores_objet.dart';
+import '../Providers/Providers.dart';
 import '../Utils/Disenos.dart';
 import '../Config/elements.dart';
 
@@ -65,15 +67,24 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
   }
 
   Future<void> loadtablas() async {
-    CarrerasList = await LoadData().obtenercarreras();
-    UniversidadList = await LoadData().obtenerUniversidades();
-    materiaList = await LoadData().tablasmateria();
-    clienteList = await LoadData().obtenerclientes();
-    tutoresList = await LoadData().obtenertutores();
-    print("load tablas ejecutandose");
+    //Cargar Tutores
+    final tutoresProvider =  context.read<VistaTutoresProvider>();
+    tutoresList = tutoresProvider.tutoresactivos;
+    //Cargar materias
+    final materiasProvider =  context.read<MateriasVistaProvider>();
+    materiaList = materiasProvider.todasLasMaterias;
+    //Cargar clientes
+    final clientesProvider =  context.read<ClientesVistaProvider>();
+    clienteList = clientesProvider.todosLosClientes;
+    //Cargar Univerisdades
+    final universidadProvider =  context.read<UniversidadVistaProvider>();
+    UniversidadList = universidadProvider.todasLasUniversidades;
+    //Cargar carreras
+    final carrerasProvider =  context.read<CarrerasProvider>();
+    CarrerasList = carrerasProvider.todosLasCarreras;
+
     Future.delayed(Duration(milliseconds: 400), () {
       actualizartablas.currentState?.update();
-      print("enviar señal");
     });
     setState(() {
       Future.delayed(Duration(milliseconds: 400), () {
@@ -88,7 +99,6 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
     final currentheight = MediaQuery.of(context).size.height-140;
     final tamanowidth = (currentwidth/3)-30;
     if (!configloaded) {
-      print("carngado cosas de solicitudes");
       return Text('cargando cosas');
     }else{
       return NavigationView(
@@ -792,19 +802,18 @@ class _CrearContainerState extends State<_CrearContainer> {
         child: Column(
           children: [
             Text(widget.title,style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
-            StreamBuilder(
-              stream: LoadData().getsolicitudstream(widget.estado),
-              builder: (context, snapshot){
-                if (snapshot.hasError) {
-                  return const Center(child: Text('Error al cargar las solicitudes'));
+            Consumer<SolicitudProvider>(
+              builder: (context, solicitudProvider, child) {
+                List<Solicitud> solicitudesList = [];
+                if(widget.estado=="DISPONIBLE"){
+                  solicitudesList = solicitudProvider.solicitudesDISPONIBLES;
+                }else if(widget.estado =="ESPERANDO"){
+                  solicitudesList = solicitudProvider.solicitudesESPERANDO;
                 }
 
-                if (!snapshot.hasData) {
-                  return const Center(child: Text('cargando'));
-                }
-                List<Solicitud>? solicitudesList = snapshot.data;
-                return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);;
-              },
+                return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);
+
+              }
             ),
           ],
         ),
@@ -1025,17 +1034,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              //Numero de celular
-                              GestureDetector(
-                                onTap: () {
-                                  final textToCopy = solicitud.cliente
-                                      .toString();
-                                  Clipboard.setData(
-                                      ClipboardData(text: textToCopy));
-                                },
-                                child: Disenos().textocardsolicitudesnobold(
-                                    solicitud.cliente.toString()),
-                              ),
                               //Copiar solicitud
                               PrimaryStyleButton(
                                 width: 100,
@@ -1420,10 +1418,8 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     );
   }
 
-
   void agendartrabajo(BuildContext context, Solicitud solicitud, Cotizacion cotizacion) async {
     final currentwidth = MediaQuery.of(context).size.width;
-    print("se dibja show diaglog");
     showDialog(
       context: context,
       builder: (context) {
@@ -1540,20 +1536,19 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
 
   Future<void> comprobacionagendartrabajo(Cotizacion cotizacion, Solicitud solicitud, BuildContext context) async {
     if(selectedSistema==null){
-      Utiles().notificacion("Selecciona un sistema", context, false,"ya sea nacional o internacional");
+      //Utiles().notificacion("Selecciona un sistema", context, false,"ya sea nacional o internacional");
     }else if(preciocobrado<cotizacion.cotizacion){
-      print("precio cobrado es < al precio del tutor");
-      Utiles().notificacion("Precio cobrado es < precio tutor", context, false,"cambia el precio");
+      //print("precio cobrado es < al precio del tutor");
+      //Utiles().notificacion("Precio cobrado es < precio tutor", context, false,"cambia el precio");
     }else if(solicitud.fechaentrega.isBefore(DateTime.now())){
-      Utiles().notificacion("fecha de entrega es < a hoy", context, false,"cambia la fehca de entrega");
+      //Utiles().notificacion("fecha de entrega es < a hoy", context, false,"cambia la fehca de entrega");
     }else{
       //Aqui vamos a tener el servicio agendado, agendado realmente
       await Uploads().addServicioAgendado(codigo,selectedSistema!, solicitud.materia, solicitud.cliente.toString(), preciocobrado, solicitud.fechaentrega, cotizacion.nombretutor, cotizacion.cotizacion, selectedIdentificador, solicitud.idcotizacion,numerocontabilidadagenda,"NO ENTREGADO");
       Navigator.pop(context, 'User deleted file');
       Navigator.pop(context, 'User deleted file');
-      Utiles().notificacion("Servicio subido con exito", context, true,"bien rey");
+      //Utiles().notificacion("Servicio subido con exito", context, true,"bien rey");
     }
-
   }
 
   String generarCodigoAleatorio() {

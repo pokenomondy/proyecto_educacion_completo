@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:googleapis/classroom/v1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
+import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 import '../../Utils/Firebase/StreamBuilders.dart';
@@ -38,7 +39,7 @@ class ContablePagosState extends State<ContablePagos> {
   }
 
   Future<void> loadTablaTutores() async {
-    servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
+    //servicioagendadList = await stream_builders().cargarserviciosagendados();
     setState(() {
       dataloaded = true;
     });
@@ -91,7 +92,8 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     List<PlatformFile>? selectedFiles ;
     List<ServicioAgendado> servicioagendadList = [];
     bool cargandopagos = false;
-    TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
+    final TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
+    bool interfazpagos = false;
 
     //Pagos
     int sumaPagosClientes = 0;
@@ -102,14 +104,16 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     Map<String, dynamic> uploadconfiguracion = {};
 
 
-    void actualizarpagosMain() async{
-      uploadconfiguracion = await Utiles().actualizarpagos(selectedservicio!, context);
+    void actualizarpagosMain(List<ServicioAgendado> servicioagendadoList,String codigo) async{
+      uploadconfiguracion = await Utiles().actualizarpagos(selectedservicio!, context,servicioagendadoList);
       setState(() {
         sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
         sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
         sumaPagosReembolsoCliente = uploadconfiguracion['sumaPagosReembolsoCliente'];
         sumaPagosReembolsoTutores = uploadconfiguracion['sumaPagosReembolsoTutores'];
       });
+      final pagosProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+      pagosProvider.actualizarPagosPorCodigo(codigo);
     }
 
     Future selectFile() async{
@@ -129,36 +133,41 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       }
     }
 
-    Future actualizarpagosporcodigo(String codigo) async{
-      print("actualiamos pago por codigo");
-      servicioagendadList.clear;
-      servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
-      final pagosProvider = Provider.of<RegistrarPagosProvider>(context, listen: false);
-      // Actualizar todos los pagos en el provider
+    void clearProviderPagos(){
+      final pagosProvider = Provider.of<ContabilidadProvider>(context, listen: false);
       pagosProvider.clearPagos();
-      pagosProvider.cargarTodosLosPagos(servicioagendadList.expand((servicio) => servicio.pagos).toList());
-      // Actualizar los pagos según el código seleccionado
-      pagosProvider.actualizarPagosPorCodigo(codigo);
-      actualizarpagosMain();
+      sumaPagosClientes = 0;
+      sumaPagosTutores = 0;
+      sumaPagosReembolsoCliente = 0;
+      sumaPagosReembolsoTutores = 0;
     }
 
     @override
     Widget build(BuildContext context) {
-      return Stack(
-        children: [
-          cuadroPagos(),
-          if(cargandopagos==true)
-            Positioned.fill(
-              child: AbsorbPointer(
-                absorbing: true, // Evita todas las interacciones del usuario
-                child: Center(
-                  child: material.CircularProgressIndicator(), // Puedes personalizar el indicador de carga
-                ),
-              ),
-            ),
-        ],
+      return Consumer<ContabilidadProvider>(
+          builder: (context, pagosProvider, child) {
+            List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
+            if(interfazpagos){
+              actualizarpagosMain(serviciosAgendadosList,selectedservicio!.codigo);
+            }else{
+              clearProviderPagos();
+            }
+            return Stack(
+              children: [
+                cuadroPagos(serviciosAgendadosList),
+                if(cargandopagos==true)
+                  Positioned.fill(
+                    child: AbsorbPointer(
+                      absorbing: true, // Evita todas las interacciones del usuario
+                      child: Center(
+                        child: material.CircularProgressIndicator(), // Puedes personalizar el indicador de carga
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          }
       );
-
     }
   
     void comprobacionpagos(int debecliente,int debetutor) async{
@@ -220,10 +229,8 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       print("Registrar nuevo pago");
       // Actualiza la lista de pagos por servicio
       await DriveApiUsage().subirPago('1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N', selectedFiles,referenciapago);
-      actualizarpagosporcodigo(selectedservicio!.codigo);
       //Borrar todas las variables anteriores
       setState(() {
-        selectedservicio=null;
         selectedFiles=null;
         selectedtipopago="";
         selectedmetodopago ="";
@@ -231,6 +238,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
         valordepago=0;
         cargandopagos = false;
         _controllerpagos.text = "";
+        interfazpagos = false;
       });
     }
   
@@ -279,7 +287,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       }
     }
 
-    Widget cuadroPagos(){
+    Widget cuadroPagos(List<ServicioAgendado> serviciosAgendadosList){
       return Container(
         color: Colors.red,
         width: widget.currentwidth,
@@ -299,7 +307,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                   height: 30,
                   width: 200,
                   child: AutoSuggestBox<ServicioAgendado>(
-                    items: widget.servicioagendadList.map<AutoSuggestBoxItem<ServicioAgendado>>(
+                    items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
                           (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
                         value: servicioagendado,
                         label: servicioagendado.codigo,
@@ -314,22 +322,21 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                     decoration: Disenos().decoracionbuscador(),
                     onSelected: (item) {
                       setState(() {
+                        interfazpagos = true;
                         selectedservicio = item.value;
-                        actualizarpagosporcodigo(selectedservicio!.codigo);
-                        print("servicio seleccionado ${selectedservicio!.codigo}");
-                        print("calcular pagos");
                       });
                     },
                     onChanged: (text, reason) {
                       if (text.isEmpty ) {
                         setState(() {
                           selectedservicio = null; // Limpiar la selección cuando se borra el texto
+                          interfazpagos = false;
                         });
                       }
                     },
                   ),
                 ),
-              if(selectedservicio!=null)
+              if(interfazpagos)
                 Column(
                   children: [
                     // tipo de pago ?,
@@ -476,10 +483,9 @@ class ContainerPagosDashboard extends StatefulWidget{
 
 class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
 
-
   @override
   Widget build(BuildContext context) {
-    return Consumer<RegistrarPagosProvider>(
+    return Consumer<ContabilidadProvider>(
       builder: (context, pagosProvider, child) {
         // Obtener la lista de pagos del provider
         List<RegistrarPago> pagosDelServicioSeleccionado = pagosProvider.pagosDelServicioSeleccionado;
@@ -523,37 +529,7 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
         );
       },
     );
-
   }
-}
-
-class RegistrarPagosProvider extends ChangeNotifier {
-  List<RegistrarPago> _todosLosPagos = [];
-  List<RegistrarPago> _pagosDelServicioSeleccionado = [];
-
-  List<RegistrarPago> get pagosDelServicioSeleccionado => _pagosDelServicioSeleccionado;
-
-  void cargarTodosLosPagos(List<RegistrarPago> pagos) {
-    _todosLosPagos = pagos;
-    actualizarPagosPorCodigo(""); // Inicialmente, cargamos todos los pagos
-  }
-
-  void actualizarPagosPorCodigo(String codigo) {
-    // Filtra los pagos según el código seleccionado y actualiza la lista
-    _pagosDelServicioSeleccionado = _todosLosPagos
-        .where((pago) => pago.codigo == codigo)
-        .toList();
-    notifyListeners();
-  }
-
-  // Método para eliminar todas las pagos
-  void clearPagos() {
-    _todosLosPagos.clear();
-    _pagosDelServicioSeleccionado.clear();
-    pagosDelServicioSeleccionado.clear();
-    notifyListeners();
-  }
-
 }
 
 

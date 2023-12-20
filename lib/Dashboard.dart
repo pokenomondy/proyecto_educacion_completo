@@ -1,14 +1,20 @@
 import 'dart:async';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadistica.dart';
 import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
+import 'package:dashboard_admin_flutter/Providers/Providers.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'Objetos/Solicitud.dart';
@@ -20,6 +26,7 @@ import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'package:intl/intl.dart';
+import 'Providers/Providers.dart';
 import 'Utils/Firebase/CollectionReferences.dart';
 
 class Dashboard extends StatefulWidget {
@@ -51,22 +58,29 @@ class DashboardState extends State<Dashboard> {
   User? currentUser;
   late StreamController<ConfiguracionPlugins> _streamController;
   late StreamController<List<ServicioAgendado>> _streamControllerServiciosAgendados;
+  late StreamController<List<Solicitud>> _streamControllerSolicitudes;
+  late StreamController<List<Tutores>> _streamControllerTutores;
+  late StreamController<List<Carrera>> _streamControllerCarreras;
+  late StreamController<List<Materia>> _streamControllerMaterias;
+  late StreamController<List<Clientes>> _streamControllerClientes;
+  late StreamController<List<Universidad>> _streamControllerUniversidades;
+
+
+  late ConfiguracionPlugins _configuracion;
 
 
   @override
   void initState() {
     super.initState();
     cargarprimeravez();
-    // Mover la lógica de inicialización aquí
-    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
-    configuracionrol.initConfig().then((_) {
-      setState((){
-        configloaded = true;
-      }); // Actualiza el estado para reconstruir el widget
-    });
-    //Cargamos streambuilder
     _streamController = StreamController<ConfiguracionPlugins>();
     _streamControllerServiciosAgendados = StreamController<List<ServicioAgendado>>();
+    _streamControllerSolicitudes = StreamController<List<Solicitud>>();
+    _streamControllerTutores = StreamController<List<Tutores>>();
+    _streamControllerCarreras = StreamController<List<Carrera>>();
+    _streamControllerMaterias = StreamController<List<Materia>>();
+    _streamControllerClientes = StreamController<List<Clientes>>();
+    _streamControllerUniversidades = StreamController<List<Universidad>>();
     _initStream();
   }
 
@@ -77,6 +91,29 @@ class DashboardState extends State<Dashboard> {
     //Contabilidad stream
     Stream<List<ServicioAgendado>> streamservicios = await stream_builders().getServiciosAgendados(context);
     _streamControllerServiciosAgendados.addStream(streamservicios);
+    //solicitudes stream
+    Stream<List<Solicitud>> streamsolicitud = await stream_builders().getTodasLasSolicitudes(context);
+    _streamControllerSolicitudes.addStream(streamsolicitud);
+    //Tutores stream
+    Stream<List<Tutores>> streamTutores = await stream_builders().getTodosLosTutores(context);
+    _streamControllerTutores.addStream(streamTutores);
+    //Carreras stream
+    Stream<List<Carrera>> streamCarreras = await stream_builders().getTodasLasCarreras(context);
+    _streamControllerCarreras.addStream(streamCarreras);
+    //Materias Stream
+    Stream<List<Materia>> stream_materia = await stream_builders().getTodasLasMaterias(context);
+    _streamControllerMaterias.addStream(stream_materia);
+    //Clientes Stream
+    Stream<List<Clientes>> stream_clientes = await stream_builders().getTodosLosClientes(context);
+    _streamControllerClientes.addStream(stream_clientes);
+    //Universidad Stream
+    Stream<List<Universidad>> stream_universidad = await stream_builders().getTodasLasUniversidades(context);
+    _streamControllerUniversidades.addStream(stream_universidad);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void cargarprimeravez() async{
@@ -91,7 +128,7 @@ class DashboardState extends State<Dashboard> {
       stream: _streamController.stream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
         else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -125,23 +162,23 @@ class DashboardState extends State<Dashboard> {
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Contable",_currentPage==3), body: ContableDashboard(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
                 PaneItem(icon: const Icon(FluentIcons.home),
-                    title: configuracionrol.panelnavegacion("Centro Datos",_currentPage==4), body: CentroConfiguracionDash(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
+                    title: configuracionrol.panelnavegacion("Centro Datos",_currentPage==4), body: const CentroConfiguracionDash(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
               ];
             }
           }
 
           if(currentUser == null || configuracionrol.rol == "TUTOR"){
-            return Text('ERROR 404');
+            return const Text('ERROR 404');
           }
           else if(configuracion!.basicoFecha.isBefore(DateTime.now())){
-            return Text('Vencio la licencia');
+            return const Text('Vencio la licencia');
           }
           else{
             return NavigationView(
               appBar: NavigationAppBar(
                 title: Container(
                   margin:  const EdgeInsets.only(left: 20),
-                  child:   Row(
+                  child:  Row(
                     children: [
                       Text(configuracion!.nombre_empresa, style: const TextStyle(fontSize: 32),),
                       const Text("Dufy Amor", style: TextStyle(fontSize: 15),),
@@ -149,15 +186,94 @@ class DashboardState extends State<Dashboard> {
                         stream: _streamControllerServiciosAgendados.stream,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
-                            return CircularProgressIndicator();
+                            return const CircularProgressIndicator();
                           } else if (snapshot.hasError) {
                             return Text('Error: ${snapshot.error}');
                           } else {
                             // No mostrar nada, ya que el stream está vacío
-                            return Text('conta true'); // O cualquier otro widget que no muestre nada
+                            return const Text('conta true'); // O cualquier otro widget que no muestre nada
                           }
                         },
                   ),
+                      const Text('Config true'),
+                      StreamBuilder<List<Materia>>(
+                        stream: _streamControllerMaterias.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
+                      StreamBuilder<List<Clientes>>(
+                        stream: _streamControllerClientes.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Clientes true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
+                      StreamBuilder<List<Solicitud>>(
+                        stream: _streamControllerSolicitudes.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Solicitudes true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
+                      StreamBuilder<List<Tutores>>(
+                        stream: _streamControllerTutores.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Tutores true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
+                      StreamBuilder<List<Carrera>>(
+                        stream: _streamControllerCarreras.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
+                      StreamBuilder<List<Universidad>>(
+                        stream: _streamControllerUniversidades.stream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // No mostrar nada, ya que el stream está vacío
+                            return const Text('Universidades true'); // O cualquier otro widget que no muestre nada
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),

@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Providers/Providers.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -22,8 +23,6 @@ class ContaDash extends StatefulWidget {
 }
 
 class ContaDashState extends State<ContaDash> {
-  bool dataloaded = true;
-
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +33,7 @@ class ContaDashState extends State<ContaDash> {
         children: [
           PrimaryColumnContaDash(currentwidth: tamanowidth,),
           SecundaryColumnContaDash(currentwidth: tamanowidth,),
+          TercerColumnContaDash(currentwidth: tamanowidth,),
         ],
       ),
     );
@@ -65,9 +65,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
   DateTime cambiarfecha = DateTime.now();
   List<Tutores> tutoresList = [];
   int valorcambio = 0;
-  List<ServicioAgendado> servicioagendadList = [];
   ServicioAgendado? servicioAgendado;
-  bool dataloaded = false;
 
   //Pagos
   int sumaPagosClientes = 0;
@@ -79,33 +77,11 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
 
   @override
   void initState() {
-    loadtablas();
     super.initState();
   }
 
-  Future actualizarHistorialporcodigo(String codigo) async{
-    print("actualizamos historial por codigo");
-    servicioagendadList.clear();
-    servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
-    final historialProvider = Provider.of<HistorialProvider>(context, listen: false);
-    // Actualizar todos los pagos en el provider
-    historialProvider.clearHistorial();
-    historialProvider.cargarTodosLosHistorial(servicioagendadList.expand((servicio) => servicio.historial).toList());
-    //actualizar pagos segun codigo
-    historialProvider.actualizarHistorialPorCodigo(codigo);
-  }
-
-  Future loadtablas() async{
-    servicioagendadList = (await stream_builders().cargarserviciosagendados())!;
-    setState(() {
-      dataloaded = true;
-    });
-    materiaList = await LoadData().tablasmateria();
-    tutoresList = await LoadData().obtenertutores();
-  }
-
   void actualizarpagosMain(ServicioAgendado codigo) async{
-    uploadconfiguracion = await Utiles().actualizarpagos(codigo, context);
+    //uploadconfiguracion = await Utiles().actualizarpagos(codigo, context);
     setState(() {
       sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
       sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
@@ -114,90 +90,57 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     });
   }
 
-  void actualizarvalores(){
-    valores.add(servicioAgendado!.sistema);
-    valores.add(servicioAgendado!.materia);
-    valores.add(Utiles().horariodeentrega("",servicioAgendado!.fechasistema,servicioAgendado!.identificadorcodigo));
-    valores.add(servicioAgendado!.cliente);
-    valores.add(servicioAgendado!.preciocobrado.toString());
-    valores.add(Utiles().horariodeentrega("",servicioAgendado!.fechaentrega,servicioAgendado!.identificadorcodigo));
-    valores.add(servicioAgendado!.tutor.toString());
-    valores.add(servicioAgendado!.preciotutor.toString());
-    valores.add(servicioAgendado!.identificadorcodigo);
-    valores.add(servicioAgendado!.idsolicitud.toString()); //9
-    valores.add(servicioAgendado!.idcontable.toString()); //10 id contable
-    valores.add(servicioAgendado!.entregadotutor);
-    cambiarfecha = servicioAgendado!.fechaentrega;
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        //TextBox buscador y icono de buscar
-        if(dataloaded==true)
-          Row(
-            children: [
-              Container(
-                height: 30,
-                width: 200,
-                child: AutoSuggestBox<ServicioAgendado>(
-                  items: servicioagendadList.map<AutoSuggestBoxItem<ServicioAgendado>>(
-                        (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
-                      value: servicioagendado,
-                      label: servicioagendado.codigo,
-                      onFocusChange: (focused) {
-                        if (focused) {
-                          debugPrint('Focused #${servicioagendado.codigo} - ');
-                        }
-                      },
-                    ),
-                  )
-                      .toList(),
-                  decoration: Disenos().decoracionbuscador(),
-                  onSelected: (item) {
-                    setState(() {
-                      servicioAgendado = item.value;
-                      actualizarvalores();
-                      actualizarHistorialporcodigo(servicioAgendado!.codigo);
-                      actualizarpagosMain(servicioAgendado!);
-                      setState(() {
-                        buscador = true;
-                      });
-                    });
-                  },
-                  onChanged: (text, reason) {
-                    if (text.isEmpty ) {
-                      setState(() {
-                        servicioAgendado = null; // Limpiar la selección cuando se borra el texto
-                      });
-                    }
-                  },
-                ),
-              ),
+    return Consumer<ContabilidadProvider>(
+        builder: (context, pagosProvider, child) {
+          List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
 
-              if(buscador==true)
-                Column(
+          return Column(
+            children: [
+                Row(
                   children: [
-                    textoymodificable("Sistema", servicioAgendado!, 0, true),
-                    textoymodificable("Matería", servicioAgendado!, 1, false),
-                    textoymodificable("Fecha sistema", servicioAgendado!, 2, true),
-                    textoymodificable("Número de cliente", servicioAgendado!, 3, true),
-                    textoymodificable("Preció cobrado ", servicioAgendado!, 4, false),
-                    textoymodificable("Fecha entrega ", servicioAgendado!, 5, false),
-                    textoymodificable("Tutor ", servicioAgendado!, 6, false),
-                    textoymodificable("Precio tutor ", servicioAgendado!, 7, false),
-                    textoymodificable("Identificador código ", servicioAgendado!, 8, true),
-                    textoymodificable("ID solicitud ", servicioAgendado!, 9, true),
-                    textoymodificable("ID contable ", servicioAgendado!, 10, true),
-                    textoymodificable("Entregado tutor ", servicioAgendado!, 11, true),
-                    Text('pago clientes: ${sumaPagosClientes-sumaPagosReembolsoCliente}\n'
-                        'pago tutores : ${sumaPagosTutores-sumaPagosReembolsoTutores}')
+                    Container(
+                      height: 30,
+                      width: 200,
+                      child: AutoSuggestBox<ServicioAgendado>(
+                        items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
+                              (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
+                            value: servicioagendado,
+                            label: servicioagendado.codigo,
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused #${servicioagendado.codigo} - ');
+                              }
+                            },
+                          ),
+                        )
+                            .toList(),
+                        decoration: Disenos().decoracionbuscador(),
+                        onSelected: (item) {
+                          setState(() {
+                            servicioAgendado = item.value;
+                            setState(() {
+                              buscador = true;
+                            });
+                          });
+                        },
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              servicioAgendado = null; // Limpiar la selección cuando se borra el texto
+                            });
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
             ],
-          ),
-      ],
+          );
+        }
     );
   }
 
@@ -418,7 +361,6 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
 
   Future<void> _cambiarprecio(int index,String valor,String cambio,int valorcambio) async{
     await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
-    actualizarHistorialporcodigo(servicioAgendado!.codigo);
     setState(() {
       valores[index] = cambio!;
       editarcasilla[index] = false;  // Desactiva el modo de edición
@@ -501,7 +443,7 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HistorialProvider>(
+    return Consumer<ContabilidadProvider>(
         builder: (context, historialProvider, child) {
           List<HistorialAgendado> historialDelServicioSeleccionado = historialProvider.historialDelServicioSeleccionado;
           return Container(
@@ -543,29 +485,27 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
   }
 }
 
-class HistorialProvider extends ChangeNotifier {
-  List<HistorialAgendado> _todosElHistorial = [];
-  List<HistorialAgendado> _historialDelServicioSeleccionado = [];
-  List<HistorialAgendado> get historialDelServicioSeleccionado => _historialDelServicioSeleccionado;
+class TercerColumnContaDash extends StatefulWidget {
+  final double currentwidth;
 
-  void cargarTodosLosHistorial(List<HistorialAgendado> historial) {
-    _todosElHistorial = historial;
-  }
+  const TercerColumnContaDash({Key?key,
+    required this.currentwidth,
+  }) :super(key: key);
 
-  void actualizarHistorialPorCodigo(String codigo) {
-    _historialDelServicioSeleccionado = _todosElHistorial
-        .where((historial) => historial.codigo == codigo)
-        .toList();
-    notifyListeners();
-  }
-
-  // Método para eliminar todas las pagos
-  void clearHistorial() {
-    _todosElHistorial.clear();
-    historialDelServicioSeleccionado.clear();
-    notifyListeners();
-  }
+  @override
+  TercerColumnContaDashState createState() => TercerColumnContaDashState();
 
 }
+
+class TercerColumnContaDashState extends State<TercerColumnContaDash> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+
+
+
 
 
