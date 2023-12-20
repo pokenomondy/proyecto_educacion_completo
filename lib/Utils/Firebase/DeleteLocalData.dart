@@ -9,7 +9,7 @@ class DeleteLocalData{
     await prefs.remove('solicitudes_list');
     await prefs.setBool('datos_descargados_listasolicitudes', false);
     print("eliinado solicitudes");
-    LoadData().obtenerSolicitudes();
+    //LoadData().obtenerSolicitudes();
   }
 
   void eliinarTutoresLocal() async{
@@ -17,7 +17,7 @@ class DeleteLocalData{
     await prefs.remove('tutores_list');
     await prefs.setBool('datos_descargados_tablatutores', false);
     print("eliminando tutores local");
-    LoadData().obtenertutores();
+    //LoadData().obtenertutores();
   }
 
   void eliminarclientesLocal() async{
@@ -25,7 +25,6 @@ class DeleteLocalData{
     await prefs.remove('clientes_list');
     await prefs.setBool('datos_descargados_tablaclientes', false);
     print("eliminando clientes local");
-    LoadData().obtenerclientes();
+    //LoadData().obtenerclientes();
   }
-
 }

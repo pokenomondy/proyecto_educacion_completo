@@ -26,7 +26,8 @@ class LoadData {
   final db = FirebaseFirestore.instance; //inicializar firebase
   CollectionReferencias referencias =  CollectionReferencias();
 
-  //Obtener solicitudes en stream
+
+  /*
   Stream<List<Solicitud>> getsolicitudstream(String estado) async* {
     await referencias.initCollections();
     CollectionReference refsolicitudes = referencias.solicitudes!;
@@ -88,13 +89,17 @@ class LoadData {
           solicitudesList.add(newsolicitud);
         } catch (e) {
           // Manejar excepciones aquí
-          print("Error al procesar un documento: $e");
+          //print("Error al procesar un documento: $e");
         }
       }
 
       yield solicitudesList;
     }
   }
+
+   */
+
+
 
   //Obtener en tiempo real, numero de servicio a publicar
   Stream<int> cargarnumerodesolicitudes() async* {
@@ -116,25 +121,25 @@ class LoadData {
     CollectionReference referencecontabilidad = referencias.contabilidad!;
     await for (QuerySnapshot snapshot in referencecontabilidad.snapshots()){
       int numDocumentos = snapshot.size;
-      print("numero obtenido $numDocumentos");
+      //print("numero obtenido $numDocumentos");
       yield numDocumentos + 922;
     }
   }
 
   //Tablas de materias
+  /*
   Future tablasmateria() async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablamateria') ?? false;
     if (!datosDescargados) {
-      print("a descargar materias por primera vez");
+      //print("a descargar materias por primera vez");
       CollectionReference referencetablamaterias = referencias.tablasmaterias!;
       QuerySnapshot queryMaterias = await referencetablamaterias.get();
       List<Materia> materiaList = [];
 
       for (var MateriaDoc in queryMaterias.docs) {
         String nombremateria = MateriaDoc['nombremateria'];
-        print(nombremateria);
 
         Materia newmateria = Materia(nombremateria);
         materiaList.add(newmateria);
@@ -142,7 +147,7 @@ class LoadData {
       guardardatostablamaterias(materiaList);
       return materiaList;
     } else {
-      print("ya descargadas la tabla materias");
+      //print("ya descargadas la tabla materias");
       String solicitudesJson = prefs.getString('tablamaterias_list') ?? '';
       List<dynamic> TablaMateriaData = jsonDecode(solicitudesJson);
       List materiaList = TablaMateriaData.map((MateriaData) =>
@@ -150,6 +155,8 @@ class LoadData {
       return materiaList;
     }
   }
+
+   */
 
   Future guardardatostablamaterias(List<Materia> materiaList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -160,6 +167,7 @@ class LoadData {
   }
 
   //Clientes, revisar
+  /*
   Future obtenerclientes({Function(Clientes)? onClienteAdded,Function(int)? TotalClietnes}) async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -184,8 +192,6 @@ class LoadData {
         DateTime fechaContacto = ClienteDoc.data().toString().contains('fechaContacto') ? ClienteDoc.get('fechaContacto').toDate() : DateTime(2023,1,1,0,0); //Number
 
 
-        print("$Carrera $Universidadd $nombreCliente $numero");
-
         Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion,procedencia,fechaContacto);
         clientesList.add(newClientes);
         if (onClienteAdded != null) {
@@ -196,7 +202,7 @@ class LoadData {
       guardardatostablaclientes(clientesList);
       return clientesList;
     } else {
-      print("ya descargadas la clientes tablas");
+      //print("ya descargadas la clientes tablas");
       String solicitudesJson = prefs.getString('clientes_list') ?? '';
       List<dynamic> ClienteData = jsonDecode(solicitudesJson);
       List clientesList = ClienteData.map((ClienteData) =>
@@ -204,6 +210,8 @@ class LoadData {
       return clientesList;
     }
   }
+
+   */
 
   Future guardardatostablaclientes(List<Clientes> clientesList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -213,12 +221,13 @@ class LoadData {
   }
 
   //Tutores, guardar
+  /*
   Future obtenertutores({Function(Tutores)? onTutorAdded,Function(int)? TotalTutores}) async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_tablatutores') ?? false;
     if (!datosDescargados) {
-      print("a descargar tutores por primera vez");
+      //print("a descargar tutores por primera vez");
       CollectionReference referencetablaclientes = referencias.tutores!;
       QuerySnapshot queryTutores = await referencetablaclientes.get();
       List<Tutores> tutoresList = [];
@@ -244,7 +253,7 @@ class LoadData {
         List<Materia> materiaList = [];
         for (var materiaDoc in materiasDocs.docs) {
           String nombremateria = materiaDoc['nombremateria'];
-          print(nombremateria);
+          //print(nombremateria);
 
           Materia newmateria = Materia(nombremateria);
           materiaList.add(newmateria);
@@ -288,7 +297,7 @@ class LoadData {
       guardardatostablatutores(tutoresList);
       return tutoresList;
     } else {
-        print("ya descargadas la tutores tablas");
+      //print("ya descargadas la tutores tablas");
       String solicitudesJson = prefs.getString('tutores_list') ?? '';
       List<dynamic> ClienteData = jsonDecode(solicitudesJson);
       List tutoresList = ClienteData.map((tutorData) =>
@@ -296,6 +305,8 @@ class LoadData {
       return tutoresList;
     }
   }
+
+   */
 
   Future guardardatostablatutores(List<Tutores> clientesList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -305,13 +316,14 @@ class LoadData {
   }
 
   //Carrareas Listas
+  /*
   Future obtenercarreras() async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listacarreras') ??
         false;
     if (!datosDescargados) {
-      print("a descargar carreras por priemra vez");
+      //print("a descargar carreras por priemra vez");
       CollectionReference referencetablascarrera = referencias.tablascarreras!;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Carrera> carreraList = [];
@@ -319,12 +331,12 @@ class LoadData {
         String nombrecarrera = CarreraDoc['nombre carrera'];
         Carrera newcarrera = Carrera(nombrecarrera);
         carreraList.add(newcarrera);
-        print(nombrecarrera);
+        //print(nombrecarrera);
         guardarCarreras(carreraList);
       }
       return carreraList;
     } else {
-      print("ya descargadas la carreras tablas");
+      //print("ya descargadas la carreras tablas");
       String solicitudesJson = prefs.getString('carreras_List') ?? '';
       List<dynamic> CarreraData = jsonDecode(solicitudesJson);
       List carreraList = CarreraData.map((tutorData) =>
@@ -332,6 +344,8 @@ class LoadData {
       return carreraList;
     }
   }
+
+   */
 
   Future guardarCarreras(List<Carrera> carreraList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -341,13 +355,14 @@ class LoadData {
   }
 
   //Lista de euniversidades
+  /*
   Future obtenerUniversidades() async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool(
         'datos_descargados_listauniversidades') ?? false;
     if (!datosDescargados) {
-      print("a descargar universidades por priemra vez");
+      //print("a descargar universidades por priemra vez");
       CollectionReference referencetablascarrera = await referencias.tablasuniversidades!;
       QuerySnapshot QueryCarreras = await referencetablascarrera.get();
       List<Universidad> universidadList = [];
@@ -355,12 +370,12 @@ class LoadData {
         String nombreuniversidad = CarreraDoc['nombre Universidad'];
         Universidad newcarrera = Universidad(nombreuniversidad);
         universidadList.add(newcarrera);
-        print(nombreuniversidad);
+        //print(nombreuniversidad);
         guardarUniversidades(universidadList);
       }
       return universidadList;
     } else {
-      print("ya descargadas la universidades tablas");
+      //print("ya descargadas la universidades tablas");
       String solicitudesJson = prefs.getString('universidades_List') ?? '';
       List<dynamic> CarreraData = jsonDecode(solicitudesJson);
       List carreraList = CarreraData.map((tutorData) =>
@@ -368,6 +383,8 @@ class LoadData {
       return carreraList;
     }
   }
+
+   */
 
   Future guardarUniversidades(List<Universidad> carreraList) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -377,12 +394,13 @@ class LoadData {
   }
 
   //Obtenemos todas las solicitudes - esto para empezar a probar a hacer estadisticas
+
   Future obtenerSolicitudes({Function(Solicitud)? onSolicitudAdded,Function(int)? TotalSolicitudes}) async{
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargados_listasolicitudes') ?? false;
     if (!datosDescargados) {
-      print("descagando por primera vez");
+      //print("descagando por primera vez");
       CollectionReference referencetablassolicitud = referencias.solicitudes!;
       QuerySnapshot QuerySolicitud = await referencetablassolicitud.get();
       List<Solicitud> solicitudList = [];
@@ -403,7 +421,7 @@ class LoadData {
         DateTime fechaactualizacion = solicitudDoc.data().toString().contains('fechaactualizacion') ? solicitudDoc.get('fechaactualizacion').toDate() : DateTime(2023,1,1,0,0); //Number
         String urlarchivo = solicitudDoc.data().toString().contains('archivos') ? solicitudDoc.get('archivos') : 'No tiene Archivos';
         DateTime actualizarsolicitudes = solicitudDoc.data().toString().contains('actualizarsolicitudes') ? solicitudDoc.get('actualizarsolicitudes').toDate() : DateTime(2023,1,1,0,0); //Number
-        print(idcotizacion);
+        //print(idcotizacion);
         List<Cotizacion> cotizaciones = [];
         if (solicitudDoc.data() != null && solicitudDoc.data().toString().contains('cotizaciones')) {
           var CotizacionData = solicitudDoc['cotizaciones'] as List<dynamic>;
@@ -423,7 +441,7 @@ class LoadData {
 
 
 
-        Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones,fechaactualizacion,urlarchivo,actualizarsolicitudes);
+        Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones,fechaactualizacion,urlarchivo,actualizarsolicitudes,0);
         solicitudList.add(newsolicitud);
 
         if (onSolicitudAdded != null) {
@@ -435,7 +453,7 @@ class LoadData {
       guardaDatosSolicitudes(solicitudList);
       return solicitudList;
     }else{
-      print("ya descargadas");
+      //print("ya descargadas");
       String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
       if (solicitudesJson.isNotEmpty) {
         List<dynamic> solicitud = jsonDecode(solicitudesJson);
@@ -456,6 +474,8 @@ class LoadData {
     await prefs.setBool('datos_descargados_listasolicitudes', true);
     print("guardando solicitudes");
   }
+
+
 
 
   //Leer configuración inicial, que es la priemra que hay
@@ -613,7 +633,7 @@ class LoadData {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
     if (!datosDescargados) {
-      print("Datos de tutor de cero");
+      //print("Datos de tutor de cero");
       DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
       String nametutor = getutoradmin.get('nombre Whatsapp');
       String Correo_gmail = getutoradmin.get('Correo gmail');
@@ -627,7 +647,7 @@ class LoadData {
       await prefs.setBool('datos_descargadios_getinfotutor', true);
       return datos_tutor;
     }else{
-      print("Datos de tutor cacheado");
+      //print("Datos de tutor cacheado");
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String solicitudesJson = prefs.getString('informacion_tutor') ?? '';
       Map<String, dynamic> datos_tutor = jsonDecode(solicitudesJson);
@@ -668,8 +688,8 @@ class LoadData {
       Duration diferenciaTiempo = DateTime.now().difference(verificador);
       return diferenciaTiempo;
     }catch(e){
-      print('Error en tiempoActualizacion: $e');
-      print("duracion es cero");
+      //print('Error en tiempoActualizacion: $e');
+      //print("duracion es cero");
       return Duration.zero;
     }
   }

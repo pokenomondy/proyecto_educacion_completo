@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dashboard_admin_flutter/Config/Strings.dart';
+import 'package:dashboard_admin_flutter/Config/strings.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../Config/Config.dart';
+import '../../Config/elements.dart';
 import '../../Config/theme.dart';
 import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/Load_Data.dart';
@@ -25,6 +26,7 @@ import '../../Utils/Firebase/Load_Data.dart';
     User? currentUser;
     FirebaseAuth? authdirection;
     CollectionReference? firestoredirection;
+
     CollectionReferencias referencias =  CollectionReferencias();
 
 
@@ -33,6 +35,15 @@ import '../../Utils/Firebase/Load_Data.dart';
       super.initState();
       redireccion();
       }
+
+    @override
+    void dispose() {
+      // Realiza la limpieza necesaria al eliminar el widget
+      // Por ejemplo, cancelar cualquier controlador o suscripción
+      correo.dispose();
+      contrasena.dispose();
+      super.dispose();
+    }
 
     Future redireccion() async{
       if(Config.dufyadmon==true){
@@ -106,30 +117,29 @@ import '../../Utils/Firebase/Load_Data.dart';
     }
 
     Future<void> login()  async {
-      Map<String, dynamic> configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
-      DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
-
+      print(correo.text);
+      print(contrasena.text);
+      UtilDialogs dialogs = UtilDialogs(context : context);
       try {
+        print("etro a login");
         final credential = await authdirection!.signInWithEmailAndPassword(
             email: correo.text,
             password: contrasena.text
         );
         final User? user = credential.user;
         String? uid = user?.uid;
-        //Lógica si es tutor o es administrador
-
-        DocumentSnapshot getutoradmin = await referencias.tutores!.doc(uid).get();
-
         _redireccionaDashboarc(uid!,user!,Config.dufyadmon);
 
+        //feedback de inicio de sesión
         Utiles().notificacion("Logueado con extio", context, false, "log");
       } on FirebaseAuthException catch (e) {
-        if (e.code == 'user-not-found') {
-          //print('No user found for that email.');
-          Utiles().notificacion("Usuario no encontrado con ese email", context, false, "log");
-        } else if (e.code == 'wrong-password') {
-          print('Wrong password provided for that user.');
-          Utiles().notificacion("Contraseña inocrrecta", context, false, "log");
+        print("erorres");
+        if (e.code == 'user-not-found' || e.code == 'invalid-email') {
+          dialogs.error(Strings().errorUsarionoencontraTitle,Strings().errorUsuarionoecnontratdoDescripcion);
+        } else if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          dialogs.error(Strings().errorcontrasenaequivocadatitle,Strings().errorcontrasenaequivocadaDescripcion);
+        }else{
+          print(e.code);
         }
       }
     }

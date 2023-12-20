@@ -21,10 +21,12 @@ class ServicioAgendado{
   //Agregar estado si ha sido entregado o no entregado
   String entregadotutor = "";
   String entregadocliente = "";
+  //lasTime
+  int ultimaModificacion = 1672534800;
 
   ServicioAgendado(this.codigo,this.sistema,this.materia,this.fechasistema,this.cliente,this.preciocobrado,this.fechaentrega,
       this.tutor,this.preciotutor,this.identificadorcodigo,this.idsolicitud,this.idcontable,this.pagos,this.entregadotutor,
-      this.entregadocliente,this.historial);
+      this.entregadocliente,this.historial,this.ultimaModificacion);
 
   Map<String,dynamic> toMap(){
     return{
@@ -44,6 +46,7 @@ class ServicioAgendado{
       'entregadocliente' : entregadocliente,
       'pagos' : pagos,
       'historial' : historial,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -67,6 +70,7 @@ class ServicioAgendado{
       'entregadotutor' : entregadotutor,
       'entregadocliente' : entregadocliente,
       'historial' :historial.map((historialData) => historialData.toJson()).toList(),
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -92,6 +96,7 @@ class ServicioAgendado{
       (json['historial'] as List<dynamic>)
           .map((pagoData) => HistorialAgendado.fromJson(pagoData))
           .toList(),
+      json['ultimaModificacion'],
     );
   }
 

@@ -16,8 +16,9 @@ class Tutores{
   //Variable para ver si se debe actualizar o no
   DateTime actualizartutores = DateTime.now();
   String rol;
+  int ultimaModificacion = 0;
 
-  Tutores(this.nombrewhatsapp,this.nombrecompleto,this.numerowhatsapp,this.carrera,this.correogmail,this.univerisdad,this.uid,this.materias,this.cuentas,this.activo,this.actualizartutores,this.rol);
+  Tutores(this.nombrewhatsapp,this.nombrecompleto,this.numerowhatsapp,this.carrera,this.correogmail,this.univerisdad,this.uid,this.materias,this.cuentas,this.activo,this.actualizartutores,this.rol,this.ultimaModificacion);
 
   Tutores.empty()
       : nombrewhatsapp = "",
@@ -31,7 +32,8 @@ class Tutores{
         cuentas = [],
         activo = false,
         actualizartutores = DateTime.now(),
-        rol = "";
+        rol = "",
+        ultimaModificacion = 0;
 
   Map<String, dynamic> toMap() {
     return{
@@ -45,6 +47,7 @@ class Tutores{
       'activo':activo,
       'actualizartutores' : actualizartutores,
       'rol' : rol,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -62,6 +65,7 @@ class Tutores{
       'activo':activo,
       'actualizartutores' :actualizartutores.toIso8601String(),
       'rol' : rol,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -83,6 +87,7 @@ class Tutores{
       json['activo'],
       DateTime.parse(json['actualizartutores']),
       json['rol'],
+      json['ultimaModificacion'],
     );
   }
 

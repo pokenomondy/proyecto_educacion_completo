@@ -14,7 +14,6 @@ import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Config/theme.dart';
 
-
 class PageCargando extends StatefulWidget {
 
   const PageCargando({Key? key,
@@ -111,8 +110,9 @@ class PageCargandoState extends State<PageCargando> {
 
 
     //Comprobemos que salio good?
-    comporbaciondescargacorrecta();
+    //comporbaciondescargacorrecta();
   }
+  /*
   Future <void> comporbaciondescargacorrecta() async{
     if(cliente_numerocargado==0){
       await LoadData().obtenerclientes(
@@ -149,6 +149,7 @@ class PageCargandoState extends State<PageCargando> {
         }
       );
     }
+    /*
     if(tutores_numerocargado==0){
       await LoadData().obtenertutores(
         onTutorAdded: (Tutores nuevotutor){
@@ -161,6 +162,8 @@ class PageCargandoState extends State<PageCargando> {
         }
       );
     }
+
+     */
     setState(() {
       cargacompleta = true;
     });
@@ -168,6 +171,8 @@ class PageCargandoState extends State<PageCargando> {
     reiniciarcontador();
 
   }
+
+   */
   Future <void> reiniciarcontador()async{
     print("reiniciando contador");
     Map<String, dynamic> servicioData = {};

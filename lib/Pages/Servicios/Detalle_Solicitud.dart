@@ -1,3 +1,4 @@
+import 'package:dashboard_admin_flutter/Config/strings.dart';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
@@ -7,6 +8,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:googleapis/drive/v2.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart' as dialog;
+import '../../Config/elements.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
@@ -85,7 +87,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   }
 
   Future loadtablas() async{
-    materiaList = await LoadData().tablasmateria();
+    //materiaList = await LoadData().tablasmateria();
   }
 
   @override
@@ -114,6 +116,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   }
 
   Widget textoymodificable(String text, Solicitud solicitud, String servicio,int index, bool bool){
+    UtilDialogs dialogs = UtilDialogs(context : context);
     const double verticalPadding = 3.0;
     String? cambio = "";
     String valor = valores[index];
@@ -174,9 +177,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                   child: TextBox(
                     placeholder: valor,
                     onChanged: (value){
-                      setState(() {
-                        datoscambiostext = value;
-                      });
+                      datoscambiostext = value;
                     },
                     maxLines: null,
                   ),
@@ -249,18 +250,13 @@ class PrimaryColumnState extends State<PrimaryColumn> {
               //actualizar variable
               GestureDetector(
                 onTap: () async{
-                  await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
-                  setState(() {
-                    if(index !=3){
-                      valores[index] = cambio!;
-                    }else{
-                      valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
-                    }
-                    editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    if (!editarcasilla[index]) {
-                      editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    }
-                  });
+                  if(cambio==""){
+                    dialogs.error(Strings().errorvalornulogeneral, Strings().errorglobalText);
+                  }else if(cambio == valor){
+                    dialogs.error(Strings().errorvalorigualgeneral, Strings().errorglobalText);
+                  }else{
+                    ActualizadorDetalles(index,cambio!,solicitud);
+                  }
                 },
                 child: Icon(FluentIcons.check_list),
               ),
@@ -282,6 +278,21 @@ class PrimaryColumnState extends State<PrimaryColumn> {
           ),
       ],
     );
+  }
+
+  Future ActualizadorDetalles(int index, String cambio, Solicitud solicitud) async{
+    await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
+    setState(() {
+      if(index !=3){
+        valores[index] = cambio!;
+      }else{
+        valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
+      }
+      editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+      if (!editarcasilla[index]) {
+        editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
+      }
+    });
   }
 
   String _truncateLabel(String label) {
@@ -341,7 +352,6 @@ class PrimaryColumnState extends State<PrimaryColumn> {
       ],
     );
   }
-
   }
 
 class SecundaryColumn extends StatefulWidget {

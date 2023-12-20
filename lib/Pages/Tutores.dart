@@ -19,6 +19,7 @@ import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/Solicitud.dart';
+import '../Providers/Providers.dart';
 import '../Utils/Firebase/Uploads.dart';
 import 'MainTutores/DetallesTutores.dart';
 
@@ -40,7 +41,7 @@ class TutoresVistaVistaState extends State<TutoresVista> {
   }
 
   Future<void> loadtablas() async {
-    tutoresList = await LoadData().obtenertutores();
+    //tutoresList = await LoadData().obtenertutores();
     setState(() {
       cargadodata=true;
     });
@@ -185,26 +186,18 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     loadtablas(); // Cargar los datos al inicializar el widget
-    cargartutores();
     super.initState();
   }
 
   Future<void> loadtablas() async {
-    materiaList = await LoadData().tablasmateria();
-    solicitudesList = await LoadData().obtenerSolicitudes();
+    //materiaList = await LoadData().tablasmateria();
+    //solicitudesList = await LoadData().obtenerSolicitudes();
     setState(() {
       dataLoaded=true;
     });
     print("load tablas ejecutandose");
   }
 
-  Future cargartutores() async{
-    tutoresList = await LoadData().obtenertutores();
-    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
-    tutoresProvider.clearTutores();
-    tutoresProvider.setFiltro('TutorA');
-    tutoresProvider.cargarTodosTutores(tutoresList);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +208,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
 
           return Column(
             children: [
-              contarTutoresRoles(tutoresList),
+              contarTutoresRoles(tutores),
               Container(
                   height: currentheight-180,
                   child: ListView.builder(
@@ -418,10 +411,10 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    materiaList = await LoadData().tablasmateria();
-    carreraList = await LoadData().obtenercarreras();
-    solicitudesList = await LoadData().obtenerSolicitudes();
-    serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
+    //materiaList = await LoadData().tablasmateria();
+    //carreraList = await LoadData().obtenercarreras();
+    //solicitudesList = await LoadData().obtenerSolicitudes();
+    //serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       _materiacargarauto = true;
     });
@@ -444,7 +437,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     if (materiabusqueda.isEmpty){
       tutoresFiltrados.clear();
     }else{
-      tutoresList = await LoadData().obtenertutores();
+      //tutoresList = await LoadData().obtenertutores();
       tutoresFiltrados = tutoresList.where((tutor) {
         return tutor.activo;
       }).where((tutor) {
@@ -964,8 +957,8 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    CarrerasList = await LoadData().obtenercarreras();
-    UniversidadList = await LoadData().obtenerUniversidades();
+    //CarrerasList = await LoadData().obtenercarreras();
+    //UniversidadList = await LoadData().obtenerUniversidades();
     setState(() {
       _cargadodatos = true;
     });
@@ -1134,67 +1127,5 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
 
 }
 
-class VistaTutoresProvider extends ChangeNotifier {
-  List<Tutores> tutorseleccionado = [];
-  List<Tutores> todosLosTutores = [];
-  List<Tutores> get todosLosTutoresSeleccioando => todosLosTutores;
-
-  String filtro = "";
-
-  void cargarTodosTutores(List<Tutores> tutor){
-    todosLosTutores = tutor.toList();
-    cargarTutores();
-    notifyListeners();
-  }
-
-  void setFiltro(String nuevoFiltro) {
-    filtro = nuevoFiltro;
-    cargarTutores();
-    notifyListeners();
-  }
-
-  void cargarTutores() {
-    tutorseleccionado = todosLosTutores
-        .where((tutor) {
-      switch (filtro) {
-        case 'TutorA':
-          return tutor.activo == true && tutor.rol == "TUTOR";
-        case 'TutorInac':
-          return tutor.rol == 'TUTOR' && tutor.activo == false;
-        case 'ADMON':
-          return tutor.rol == 'ADMIN';
-        default:
-          return true; // Sin filtro o filtro desconocido, mostrar todos
-      }
-    })
-        .toList(); // Assign the loaded tutors to todosLosTutores
-    notifyListeners();
-  }
-
-  void busquedatutor(String texto){
-    tutorseleccionado = todosLosTutores
-    .where((tutor) =>
-        tutor.nombrewhatsapp == texto,
-    ).toList();
-    notifyListeners();
-  }
-
-  void modificarTutor(Tutores tutor) {
-    Tutores tutorEnLista = tutorseleccionado.where((tutore) => tutore.uid == tutor.uid).first;
-
-    tutorEnLista.nombrecompleto = tutor.nombrecompleto;
-    tutorEnLista.numerowhatsapp = tutor.numerowhatsapp;
-    tutorEnLista.carrera = tutor.carrera;
-    tutorEnLista.univerisdad = tutor.univerisdad;
-    tutorEnLista.activo = tutor.activo;
-
-    notifyListeners();
-  }
-
-  void clearTutores() {
-    tutorseleccionado.clear(); // Clear the list
-    notifyListeners();
-  }
-}
 
 
