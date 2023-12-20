@@ -82,7 +82,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   }
 
   Future loadtablas() async{
-    materiaList = await LoadData().tablasmateria();
+    //materiaList = await LoadData().tablasmateria();
   }
 
   @override

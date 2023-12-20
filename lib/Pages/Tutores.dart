@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
+import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/CollectionReferences.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
@@ -19,11 +20,9 @@ import '../Objetos/Cotizaciones.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/Solicitud.dart';
+import '../Providers/Providers.dart';
 import '../Utils/Firebase/Uploads.dart';
 import 'MainTutores/DetallesTutores.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
-
-
 
 class TutoresVista extends StatefulWidget {
   const TutoresVista({super.key});
@@ -45,7 +44,7 @@ class TutoresVistaVistaState extends State<TutoresVista> {
   }
 
   Future<void> loadtablas() async {
-    tutoresList = await LoadData().obtenertutores();
+    //tutoresList = await LoadData().obtenertutores();
     setState(() {
       cargadodata=true;
     });
@@ -66,11 +65,11 @@ class TutoresVistaVistaState extends State<TutoresVista> {
                 _CrearTutorNuevo(currentwidth: tamanowidth),
               ],),
           if(currentwidth < 1200 && currentwidth > 620)
-            SizedBox(
+            Container(
                 width: currentwidth,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
           if(currentwidth <= 620)
-            SizedBox(
+            Container(
                 width: currentwidth,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
 
@@ -96,30 +95,32 @@ class _TutoresResponsiveVistaState extends State<TutoresResponsiveVista> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    return NavigationView(
-      pane: NavigationPane(
-        selected: _selectedpage,
-        onChanged: (index) => setState(() {
-          _selectedpage = index;
-        }),
-        displayMode: PaneDisplayMode.top,
-        items: <NavigationPaneItem>[
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('Tutores'),
-            body:  _Creartutores(currentwidth: currentwidth,tutoresList: widget.tutoresList,),
-          ),
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('Busqueda'),
-            body: _BusquedaTutor(currentwidth: currentwidth,),
-          ),
-          PaneItem(
-            icon:  const Icon(FluentIcons.home),
-            title: const Text('Nuevo tutor'),
-            body:  _CrearTutorNuevo(currentwidth: currentwidth),
-          ),
-        ],
+    return Container(
+      child: NavigationView(
+        pane: NavigationPane(
+          selected: _selectedpage,
+          onChanged: (index) => setState(() {
+            _selectedpage = index;
+          }),
+          displayMode: PaneDisplayMode.top,
+          items: <NavigationPaneItem>[
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Tutores'),
+              body:  _Creartutores(currentwidth: currentwidth,tutoresList: widget.tutoresList,),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Busqueda'),
+              body: _BusquedaTutor(currentwidth: currentwidth,),
+            ),
+            PaneItem(
+              icon:  const Icon(FluentIcons.home),
+              title: const Text('Nuevo tutor'),
+              body:  _CrearTutorNuevo(currentwidth: currentwidth),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -157,7 +158,7 @@ class _CreartutoresrState extends State<_Creartutores> {
             padding: const EdgeInsets.only(top: 22.0, bottom: 15.0),
             child: Text('Tutores', style: themeApp.styleText(24, true, themeApp.primaryColor),),
           ),
-         _TarjetaTutores(tutoresList: widget.tutoresList),
+          _TarjetaTutores(tutoresList: widget.tutoresList),
         ],
       ),
     );
@@ -203,7 +204,6 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     loadtablas(); // Cargar los datos al inicializar el widget
-    cargartutores();
     super.initState();
 
     styleText = themeApp.styleText(14, false, themeApp.grayColor);
@@ -213,21 +213,14 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
 
 
   Future<void> loadtablas() async {
-    materiaList = await LoadData().tablasmateria();
-    solicitudesList = await LoadData().obtenerSolicitudes();
+    //materiaList = await LoadData().tablasmateria();
+    //solicitudesList = await LoadData().obtenerSolicitudes();
     setState(() {
       dataLoaded=true;
     });
     print("load tablas ejecutandose");
   }
 
-  Future cargartutores() async{
-    tutoresList = await LoadData().obtenertutores();
-    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
-    tutoresProvider.clearTutores();
-    tutoresProvider.setFiltro('TutorA');
-    tutoresProvider.cargarTodosTutores(tutoresList);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +235,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
               contarTutoresRoles(tutoresList),
 
               SizedBox(
-                height: currentHeight * 0.6,
+                  height: currentHeight * 0.6,
                   child: ListView.builder(
                       itemCount: tutores.length,
                       itemBuilder: (context,index) {
@@ -316,8 +309,8 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                                             alignment: Alignment.center,
                                             margin: const EdgeInsets.symmetric(horizontal: 3.0),
                                             decoration: BoxDecoration(
-                                              color: themeApp.primaryColor,
-                                              borderRadius: BorderRadius.circular(80)
+                                                color: themeApp.primaryColor,
+                                                borderRadius: BorderRadius.circular(80)
                                             ),
                                             child: Icon(material.Icons.add, color: themeApp.whitecolor,),
                                           ),
@@ -400,22 +393,22 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
           children: [
             PrimaryStyleButton(
                 function: () {
-              tutoresProvider.setFiltro('TutorA');
-            },
+                  tutoresProvider.setFiltro('TutorA');
+                },
                 text: "Tutor Activo"
             ),
 
             PrimaryStyleButton(
                 function: () {
-              tutoresProvider.setFiltro('TutorInac');
-            },
+                  tutoresProvider.setFiltro('TutorInac');
+                },
                 text: "Tutor Inactivo"
             ),
 
             PrimaryStyleButton(
                 function: () {
-              tutoresProvider.setFiltro('ADMON');
-            },
+                  tutoresProvider.setFiltro('ADMON');
+                },
                 text: "Administradores"
             ),
           ],
@@ -435,7 +428,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                 height: 30,
                 width: 350,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(80)
+                    borderRadius: BorderRadius.circular(80)
                 ),
                 child: AutoSuggestBox<Tutores>(
                   items: tutores.map<AutoSuggestBoxItem<Tutores>>(
@@ -453,7 +446,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                     setState(() {
                       print("seleccionado ${item.label}");
                       selectedTutor = item.value; // Actualizar el valor seleccionado
-                      tutoresProvider.busquedatutor(selectedTutor!.nombrewhatsapp);
+                      tutoresProvider.busquedatutor(selectedTutor!.nombrewhatsapp!);
                     });
                   },
                 ),
@@ -539,10 +532,10 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    materiaList = await LoadData().tablasmateria();
-    carreraList = await LoadData().obtenercarreras();
-    solicitudesList = await LoadData().obtenerSolicitudes();
-    serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
+    //materiaList = await LoadData().tablasmateria();
+    //carreraList = await LoadData().obtenercarreras();
+    //solicitudesList = await LoadData().obtenerSolicitudes();
+    //serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       _materiacargarauto = true;
     });
@@ -565,7 +558,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     if (materiabusqueda.isEmpty){
       tutoresFiltrados.clear();
     }else{
-      tutoresList = await LoadData().obtenertutores();
+      //tutoresList = await LoadData().obtenertutores();
       tutoresFiltrados = tutoresList.where((tutor) {
         return tutor.activo;
       }).where((tutor) {
@@ -602,6 +595,10 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
 
   @override
   Widget build(BuildContext context) {
+
+    final TextStyle styleText = themeApp.styleText(14, false, themeApp.whitecolor);
+    final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.whitecolor);
+
     return ItemsCard(
       width: widget.currentwidth+100,
       cardColor: themeApp.primaryColor,
@@ -1009,33 +1006,33 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
           ),
 
         PrimaryStyleButton(
-          invert: true,
-          width: 120,
+            invert: true,
+            width: 120,
             function: () {
-          String materiaUno = selectedMateria != null ? selectedMateria!.nombremateria : "";
-          String materiaDos = selectedMateriados != null ? selectedMateriados!.nombremateria : "";
-          String materiaTres = selectedMateriatres != null ? selectedMateriatres!.nombremateria : "";
-          String materiaCuatro = selectedMateriacuatro != null ? selectedMateriacuatro!.nombremateria : "";
-          String materiaCinco = selectedMateriacinco != null ? selectedMateriacinco!.nombremateria : "";
-          String carreraUno = selectedCarrera != null ? selectedCarrera!.nombrecarrera : "";
-          String carreraDos = selectedCarrerados != null ? selectedCarrerados!.nombrecarrera : "";
-          String carreraTres = selectedCarreratres != null ? selectedCarreratres!.nombrecarrera : "";
-          String carreraCuatro = selectedCarreracuatro != null ? selectedCarreracuatro!.nombrecarrera : "";
-          String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
+              String materiaUno = selectedMateria != null ? selectedMateria!.nombremateria : "";
+              String materiaDos = selectedMateriados != null ? selectedMateriados!.nombremateria : "";
+              String materiaTres = selectedMateriatres != null ? selectedMateriatres!.nombremateria : "";
+              String materiaCuatro = selectedMateriacuatro != null ? selectedMateriacuatro!.nombremateria : "";
+              String materiaCinco = selectedMateriacinco != null ? selectedMateriacinco!.nombremateria : "";
+              String carreraUno = selectedCarrera != null ? selectedCarrera!.nombrecarrera : "";
+              String carreraDos = selectedCarrerados != null ? selectedCarrerados!.nombrecarrera : "";
+              String carreraTres = selectedCarreratres != null ? selectedCarreratres!.nombrecarrera : "";
+              String carreraCuatro = selectedCarreracuatro != null ? selectedCarreracuatro!.nombrecarrera : "";
+              String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
 
-          busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
-          print(materiaDos);
-          loadDataTablasMaterias();
+              busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
+              print(materiaDos);
+              loadDataTablasMaterias();
 
-          //cargarlistas
+              //cargarlistas
 
-        },
+            },
             text: "Buscar"),
-        if(_cargadotutoresfiltradosmateria)
+        if(_cargadotutoresfiltradosmateria==true)
           Column(
             children: [
               SizedBox(
-                height: 300,
+                height: 600,
                 child: ListView.builder(
                     itemCount: tutoresFiltrados.length,
                     itemBuilder: (context,index){
@@ -1062,77 +1059,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                 ),
 
                                 material.Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-
-                                    Expanded(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-
-                                          _textAndTitle("Calificacion obtenida: ", tutorEvaluator!.retornocalificacion(tutore).toStringAsFixed(1)),
-                                          _nivelTutor("Nivel: ", tutorEvaluator!.retornocalificacion(tutore)),
-
-                                          material.Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-
-                                                material.Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: GestureDetector(
-                                                    onTap: (){
-
-                                                    },
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 500),
-                                                      width: 25,
-                                                      height: 25,
-                                                      decoration: BoxDecoration(
-                                                        color: themeApp.primaryColor,
-                                                        borderRadius: BorderRadius.circular(80),
-                                                      ),
-                                                      child: Icon(material.Icons.add, color: themeApp.whitecolor,),
-                                                    ),
-                                                  ),
-                                                ),
-
-                                                material.Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: GestureDetector(
-                                                    onTap: (){
-
-                                                    },
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 500),
-                                                      width: 25,
-                                                      height: 25,
-                                                      decoration: BoxDecoration(
-                                                        color: themeApp.redColor,
-                                                        borderRadius: BorderRadius.circular(80),
-                                                      ),
-                                                      child: Icon(material.Icons.cancel, color: themeApp.whitecolor,),
-                                                    ),
-                                                  ),
-                                                ),
-
-                                              ],
-                                            ),
-                                          )
-
-                                        ],
-                                      ),
-                                    ),
-
-                                    _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
-
-
-
-
-
-                                    /*
-
                                     Column(
                                       children: [
                                         Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
@@ -1164,12 +1092,9 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                         Text('ult fecha ${tutorEvaluator?.ultimaFechaCotizacionTutor(tutore.nombrewhatsapp)}'),
                                       ],
                                     ),
-
-                                     */
-
-
                                   ],
                                 )
+
                               ],
                             )),
                       );
@@ -1188,50 +1113,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       ],
     );
   }
-
-  Padding _nivelTutor(String title, double calificacion){
-    return Padding(
-      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
-          Text(calificacion > 4 ? "Excelente" : calificacion >= 3 ? "Intermedio" : "Regular", style: themeApp.styleText(14, true, calificacion > 4 ? themeApp.greenColor : calificacion >= 3 ? themeApp.primaryColor : themeApp.redColor),),
-        ],
-      ),
-    );
-  }
-
-  Padding _textAndTitle(String title, String text){
-    return Padding(
-      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
-          Text(text, style: themeApp.styleText(14, false, themeApp.grayColor),),
-        ],
-      ),
-    );
-  }
-
-  CircularPercentIndicator _pieChart(double calificacion, double tamanio){
-    return CircularPercentIndicator(
-        radius: tamanio,
-        lineWidth: 5.0,
-        percent: calificacion / 5.0,
-        center: material.Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(calificacion.toString().length < 2 ? "$calificacion.0" : "$calificacion", style: themeApp.styleText(tamanio * 0.3, true, themeApp.primaryColor),),
-            Text("/5.0", style: themeApp.styleText(tamanio * 0.2, true, themeApp.primaryColor),)
-          ],
-        ),
-        circularStrokeCap: CircularStrokeCap.round,
-        progressColor: themeApp.primaryColor,
-    );
-  }
-
 }
 
 class _CrearTutorNuevo extends StatefulWidget{
@@ -1271,8 +1152,8 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    CarrerasList = await LoadData().obtenercarreras();
-    UniversidadList = await LoadData().obtenerUniversidades();
+    //CarrerasList = await LoadData().obtenercarreras();
+    //UniversidadList = await LoadData().obtenerUniversidades();
     setState(() {
       _cargadodatos = true;
     });
@@ -1404,9 +1285,9 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
         PrimaryStyleButton(
             width: 120,
             function: ()async{
-          print("crear nuevo usuario");
-          await createUserWithEmailAndPassword();
-        },
+              print("crear nuevo usuario");
+              await createUserWithEmailAndPassword();
+            },
             text: "Agregar")
       ],
     );
@@ -1415,9 +1296,7 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   Future<void> createUserWithEmailAndPassword() async {
     await referencias.initCollections();
     try {
-
       final credential = await referencias.authdireccion!.createUserWithEmailAndPassword(email: correoGmail.text, password: password.text,);
-
       print("usuario creado");
       await Uploads().addinfotutor(nombreWsp.text, nombrecompleto.text, int.parse(numWsp.text), selectedCarrera!.nombrecarrera, correoGmail.text, selectedUniversidad!.nombreuniversidad, referencias.authdireccion!.currentUser!.uid);
       referencias.initCollections();
@@ -1440,68 +1319,4 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   }
 
 }
-
-class VistaTutoresProvider extends ChangeNotifier {
-  List<Tutores> tutorseleccionado = [];
-  List<Tutores> todosLosTutores = [];
-  List<Tutores> get todosLosTutoresSeleccioando => todosLosTutores;
-
-  String filtro = "";
-
-  void cargarTodosTutores(List<Tutores> tutor){
-    todosLosTutores = tutor.toList();
-    cargarTutores();
-    notifyListeners();
-  }
-
-  void setFiltro(String nuevoFiltro) {
-    filtro = nuevoFiltro;
-    cargarTutores();
-    notifyListeners();
-  }
-
-  void cargarTutores() {
-    tutorseleccionado = todosLosTutores
-        .where((tutor) {
-      switch (filtro) {
-        case 'TutorA':
-          return tutor.activo == true && tutor.rol == "TUTOR";
-        case 'TutorInac':
-          return tutor.rol == 'TUTOR' && tutor.activo == false;
-        case 'ADMON':
-          return tutor.rol == 'ADMIN';
-        default:
-          return true; // Sin filtro o filtro desconocido, mostrar todos
-      }
-    })
-        .toList(); // Assign the loaded tutors to todosLosTutores
-    notifyListeners();
-  }
-
-  void busquedatutor(String texto){
-    tutorseleccionado = todosLosTutores
-    .where((tutor) =>
-        tutor.nombrewhatsapp == texto,
-    ).toList();
-    notifyListeners();
-  }
-
-  void modificarTutor(Tutores tutor) {
-    Tutores tutorEnLista = tutorseleccionado.where((tutore) => tutore.uid == tutor.uid).first;
-
-    tutorEnLista.nombrecompleto = tutor.nombrecompleto;
-    tutorEnLista.numerowhatsapp = tutor.numerowhatsapp;
-    tutorEnLista.carrera = tutor.carrera;
-    tutorEnLista.univerisdad = tutor.univerisdad;
-    tutorEnLista.activo = tutor.activo;
-
-    notifyListeners();
-  }
-
-  void clearTutores() {
-    tutorseleccionado.clear(); // Clear the list
-    notifyListeners();
-  }
-}
-
 
