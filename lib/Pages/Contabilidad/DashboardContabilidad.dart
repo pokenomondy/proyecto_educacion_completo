@@ -32,8 +32,8 @@ class ContaDashState extends State<ContaDash> {
       child: Row(
         children: [
           PrimaryColumnContaDash(currentwidth: tamanowidth,),
-          SecundaryColumnContaDash(currentwidth: tamanowidth,),
           TercerColumnContaDash(currentwidth: tamanowidth,),
+          SecundaryColumnContaDash(currentwidth: tamanowidth,),
         ],
       ),
     );
@@ -53,7 +53,6 @@ class PrimaryColumnContaDash extends StatefulWidget {
 }
 
 class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
-  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false,false];
   List<Materia> materiaList = [];
   List<String> valores = [];
   bool buscador = false;
@@ -74,30 +73,32 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
   int sumaPagosReembolsoTutores = 0;
   bool disabledbutton = false;
   Map<String, dynamic> uploadconfiguracion = {};
+  bool interfazpagos = false;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void actualizarpagosMain(ServicioAgendado codigo) async{
-    //uploadconfiguracion = await Utiles().actualizarpagos(codigo, context);
-    setState(() {
-      sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
-      sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
-      sumaPagosReembolsoCliente = uploadconfiguracion['sumaPagosReembolsoCliente'];
-      sumaPagosReembolsoTutores = uploadconfiguracion['sumaPagosReembolsoTutores'];
+  void SeleccionarServicoAgendado(ServicioAgendado servicioAgendado) async {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+      contabilidadProvider.seleccionarServicio(servicioAgendado);
     });
   }
 
-
+  void eliminarServicioSeleccionado(){
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+      //contabilidadProvider.clearServicioSeleccionado();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ContabilidadProvider>(
         builder: (context, pagosProvider, child) {
           List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
-
+          if(interfazpagos){
+            SeleccionarServicoAgendado(servicioAgendado!);
+          }else{
+            eliminarServicioSeleccionado();
+          }
           return Column(
             children: [
                 Row(
@@ -124,6 +125,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                             servicioAgendado = item.value;
                             setState(() {
                               buscador = true;
+                              interfazpagos = true;
                             });
                           });
                         },
@@ -131,6 +133,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                           if (text.isEmpty ) {
                             setState(() {
                               servicioAgendado = null; // Limpiar la selección cuando se borra el texto
+                              interfazpagos = false;
                             });
                           }
                         },
@@ -141,287 +144,6 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
             ],
           );
         }
-    );
-  }
-
-  Widget textoymodificable(String text, ServicioAgendado servicioAgendado,int index, bool bool){
-    String? cambio = "";
-    String valor = valores[index];
-
-    if (index == 1) {
-      if(selectedMateria!=null){
-        cambio = selectedMateria?.nombremateria;
-      }else{
-        cambio = valor;
-      }
-    }else if(index == 4 ||index == 7){
-      cambio = valorcambio.toString();
-    }else if(index == 8){
-      cambio = selectedIdentificador;
-    }else if(index == 5){
-      cambio = DateFormat('dd/MM/yyyy-hh:mm:ssa').format(cambiarfecha);
-    }else if(index == 6){
-      cambio = selectedTutor?.nombrewhatsapp;
-    }
-
-    return Row(
-      children: [
-        if (!editarcasilla[index])
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Text("$text : $valor"),
-                if(!bool)
-                  GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        if (!editarcasilla[index]) {
-                          // Si se desactiva la edición, actualiza el texto original con el texto editado
-                          editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        }
-                      });
-                      print("oprimido para cambiar");
-                    },
-                    child: Icon(FluentIcons.edit),
-                  )
-              ],
-            ),
-          ),
-        if (editarcasilla[index])
-          Row(
-            children: [
-              //Precio tutor y precio al cliente
-              if(index == 4 || index == 7)
-                Container(
-                  width: 100,
-                  child: TextBox(
-                    placeholder: valor,
-                    onChanged: (value){
-                      setState(() {
-                        valorcambio = int.parse(value);
-                        cambio = valorcambio.toString();
-                      });
-                    },
-                    maxLines: null,
-                  ),
-                ),
-              //Fecha de entrega
-              if(index == 5)
-                selectfecha(context),
-              if(index == 6)
-                Container(
-                  height: 30,
-                  width: 300,
-                  child: AutoSuggestBox<Tutores>(
-                    items: tutoresList.map<AutoSuggestBoxItem<Tutores>>(
-                          (tutor) => AutoSuggestBoxItem<Tutores>(
-                        value: tutor,
-                        label: _truncateLabel(tutor.nombrewhatsapp),
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused #${tutor.nombrewhatsapp} - ');
-                          }
-                        },
-                      ),
-                    )
-                        .toList(),
-                    decoration: Disenos().decoracionbuscador(),
-                    onSelected: (item) {
-                      setState(() {
-                        print("seleccionado ${item.label}");
-                        selectedTutor = item.value; // Actualizar el valor seleccionado
-                      });
-                    },
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedTutor = null; // Limpiar la selección cuando se borra el texto
-                        });
-                      }
-                    },
-                  ),
-                ),
-              //Lista materias
-              if(index == 1)
-                Container(
-                  height: 30,
-                  width: 300,
-                  child: AutoSuggestBox<Materia>(
-                    items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                          (materia) => AutoSuggestBoxItem<Materia>(
-                        value: materia,
-                        label: _truncateLabel(materia.nombremateria),
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused #${materia.nombremateria} - ');
-                          }
-                        },
-                      ),
-                    )
-                        .toList(),
-                    decoration: Disenos().decoracionbuscador(),
-                    onSelected: (item) {
-                      setState(() {
-                        print("seleccionado ${item.label}");
-                        selectedMateria = item.value; // Actualizar el valor seleccionado
-                      });
-                    },
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedMateria = null; // Limpiar la selección cuando se borra el texto
-                        });
-                      }
-                    },
-                  ),
-                ),
-              //Lista identificador codigo
-              if(index == 8)
-                Container(
-                  height: 30,
-                  width: 300,
-                  child: AutoSuggestBox<String>(
-                    items: identificadoresList.map((servicio) {
-                      return AutoSuggestBoxItem<String>(
-                          value: servicio,
-                          label: servicio,
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused $servicio');
-                            }
-                          }
-                      );
-                    }).toList(),
-                    onSelected: (item) {
-                      setState(() => selectedIdentificador = item.value);
-                    },
-                    decoration: Disenos().decoracionbuscador(),
-                    placeholder: 'Selecciona tu servicio',
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedIdentificador = null; // Limpiar la selección cuando se borra el texto
-                        });
-                      }
-                    },
-                  ),
-                ),
-              //actualizar variable
-              GestureDetector(
-                onTap: () async{
-                  comprobaractualziardatos(index,cambio!,valor,valorcambio);
-                },
-                child: Icon(FluentIcons.check_list),
-              ),
-              //cancelar
-              GestureDetector(
-                onTap: (){
-                  setState(() {
-                    editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    if (!editarcasilla[index]) {
-                      // Si se desactiva la edición, actualiza el texto original con el texto editado
-                      editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    }
-                  });
-                  print("oprimido para cambiar");
-                },
-                child: Icon(FluentIcons.cancel),
-              )
-            ],
-          ),
-      ],
-    );
-  }
-
-  void comprobaractualziardatos(int index,String cambio,String valor, int valorcambio,) async{
-    int pagocliente = sumaPagosClientes-sumaPagosReembolsoCliente;
-    int pagoTutor = sumaPagosTutores-sumaPagosReembolsoTutores;
-    if(index == 1 && cambio == valor){
-      Utiles().notificacion("Selecciona una materia", context, false,"desp");
-    }else if(index == 4 && sumaPagosClientes>0){
-      if(valorcambio < pagocliente ){
-        Utiles().notificacion("No se puede cambiar, porque el precio es < al pagado", context, false,"desp");
-      }else{
-        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
-        _cambiarprecio(index, valor, cambio, valorcambio);
-      }
-    }else if(index == 7 && sumaPagosTutores>0){
-      if(valorcambio < pagoTutor){
-        Utiles().notificacion("No se puede editar el precio porque hay pagos", context, false,"desp");
-      }else{
-        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
-        _cambiarprecio(index, valor, cambio, valorcambio);
-      }
-    } else{
-      _cambiarprecio(index, valor, cambio, valorcambio);
-    }
-  }
-
-  Future<void> _cambiarprecio(int index,String valor,String cambio,int valorcambio) async{
-    await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
-    setState(() {
-      valores[index] = cambio!;
-      editarcasilla[index] = false;  // Desactiva el modo de edición
-    });
-  }
-
-  String _truncateLabel(String label) {
-    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
-    if (label.length > maxLength) {
-      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
-    }
-    return label;
-  }
-
-  Column selectfecha(BuildContext context){
-    return Column(
-      children: [
-        Container(
-          child: GestureDetector(
-            onTap: () async{
-              final date = await Utiles().pickDate(context,cambiarfecha);
-              if(date == null) return;
-
-              final newDateTime = DateTime(
-                date.year,
-                date.month,
-                date.day,
-                cambiarfecha.hour,
-                cambiarfecha.minute,
-              );
-
-              setState( () =>
-              cambiarfecha = newDateTime
-              );
-            },
-            child: Disenos().fecha_y_entrega('${cambiarfecha.day}/${cambiarfecha.month}/${cambiarfecha.year}',400),
-          ),
-        ),
-        Container(
-          child: GestureDetector(
-            onTap: () async {
-              final time = await FuncionesMaterial().pickTime(context,cambiarfecha);
-              if (time == null) return;
-
-              final newDateTime = DateTime(
-                cambiarfecha.year,
-                cambiarfecha.month,
-                cambiarfecha.day,
-                time.hour,
-                time.minute,
-              );
-              setState(() =>
-              cambiarfecha = newDateTime
-              );
-              final formattedTime = DateFormat('hh:mm a').format(cambiarfecha);
-              print(formattedTime);
-            },
-            child: Disenos().fecha_y_entrega(DateFormat('hh:mm  a').format(cambiarfecha), 400),
-          ),
-        ),
-      ],
     );
   }
 
@@ -498,9 +220,80 @@ class TercerColumnContaDash extends StatefulWidget {
 }
 
 class TercerColumnContaDashState extends State<TercerColumnContaDash> {
+  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false,false];
+
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Consumer<ContabilidadProvider>(
+        builder: (context, pagosProvider, child) {
+          ServicioAgendado servicioAgendado = pagosProvider.servicioSeleccionado;
+
+          return Column(
+            children: [
+              textoymodificable('Sistema: ', servicioAgendado.codigo,0,true),
+              textoymodificable('Matería: ', servicioAgendado.materia,1,true),
+              textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,true),
+              textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,true),
+              textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
+              textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
+              textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
+              textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
+              textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,true),
+              textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,true),
+              textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,true),
+            ],
+          );
+        }
+    );
+  }
+
+  Widget textoymodificable(String text,String valor,int index,bool bool){
+    String? cambio = "";
+
+    return Row(
+      children: [
+        if (!editarcasilla[index])
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Text("$text : $valor"),
+                if(bool)
+                  GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                      });
+                    },
+                    child: Icon(FluentIcons.edit),
+                  )
+              ],
+            ),
+          ),
+          if (editarcasilla[index])
+            Row(
+              children: [
+                //actualizar variable
+                GestureDetector(
+                  onTap: () async{
+                    //comprobaractualziardatos(index,cambio!,valor,valorcambio);
+                  },
+                  child: Icon(FluentIcons.check_list),
+                ),
+                //cancelar
+                GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                    });
+                    print("oprimido para cambiar");
+                  },
+                  child: Icon(FluentIcons.cancel),
+                )
+              ],
+            ),
+      ],
+    );
   }
 }
 

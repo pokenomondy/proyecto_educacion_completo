@@ -13,6 +13,7 @@ import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/Contabilidad/DashboardContabilidad.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
+import 'Pages/Pruebas/DashboardAdmin.dart';
 import 'Pages/Pruebas/Whatsapp.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'Pages/TutorDashPages/EntregasTutor.dart';
@@ -20,43 +21,59 @@ import 'Pages/TutorDashPages/MainTutoresDash.dart';
 import 'Pages/TutorDashPages/TutorConfiguracion.dart';
 import 'Pages/Tutores.dart';
 import 'Pages/pages.dart';
+import 'Providers/Providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-      options: const FirebaseOptions(
-          apiKey: "AIzaSyAaDFOJuIohkPrVo0jEy0qnEPaFeiijvio",
-          authDomain: "dufy-asesorias.firebaseapp.com",
-          databaseURL: "https://dufy-asesorias-default-rtdb.firebaseio.com",
-          projectId: "dufy-asesorias",
-          storageBucket: "dufy-asesorias.appspot.com",
-          messagingSenderId: "350250942752",
-          appId: "1:350250942752:web:f8d0492c9cea9669dd1745",
-          measurementId: "G-MH2TEMC9DB"
-      ),
+    options: const FirebaseOptions(
+        apiKey: "AIzaSyAaDFOJuIohkPrVo0jEy0qnEPaFeiijvio",
+        authDomain: "dufy-asesorias.firebaseapp.com",
+        databaseURL: "https://dufy-asesorias-default-rtdb.firebaseio.com",
+        projectId: "dufy-asesorias",
+        storageBucket: "dufy-asesorias.appspot.com",
+        messagingSenderId: "350250942752",
+        appId: "1:350250942752:web:f8d0492c9cea9669dd1745",
+        measurementId: "G-MH2TEMC9DB"
+    ),
   );
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-        apiKey: "AIzaSyA_xNYL-1mikJJCsB8EQjNg6DyeKdNWyww",
-        authDomain: "liba-education-app.firebaseapp.com",
-        projectId: "liba-education-app",
-        storageBucket: "liba-education-app.appspot.com",
-        messagingSenderId: "1854378948",
-        appId: "1:1854378948:web:82d700cb65df601544ca91",
-        measurementId: "G-BZKDF684XY"
-    ),
-    name: 'LIBADB'
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyA_xNYL-1mikJJCsB8EQjNg6DyeKdNWyww",
+          authDomain: "liba-education-app.firebaseapp.com",
+          projectId: "liba-education-app",
+          storageBucket: "liba-education-app.appspot.com",
+          messagingSenderId: "1854378948",
+          appId: "1:1854378948:web:82d700cb65df601544ca91",
+          measurementId: "G-BZKDF684XY"
+      ),
+      name: 'LIBADB'
   );
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => MateriasProvider()),
         ChangeNotifierProvider(create: (context) => CuentasProvider()),
-        ChangeNotifierProvider(create: (context) => HistorialProvider()),
-        ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
-        ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
+
+        //Nuevos notificadores creados
+        //Configuración
+        ChangeNotifierProvider(create: (context) => ConfiguracionAplicacion()),
+        //Contabilidad
+        ChangeNotifierProvider(create: (context) => ContabilidadProvider()),
+        //Solicitudes
+        ChangeNotifierProvider(create: (context) => SolicitudProvider()),
+        //Carreras
+        ChangeNotifierProvider(create: (context) => CarrerasProvider()),
+        //Materias
+        ChangeNotifierProvider(create: (context) => MateriasVistaProvider()),
+        //Clientes
+        ChangeNotifierProvider(create: (context) => ClientesVistaProvider()),
+        //Universidades
+        ChangeNotifierProvider(create: (context) => UniversidadVistaProvider()),
+        //Tutores
+        ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
+
 
       ],
       child: MyApp(),
@@ -79,7 +96,7 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/',
           builder: (BuildContext context, GoRouterState state) {
-              return (Config.dufyadmon)?  const LoginPage(): const InitPage();//InitPage();
+            return (Config.dufyadmon)?  LoginPage(): InitPage();//InitPage(); LoginPage() DashboardAdmin();
           },
           routes: <RouteBase>[
             ShellRoute(
@@ -93,12 +110,12 @@ class MyApp extends StatelessWidget {
                       return Dashboard(showSolicitudesNew: false, solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
                     },
                     routes: <RouteBase>[
-                    GoRoute(
-                      path: 'configuracion_inicial',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return ConfigInicialPrimerAcceso();
-                      },)
-                  ]
+                      GoRoute(
+                        path: 'configuracion_inicial',
+                        builder: (BuildContext context, GoRouterState state) {
+                          return ConfigInicialPrimerAcceso();
+                        },)
+                    ]
                 ),
               ],
             ),
