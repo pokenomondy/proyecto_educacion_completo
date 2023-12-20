@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
-import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/CollectionReferences.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
@@ -22,6 +21,9 @@ import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/Solicitud.dart';
 import '../Utils/Firebase/Uploads.dart';
 import 'MainTutores/DetallesTutores.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
+
+
 
 class TutoresVista extends StatefulWidget {
   const TutoresVista({super.key});
@@ -64,11 +66,11 @@ class TutoresVistaVistaState extends State<TutoresVista> {
                 _CrearTutorNuevo(currentwidth: tamanowidth),
               ],),
           if(currentwidth < 1200 && currentwidth > 620)
-            Container(
+            SizedBox(
                 width: currentwidth,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
           if(currentwidth <= 620)
-            Container(
+            SizedBox(
                 width: currentwidth,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
 
@@ -94,32 +96,30 @@ class _TutoresResponsiveVistaState extends State<TutoresResponsiveVista> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    return Container(
-      child: NavigationView(
-        pane: NavigationPane(
-          selected: _selectedpage,
-          onChanged: (index) => setState(() {
-            _selectedpage = index;
-          }),
-          displayMode: PaneDisplayMode.top,
-          items: <NavigationPaneItem>[
-            PaneItem(
-              icon:  const Icon(FluentIcons.home),
-              title: const Text('Tutores'),
-              body:  _Creartutores(currentwidth: currentwidth,tutoresList: widget.tutoresList,),
-            ),
-            PaneItem(
-              icon:  const Icon(FluentIcons.home),
-              title: const Text('Busqueda'),
-              body: _BusquedaTutor(currentwidth: currentwidth,),
-            ),
-            PaneItem(
-              icon:  const Icon(FluentIcons.home),
-              title: const Text('Nuevo tutor'),
-              body:  _CrearTutorNuevo(currentwidth: currentwidth),
-            ),
-          ],
-        ),
+    return NavigationView(
+      pane: NavigationPane(
+        selected: _selectedpage,
+        onChanged: (index) => setState(() {
+          _selectedpage = index;
+        }),
+        displayMode: PaneDisplayMode.top,
+        items: <NavigationPaneItem>[
+          PaneItem(
+            icon:  const Icon(FluentIcons.home),
+            title: const Text('Tutores'),
+            body:  _Creartutores(currentwidth: currentwidth,tutoresList: widget.tutoresList,),
+          ),
+          PaneItem(
+            icon:  const Icon(FluentIcons.home),
+            title: const Text('Busqueda'),
+            body: _BusquedaTutor(currentwidth: currentwidth,),
+          ),
+          PaneItem(
+            icon:  const Icon(FluentIcons.home),
+            title: const Text('Nuevo tutor'),
+            body:  _CrearTutorNuevo(currentwidth: currentwidth),
+          ),
+        ],
       ),
     );
   }
@@ -453,7 +453,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                     setState(() {
                       print("seleccionado ${item.label}");
                       selectedTutor = item.value; // Actualizar el valor seleccionado
-                      tutoresProvider.busquedatutor(selectedTutor!.nombrewhatsapp!);
+                      tutoresProvider.busquedatutor(selectedTutor!.nombrewhatsapp);
                     });
                   },
                 ),
@@ -602,10 +602,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
 
   @override
   Widget build(BuildContext context) {
-
-    final TextStyle styleText = themeApp.styleText(14, false, themeApp.whitecolor);
-    final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.whitecolor);
-
     return ItemsCard(
       width: widget.currentwidth+100,
       cardColor: themeApp.primaryColor,
@@ -1035,11 +1031,11 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
 
         },
             text: "Buscar"),
-        if(_cargadotutoresfiltradosmateria==true)
+        if(_cargadotutoresfiltradosmateria)
           Column(
             children: [
               SizedBox(
-                height: 600,
+                height: 300,
                 child: ListView.builder(
                     itemCount: tutoresFiltrados.length,
                     itemBuilder: (context,index){
@@ -1066,8 +1062,77 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                 ),
 
                                 material.Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
+
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+
+                                          _textAndTitle("Calificacion obtenida: ", tutorEvaluator!.retornocalificacion(tutore).toStringAsFixed(1)),
+                                          _nivelTutor("Nivel: ", tutorEvaluator!.retornocalificacion(tutore)),
+
+                                          material.Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+
+                                                material.Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: GestureDetector(
+                                                    onTap: (){
+
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 500),
+                                                      width: 25,
+                                                      height: 25,
+                                                      decoration: BoxDecoration(
+                                                        color: themeApp.primaryColor,
+                                                        borderRadius: BorderRadius.circular(80),
+                                                      ),
+                                                      child: Icon(material.Icons.add, color: themeApp.whitecolor,),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                material.Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: GestureDetector(
+                                                    onTap: (){
+
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 500),
+                                                      width: 25,
+                                                      height: 25,
+                                                      decoration: BoxDecoration(
+                                                        color: themeApp.redColor,
+                                                        borderRadius: BorderRadius.circular(80),
+                                                      ),
+                                                      child: Icon(material.Icons.cancel, color: themeApp.whitecolor,),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                              ],
+                                            ),
+                                          )
+
+                                        ],
+                                      ),
+                                    ),
+
+                                    _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
+
+
+
+
+
+                                    /*
+
                                     Column(
                                       children: [
                                         Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
@@ -1099,9 +1164,12 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                         Text('ult fecha ${tutorEvaluator?.ultimaFechaCotizacionTutor(tutore.nombrewhatsapp)}'),
                                       ],
                                     ),
+
+                                     */
+
+
                                   ],
                                 )
-
                               ],
                             )),
                       );
@@ -1120,6 +1188,50 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       ],
     );
   }
+
+  Padding _nivelTutor(String title, double calificacion){
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
+          Text(calificacion > 4 ? "Excelente" : calificacion >= 3 ? "Intermedio" : "Regular", style: themeApp.styleText(14, true, calificacion > 4 ? themeApp.greenColor : calificacion >= 3 ? themeApp.primaryColor : themeApp.redColor),),
+        ],
+      ),
+    );
+  }
+
+  Padding _textAndTitle(String title, String text){
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
+          Text(text, style: themeApp.styleText(14, false, themeApp.grayColor),),
+        ],
+      ),
+    );
+  }
+
+  CircularPercentIndicator _pieChart(double calificacion, double tamanio){
+    return CircularPercentIndicator(
+        radius: tamanio,
+        lineWidth: 5.0,
+        percent: calificacion / 5.0,
+        center: material.Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(calificacion.toString().length < 2 ? "$calificacion.0" : "$calificacion", style: themeApp.styleText(tamanio * 0.3, true, themeApp.primaryColor),),
+            Text("/5.0", style: themeApp.styleText(tamanio * 0.2, true, themeApp.primaryColor),)
+          ],
+        ),
+        circularStrokeCap: CircularStrokeCap.round,
+        progressColor: themeApp.primaryColor,
+    );
+  }
+
 }
 
 class _CrearTutorNuevo extends StatefulWidget{
@@ -1303,7 +1415,9 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   Future<void> createUserWithEmailAndPassword() async {
     await referencias.initCollections();
     try {
+
       final credential = await referencias.authdireccion!.createUserWithEmailAndPassword(email: correoGmail.text, password: password.text,);
+
       print("usuario creado");
       await Uploads().addinfotutor(nombreWsp.text, nombrecompleto.text, int.parse(numWsp.text), selectedCarrera!.nombrecarrera, correoGmail.text, selectedUniversidad!.nombreuniversidad, referencias.authdireccion!.currentUser!.uid);
       referencias.initCollections();
