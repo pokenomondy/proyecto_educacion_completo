@@ -11,7 +11,7 @@ class TarjetaSolicitudes extends StatelessWidget{
   final Color cardColor;
   final double tamanio;
 
-  TarjetaSolicitudes({
+  const TarjetaSolicitudes({
     Key?key,
     required this.solicitud,
     this.width = 400,
@@ -384,7 +384,7 @@ class UtilDialogs{
 
   void error (String text, String title) => showDialog(
       context: context,
-      builder: (BuildContext context) => _errorDialog(text, title)
+      builder: (BuildContext errorContext) => _errorDialog(text, title, errorContext)
   );
   
   void exito(String text, String title) => showDialog(
@@ -402,7 +402,7 @@ class UtilDialogs{
       builder: (BuildContext context) => _cargaDialog(text, title)
   );
 
-  dialog.Dialog _errorDialog(String text, String title){
+  dialog.Dialog _errorDialog(String text, String title, BuildContext errorContext){
     final ThemeApp themeApp = ThemeApp();
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
@@ -424,7 +424,7 @@ class UtilDialogs{
               width: 100,
               buttonColor: themeApp.redColor,
               function: (){
-                Navigator.pop(context);
+                Navigator.pop(errorContext);
               }, text: "Cerrar")
         ],
       ),

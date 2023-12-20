@@ -4,13 +4,10 @@ import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:googleapis/drive/v2.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/material.dart' as dialog;
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
-import '../../Utils/Drive Api/GoogleDrive.dart';
 
 class DetallesServicio extends StatefulWidget {
   final Solicitud solicitud;
@@ -166,119 +163,133 @@ class PrimaryColumnState extends State<PrimaryColumn> {
             ),
           ),
         if (editarcasilla[index])
-          Row(
-            children: [
-              if(index == 7 || index == 8)
-                SizedBox(
-                  width: 100,
-                  child: TextBox(
-                    placeholder: valor,
-                    onChanged: (value){
-                      setState(() {
-                        datoscambiostext = value;
-                      });
-                    },
-                    maxLines: null,
-                  ),
-                ),
-              if(index == 0 )
-                Container(
-                  width: 300,
-                  child: AutoSuggestBox<String>(
-                    items: serviciosList.map((servicio) {
-                      return AutoSuggestBoxItem<String>(
-                          value: servicio,
-                          label: servicio,
-                          onFocusChange: (focused) {
-                            if (focused) {
-                              debugPrint('Focused $servicio');
-                            }
-                          }
-                      );
-                    }).toList(),
-                    onSelected: (item) {
-                      setState(() => selectedServicio = item.value);
-                    },
-                    decoration: Disenos().decoracionbuscador(),
-                    placeholder: 'Selecciona tu servicio',
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedServicio = null; // Limpiar la selección cuando se borra el texto
-                        });
-                      }
-                    },
-                  ),
-                ),
-              if(index == 2)
-                Container(
-                  height: 30,
-                  width: 300,
-                  child: AutoSuggestBox<Materia>(
-                    items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                          (materia) => AutoSuggestBoxItem<Materia>(
-                        value: materia,
-                        label: _truncateLabel(materia.nombremateria),
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused #${materia.nombremateria} - ');
-                          }
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+            child: SizedBox(
+              width: widget.currentwith - 42,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if(index == 7 || index == 8)
+                    SizedBox(
+                      width: widget.currentwith - 120,
+                      child: TextBox(
+                        placeholder: valor,
+                        onChanged: (value){
+                          datoscambiostext = value;
                         },
+                        maxLines: null,
                       ),
-                    )
-                        .toList(),
-                    decoration: Disenos().decoracionbuscador(),
-                    onSelected: (item) {
-                      setState(() {
-                        print("seleccionado ${item.label}");
-                        selectedMateria = item.value; // Actualizar el valor seleccionado
-                      });
-                    },
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedMateria = null; // Limpiar la selección cuando se borra el texto
-                        });
-                      }
-                    },
-                  ),
-                ),
-              if(index == 3)
-                Container(
-                    child: selectfecha(context)),
-              //actualizar variable
-              GestureDetector(
-                onTap: () async{
-                  await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
-                  setState(() {
-                    if(index !=3){
-                      valores[index] = cambio!;
-                    }else{
-                      valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
-                    }
-                    editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    if (!editarcasilla[index]) {
-                      editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    }
-                  });
-                },
-                child: Icon(FluentIcons.check_list),
+                    ),
+                  if(index == 0 )
+                    SizedBox(
+                      width: widget.currentwith - 120,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: AutoSuggestBox<String>(
+                          items: serviciosList.map((servicio) {
+                            return AutoSuggestBoxItem<String>(
+                                value: servicio,
+                                label: servicio,
+                                onFocusChange: (focused) {
+                                  if (focused) {
+                                    debugPrint('Focused $servicio');
+                                  }
+                                }
+                            );
+                          }).toList(),
+                          onSelected: (item) {
+                            selectedServicio = item.value;
+                          },
+                          decoration: Disenos().decoracionbuscador(),
+                          placeholder: 'Selecciona tu servicio',
+                          onChanged: (text, reason) {
+                            if (text.isEmpty ) {
+                              selectedServicio = null; // Limpiar la selección cuando se borra el texto
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  if(index == 2)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+                      child: SizedBox(
+                        height: 30,
+                        width: widget.currentwith - 120,
+                        child: AutoSuggestBox<Materia>(
+                          items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                                (materia) => AutoSuggestBoxItem<Materia>(
+                              value: materia,
+                              label: _truncateLabel(materia.nombremateria),
+                              onFocusChange: (focused) {
+                                if (focused) {
+                                  debugPrint('Focused #${materia.nombremateria} - ');
+                                }
+                              },
+                            ),
+                          )
+                              .toList(),
+                          decoration: Disenos().decoracionbuscador(),
+                          onSelected: (item) {
+                            setState(() {
+                              print("seleccionado ${item.label}");
+                              selectedMateria = item.value; // Actualizar el valor seleccionado
+                            });
+                          },
+                          onChanged: (text, reason) {
+                            if (text.isEmpty ) {
+                              setState(() {
+                                selectedMateria = null; // Limpiar la selección cuando se borra el texto
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  if(index == 3)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: selectfecha(context),
+                    ),
+                  //actualizar variable
+                  Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                        child: GestureDetector(
+                          onTap: () async{
+                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
+                            setState(() {
+                              if(index !=3){
+                                valores[index] = cambio!;
+                              }else{
+                                valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
+                              }
+                              editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                            });
+                          },
+                          child: const Icon(FluentIcons.check_list),
+                        ),
+                      ),
+                      //cancelar
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                        child: GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                            });
+                            print("oprimido para cambiar");
+                          },
+                          child: const Icon(FluentIcons.cancel),
+                        ),
+                      )
+                    ],
+                  )
+                ],
               ),
-              //cancelar
-              GestureDetector(
-                onTap: (){
-                  setState(() {
-                    editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    if (!editarcasilla[index]) {
-                      // Si se desactiva la edición, actualiza el texto original con el texto editado
-                      editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    }
-                  });
-                  print("oprimido para cambiar");
-                },
-                child: Icon(FluentIcons.cancel),
-              )
-            ],
+            ),
           ),
       ],
     );
@@ -287,7 +298,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   String _truncateLabel(String label) {
     const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
     if (label.length > maxLength) {
-      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
+      return '${label.substring(0, maxLength - 3)}...'; // Agrega puntos suspensivos
     }
     return label;
   }
@@ -295,48 +306,47 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   Column selectfecha(BuildContext context){
     return Column(
       children: [
-        Container(
-          child: GestureDetector(
-            onTap: () async{
-              final date = await FuncionesMaterial().pickDate(context,cambiarfecha);
-              if(date == null) return;
+        GestureDetector(
+          onTap: () async{
+            final date = await FuncionesMaterial().pickDate(context,cambiarfecha);
+            if(date == null) return;
 
-              final newDateTime = DateTime(
-                date.year,
-                date.month,
-                date.day,
-                cambiarfecha.hour,
-                cambiarfecha.minute,
-              );
+            final newDateTime = DateTime(
+              date.year,
+              date.month,
+              date.day,
+              cambiarfecha.hour,
+              cambiarfecha.minute,
+            );
 
-              setState( () =>
-              cambiarfecha = newDateTime
-              );
-            },
-            child: Disenos().fecha_y_entrega('${cambiarfecha.day}/${cambiarfecha.month}/${cambiarfecha.year}',400),
+            setState( () =>
+            cambiarfecha = newDateTime
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 5.0),
+            child: Disenos().fecha_y_entrega('${cambiarfecha.day}/${cambiarfecha.month}/${cambiarfecha.year}',widget.currentwith - 60),
           ),
         ),
-        Container(
-          child: GestureDetector(
-            onTap: () async {
-              final time = await FuncionesMaterial().pickTime(context,cambiarfecha);
-              if (time == null) return;
+        GestureDetector(
+          onTap: () async {
+            final time = await FuncionesMaterial().pickTime(context,cambiarfecha);
+            if (time == null) return;
 
-              final newDateTime = DateTime(
-                cambiarfecha.year,
-                cambiarfecha.month,
-                cambiarfecha.day,
-                time.hour,
-                time.minute,
-              );
-              setState(() =>
-              cambiarfecha = newDateTime
-              );
-              final formattedTime = DateFormat('hh:mm a').format(cambiarfecha);
-              print(formattedTime);
-            },
-            child: Disenos().fecha_y_entrega(DateFormat('hh:mm  a').format(cambiarfecha), 400),
-          ),
+            final newDateTime = DateTime(
+              cambiarfecha.year,
+              cambiarfecha.month,
+              cambiarfecha.day,
+              time.hour,
+              time.minute,
+            );
+            setState(() =>
+            cambiarfecha = newDateTime
+            );
+            final formattedTime = DateFormat('hh:mm a').format(cambiarfecha);
+            print(formattedTime);
+          },
+          child: Disenos().fecha_y_entrega(DateFormat('hh:mm  a').format(cambiarfecha), widget.currentwith - 60),
         ),
       ],
     );
@@ -460,14 +470,14 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(child: Text(archivo!.mimeType)),
+                                Expanded(child: Text(archivo.mimeType)),
                               ],
                             ),
                             //id de archivo
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(child: Text(archivo!.id)),
+                                Expanded(child: Text(archivo.id)),
                               ],
                             ),
                           ],
