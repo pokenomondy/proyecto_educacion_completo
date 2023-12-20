@@ -53,11 +53,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => MateriasProvider()),
         ChangeNotifierProvider(create: (context) => CuentasProvider()),
-        ChangeNotifierProvider(create: (context) => HistorialProvider()),
-        ChangeNotifierProvider(create: (context) => RegistrarPagosProvider()),
-        ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
 
         //Nuevos notificadores creados
@@ -65,6 +61,19 @@ void main() async {
         ChangeNotifierProvider(create: (context) => ConfiguracionAplicacion()),
         //Contabilidad
         ChangeNotifierProvider(create: (context) => ContabilidadProvider()),
+        //Solicitudes
+        ChangeNotifierProvider(create: (context) => SolicitudProvider()),
+        //Carreras
+        ChangeNotifierProvider(create: (context) => CarrerasProvider()),
+        //Materias
+        ChangeNotifierProvider(create: (context) => MateriasVistaProvider()),
+        //Clientes
+        ChangeNotifierProvider(create: (context) => ClientesVistaProvider()),
+        //Universidades
+        ChangeNotifierProvider(create: (context) => UniversidadVistaProvider()),
+        //Tutores
+        ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
+
 
       ],
       child: MyApp(),

@@ -17,6 +17,7 @@ import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Pages/Contabilidad/Pagos.dart';
 import '../../Pages/Tutores.dart';
+import '../../Providers/Providers.dart';
 import '../Utiles/FuncionesUtiles.dart';
 import 'CollectionReferences.dart';
 import 'Load_Data.dart';
@@ -44,18 +45,9 @@ class Uploads{
   DateTime fechaactualizacion = DateTime.now();
   CollectionReference solicitud = referencias.solicitudes!;
   List<Cotizacion> cotizaciones = [];
-  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now());
+  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now(),DateTime.now().millisecondsSinceEpoch ~/ 1000);
   print("subido con exito servicio $idcotizacion");
   await solicitud.doc("$idcotizacion").set(newservice.toMap());
-  //Agregamos este servicio a la lista offline ya guardada
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
-  List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-  List solicitudList = CarreraData.map((tutorData) => Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
-  solicitudList.add(newservice);
-  //Ahora guardamos la lista
-  String solicitudesJsondos = jsonEncode(solicitudList);
-  await prefs.setString('solicitudes_list', solicitudesJsondos);
 }
   //Modificar un servicio
   Future<void> modifyServiciosolicitud(int index, String texto, DateTime dateTime, int idcotizacionfire) async {
@@ -78,22 +70,16 @@ class Uploads{
     if(index!=3){
       uploadinformacion = {
         '$variable': texto,
-        'actualizarsolicitudes': DateTime.now(),
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       };
     }else{
       uploadinformacion = {
         '$variable': dateTime,
-        'actualizarsolicitudes': DateTime.now(),
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       };
     }
 
     print("Upload Información: $uploadinformacion");
-
-    //Modificar en local la información. //Adicional se debe actualizar la variable de actualización para que no se actualice ahorita que pase
-    List<Solicitud> solicitudesList = await LoadData().obtenerSolicitudes();
-    Solicitud solicitudEnLista = solicitudesList.where((solicitud) => solicitud.idcotizacion == idcotizacionfire).first;
-    //Seguir trabajando en esta modificación
-
     await solicitud.doc(idcotizacionfire.toString()).update(uploadinformacion);
   }
 
@@ -106,18 +92,6 @@ class Uploads{
     await cotizacionReference.update({
       'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
     });
-    //cargar las solitiudes y añadir esta nueva cotización
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
-    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-    List solicitudList = CarreraData.map((tutorData) =>
-        Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
-    //encontrar la solicitud
-    int solicitudIndex = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idcotizacion);
-    solicitudList[solicitudIndex].cotizaciones.add(newcotizacion);
-    //guardar
-    String solicitudesJsondos = jsonEncode(solicitudList);
-    await prefs.setString('solicitudes_list', solicitudesJsondos);
   }
 
   //añadir servicio agendado
@@ -126,7 +100,7 @@ class Uploads{
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = referencias.contabilidad!;
     List<RegistrarPago> pagos = [];
-    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[]);
+    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
 
     print(idsolicitud);
@@ -136,9 +110,13 @@ class Uploads{
   Future<void> cambiarEstadoSolicitud(int idsolicitud,String motivo) async{
     await referencias.initCollections();
     CollectionReference expiradoglobal = referencias.solicitudes!;
-    Map<String, dynamic> dataAgendado = {'Estado': motivo};
+    Map<String, dynamic> dataAgendado = {
+      'Estado': motivo,
+      'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+    };
     expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
 
+    /*
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
     List<dynamic> CarreraData = jsonDecode(solicitudesJson);
@@ -151,6 +129,8 @@ class Uploads{
     }
     String solicitudListdos = jsonEncode(solicitudList);
     await prefs.setString('solicitudes_list', solicitudListdos);
+
+     */
   }
 
   //modificar un servicio agendado
@@ -193,6 +173,7 @@ class Uploads{
     HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable,codigo);
     await contabilidad.doc(codigo).update({
       'historial' : FieldValue.arrayUnion([newhistorial.toMap()]),
+      'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
     });
   }
   //Entregar trabajos tutores
@@ -229,7 +210,7 @@ class Uploads{
     CollectionReference tutor = referencias.tutores!;
     List<Materia> materias = [];
     List<CuentasBancarias> cuentas = [];
-    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR");
+    Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR",DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await tutor.doc(uid).set(newtutor.toMap());
     print("se subio un nuevo tutor");
     print(newtutor);
@@ -266,42 +247,22 @@ class Uploads{
     if(index == 1 || index == 3 || index == 5){
       uploadinformacion = {
         '$variable': texto,
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       };
     }else if(index == 2){
       uploadinformacion = {
         '$variable': num,
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       };
     }else if(index == 6){
       uploadinformacion = {
         '$variable' : activo,
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       };
     }
 
     CollectionReference tutores = referencias.tutores!;
     await tutores.doc(tutor.uid).update(uploadinformacion);
-
-    //Modificar
-    List<Tutores> tutoresList = [];
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    tutoresList = await LoadData().obtenertutores();
-    Tutores tutorEnLista = tutoresList.where((tutore) => tutore.uid == tutor.uid).first;
-    if(index == 1){
-      tutorEnLista.nombrecompleto = texto;
-    }else if(index == 2){
-      tutorEnLista.numerowhatsapp =  num;
-    }else if(index == 3){
-      tutorEnLista.carrera = texto;
-    }else if(index == 5){
-      tutorEnLista.univerisdad = texto;
-    }else if(index == 6){
-      tutorEnLista.activo = activo;
-    }
-
-    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
-    tutoresProvider.modificarTutor(tutorEnLista);
-
-    String updatedTutoresJson = jsonEncode(tutoresList.map((tutor) => tutor.toJson()).toList());
-    prefs.setString('tutores_list', updatedTutoresJson);
   }
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
@@ -310,46 +271,23 @@ class Uploads{
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
     print("Subido nueva cuenta bancaria");
     await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
-    //Actualizar de forma local
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Tutores> tutoresList = await LoadData().obtenertutores();
-    // Encontrar al tutor
-    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
-    if (tutorIndex != -1) {
-      // Agregar el nuevo pago a la lista existente
-      tutoresList[tutorIndex].cuentas.add(newcuenta);
-      // Guardar la lista actualizada en SharedPreferences
-      String solicitudesJsondos = jsonEncode(tutoresList);
-      await prefs.setString('tutores_list', solicitudesJsondos);
-    }
+
   }
   //Subir materia de tutor
   void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
     await referencias.initCollections();
     CollectionReference materias = referencias.tutores!.doc(uidtutor.toString()).collection("MATERIA");
-    Materia newmateria = Materia(nombremateria);
+    Materia newmateria = Materia(nombremateria,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await materias.doc(nombremateria).set(newmateria.toMap());
     //Actualizar de forma local
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Tutores> tutoresList = await LoadData().obtenertutores();
-    // Encontrar al tutor
-    int tutorIndex = tutoresList.indexWhere((tutor) => tutor.uid == uidtutor);
-    if (tutorIndex != -1) {
-      // Agregar el nuevo pago a la lista existente
-      tutoresList[tutorIndex].materias.add(newmateria);
-      if (onMateriaAdded != null) {
-        onMateriaAdded(newmateria);
-      }
-      // Guardar la lista actualizada en SharedPreferences
-      String solicitudesJsondos = jsonEncode(tutoresList);
-      await prefs.setString('tutores_list', solicitudesJsondos);
-    }
+
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {
     await referencias.initCollections();
     CollectionReference cliente = referencias.clientes!;
-    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now(),procedencia,DateTime.now());
+    Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now(),procedencia,DateTime.now(),DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await cliente.doc(numero.toString()).set(newcliente.toMap());
     //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -382,19 +320,6 @@ class Uploads{
     };
 
     await refcliente.doc(numerocliente).update(uploadinformacion);
-    //Ahora que se guarde de forma local?
-    List<Clientes> clienteList = [];
-    clienteList = await LoadData().obtenerclientes();
-    Clientes clienteEnLista = clienteList.where((cliente) => cliente.numero.toString() == numerocliente.toString()).first;
-    if(index ==0){
-      clienteEnLista.carrera = cambio;
-    }else if(index==1){
-      clienteEnLista.universidad = cambio;
-    }else if(index==4){
-      clienteEnLista.nombrecompletoCliente = cambio;
-    }
-    String updatedClienteJson = jsonEncode(clienteList.map((tutor) => tutor.toJson()).toList());
-    prefs.setString('clientes_list', updatedClienteJson);
 
   }
 
@@ -436,22 +361,28 @@ class Uploads{
       await pagoReference.update({
         'pagos': FieldValue.arrayUnion([newpago.toMap()]),
         'preciocobrado' : nuevosaldocliente,
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       });
     }else if(tipopago == "REEMBOLSOTUTOR"){
       int nuevosaldocliente = servicio.preciotutor - valor;
       await pagoReference.update({
         'pagos': FieldValue.arrayUnion([newpago.toMap()]),
         'preciotutor' : nuevosaldocliente,
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       });
     }else{
       await pagoReference.update({
         'pagos': FieldValue.arrayUnion([newpago.toMap()]),
+        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       });
     }
   }
+
+
   Future<int> obtenerNumeroDePagosRegistrados(int idcontable) async {
     await referencias.initCollections();
-    List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
+    //List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
+    List<ServicioAgendado>? serviciosAgendados;
 
     // Verifica si serviciosAgendados no es nulo y no está vacío
     if (serviciosAgendados != null && serviciosAgendados.isNotEmpty) {
@@ -508,29 +439,16 @@ class Uploads{
   Future<void> addCarrera(String nombrecarrera) async {
     await referencias.initCollections();
     CollectionReference carreraCollection = referencias.tablascarreras!;
-    Carrera newcarrera = Carrera(nombrecarrera);
+    Carrera newcarrera = Carrera(nombrecarrera,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await carreraCollection.doc(nombrecarrera).set(newcarrera.toMap());
-    //Obtenemos tablas de carreras agregadas
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Carrera> carreraList = await LoadData().obtenercarreras();
-    carreraList.add(newcarrera);
-    //guardar carreras
-    String solicitudesJsondos = jsonEncode(carreraList);
-    await prefs.setString('carreras_List', solicitudesJsondos);
   }
   //Agregar unversidad a tabla
   Future<void> addUniversidad(String nombreuniversidad) async {
     await referencias.initCollections();
     CollectionReference universidadCollection = referencias.tablasuniversidades!;
-    Universidad newuniversidad = Universidad(nombreuniversidad);
+    Universidad newuniversidad = Universidad(nombreuniversidad,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await universidadCollection.doc(nombreuniversidad).set(newuniversidad.toMap());
     //universidades en cache
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Universidad> universidadList = await LoadData().obtenerUniversidades();
-    universidadList.add(newuniversidad);
-    //guardar carreras
-    String solicitudesJsondos = jsonEncode(universidadList);
-    await prefs.setString('universidades_List', solicitudesJsondos);
   }
   //Envíar configuración inicial
   Future<void> uploadconfiginicial(String Primarycolor,String Secundarycolor,String nombre_empresa,String idcarpetaPagos,String idcarpetaSol) async{
@@ -574,17 +492,8 @@ class Uploads{
   Future<void> addnewmateria(String nombremateria) async{
     await referencias.initCollections();
     CollectionReference referencemateria = referencias.tablasmaterias!;
-    Materia newmateria = Materia(nombremateria);
+    Materia newmateria = Materia(nombremateria,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await referencemateria.doc(nombremateria).set(newmateria.toMap());
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<Materia> materiaList = [];
-    materiaList = await LoadData().tablasmateria();
-    materiaList.add(newmateria);
-    //guardar info
-    String solicitudesJsondos = jsonEncode(materiaList);
-    await prefs.setString('tablamaterias_list', solicitudesJsondos);
-
   }
 
 

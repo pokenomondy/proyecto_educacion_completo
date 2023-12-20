@@ -50,7 +50,7 @@ class PrimaryListaPagosDashState extends State<PrimaryListaPagosDash> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    serviciosAgendadoList = (await stream_builders().cargarserviciosagendados())!;
+    //serviciosAgendadoList = (await stream_builders().cargarserviciosagendados())!;
     setState(() {
       dataLoaded=true;
     });

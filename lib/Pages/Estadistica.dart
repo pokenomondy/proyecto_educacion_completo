@@ -44,6 +44,7 @@ class _EstadisticaState extends State<Estadistica> {
               title: const Text('Estadisticas'),
               body: EstadisticaMain(currentwidth: currentwidth,),
             ),
+            /*
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Contabilidad'),
@@ -59,6 +60,8 @@ class _EstadisticaState extends State<Estadistica> {
               title: const Text('PAGOS'),
               body: PagosDatos(),
             ),
+
+             */
 
           ]
       ),

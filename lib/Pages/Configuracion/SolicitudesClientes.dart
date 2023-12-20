@@ -63,9 +63,9 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
   }
 
   Future<void> laodtablas() async {
-    clienteList = await LoadData().obtenerclientes();
-    solicitudList = await LoadData().obtenerSolicitudes();
-    tutoresList = await LoadData().obtenertutores();
+    //clienteList = await LoadData().obtenerclientes();
+    //solicitudList = await LoadData().obtenerSolicitudes();
+    //tutoresList = await LoadData().obtenertutores();
     setState(() {
       dataLoaded=true;
     });

@@ -62,9 +62,9 @@ class PrimaryColumnEditarClietnesState extends State<PrimaryColumnEditarClietnes
   }
 
   Future<void> loadtablas() async {
-    CarrerasList = await LoadData().obtenercarreras();
-    clientesList = await LoadData().obtenerclientes();
-    UniversidadList = await LoadData().obtenerUniversidades();
+    //CarrerasList = await LoadData().obtenercarreras();
+    //clientesList = await LoadData().obtenerclientes();
+    //UniversidadList = await LoadData().obtenerUniversidades();
 
     setState(() {
       carguecompleta = true;

@@ -36,6 +36,15 @@ import '../../Utils/Firebase/Load_Data.dart';
       redireccion();
       }
 
+    @override
+    void dispose() {
+      // Realiza la limpieza necesaria al eliminar el widget
+      // Por ejemplo, cancelar cualquier controlador o suscripción
+      correo.dispose();
+      contrasena.dispose();
+      super.dispose();
+    }
+
     Future redireccion() async{
       if(Config.dufyadmon==true){
         currentUser = FirebaseAuth.instance.currentUser;
