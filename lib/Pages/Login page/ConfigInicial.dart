@@ -131,6 +131,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                             placeholder: "Ingrese su mensaje de solicitud predeterminado",
                             controller: solicitud_empresa,
                           ),
+
                           MensajeTextBox(
                             solicitud: false,
                             placeholder: "Ingrese su mensaje de confirmacion predeterminado",

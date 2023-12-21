@@ -532,7 +532,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   }
 
   Future<void> loadDataTablasMaterias() async {
-    //materiaList = await LoadData().tablasmateria();
+    materiaList = await stream_builders().cargarMaterias();
     //carreraList = await LoadData().obtenercarreras();
     //solicitudesList = await LoadData().obtenerSolicitudes();
     //serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
@@ -558,7 +558,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     if (materiabusqueda.isEmpty){
       tutoresFiltrados.clear();
     }else{
-      //tutoresList = await LoadData().obtenertutores();
+      tutoresList = await stream_builders().cargarTutoresList();
       tutoresFiltrados = tutoresList.where((tutor) {
         return tutor.activo;
       }).where((tutor) {

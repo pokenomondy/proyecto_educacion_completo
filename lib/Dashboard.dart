@@ -7,26 +7,21 @@ import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.da
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadistica.dart';
 import 'package:dashboard_admin_flutter/Pages/Tutores.dart';
-import 'package:dashboard_admin_flutter/Providers/Providers.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
 import 'Pages/ContableDash.dart';
-import 'Pages/Login page/PageCargando.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
 import 'package:intl/intl.dart';
-import 'Providers/Providers.dart';
 import 'Utils/Firebase/CollectionReferences.dart';
 
 class Dashboard extends StatefulWidget {
@@ -155,7 +150,7 @@ class DashboardState extends State<Dashboard> {
                 ),
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
-                    body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
+                    body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): const TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),

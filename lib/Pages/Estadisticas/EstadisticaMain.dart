@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:whatsapp/whatsapp.dart';
 import '../../Config/Config.dart';
+import '../../Config/theme.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Solicitud.dart';
 import '../../Providers/Providers.dart';
@@ -66,6 +67,7 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
   double percetnsolicitudes = 0.0;
   late TooltipBehavior _tooltipBehavior; //Top sf chart
 
+  final ThemeApp themeApp = ThemeApp();
 
   void initState() {
     _tooltipBehavior =  TooltipBehavior(enable: true);
@@ -183,317 +185,227 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
-    final currentheight = MediaQuery.of(context).size.height;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 60,vertical: 30),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            //Primera fila, superior
-            Row(
-              children: [
-                //primera columna
-                Container(
-                  margin: EdgeInsets.only(top: margen_solicitud),
-                  child: Column(
-                    children: [
-                      Text('Estadisticas',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
-                      Container(
-                        margin: EdgeInsets.only(top: margen_solicitud),
-                        width: 180,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("Año"),
-                            Container(
-                              width: 80,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Config.colorazulventas,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Center(child: Disenos().textonuevasolicitudazul(fecha_actual_filtro.year.toString())),
 
-                            ),
-                          ],),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: margen_solicitud),
-                        width: 180,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("Mes"),
-                            Container(
-                              width: 80,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Config.colorazulventas,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Center(child: Disenos().textonuevasolicitudazul(Utiles().mes(fecha_actual_filtro.month))),
+    const double containerWidth = 240;
 
-                            ),
-                          ],),
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: margen_solicitud),
-                        width: 180,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("Día"),
-                            Container(
-                              width: 80,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Config.colorazulventas,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Center(child: Disenos().textonuevasolicitudazul(fecha_actual_filtro.day.toString())),
+    Text descripText(String text, [Color? color]) => Text(text, style: themeApp.styleText(15, true, color ?? themeApp.primaryColor), textAlign: TextAlign.center,);
 
-                            ),
-                          ],),
-                      ),
-                      Container(
-                          width: 250,
-                          child: selectfecha()
-                      ),
-                    ],
-                  ),
-                ),
-                //segunda columna
-                Column(
+    Container campoText(String text) => Container(
+      width: 140,
+      height: 30,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: themeApp.primaryColor,
+        borderRadius: BorderRadius.circular(20)
+      ),
+      child: descripText(text, themeApp.whitecolor),
+    );
+
+    Container campoFecha(List<Widget> children) => Container(
+        margin: EdgeInsets.only(top: margen_solicitud),
+        width: containerWidth,
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: children,
+        )
+    );
+
+    Container campoInformacion(List<Widget> children) => Container(
+      width: 120,
+      height: 80,
+      alignment: Alignment.center,
+      margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
+      decoration: BoxDecoration(
+          color: themeApp.primaryColor,
+          borderRadius: BorderRadius.circular(20)
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: children,
+      ),
+    );
+
+    return SingleChildScrollView(
+      child: ItemsCard(
+        shadow: true,
+        horizontalPadding: 20.0,
+        verticalPadding: 15.0,
+        children: [
+          //Primera fila, superior
+          Row(
+            children: [
+              //primera columna
+              Container(
+                margin: EdgeInsets.only(top: margen_solicitud, right: margen_solicitud * 2.5),
+                child: Column(
                   children: [
-                    // # ventas
+                    Text('Estadisticas',style: themeApp.styleText(22, true, themeApp.primaryColor),),
+
+                    campoFecha([
+                      descripText("Año"),
+                      campoText(fecha_actual_filtro.year.toString()),
+                    ]),
+
+                    campoFecha([
+                      descripText("Mes"),
+                      campoText(Utiles().mes(fecha_actual_filtro.month)),
+                    ]),
+
+                    campoFecha([
+                      descripText("Dia"),
+                      campoText(fecha_actual_filtro.day.toString()),
+                    ]),
+
                     Container(
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("$conteoServiciosAgendadofiltro'"),
-                            Disenos().textonuevasolicitudazul("ventas"),
-                          ],
-                        ),
-                      ),
-
-                    ),
-                    // # solicitudes
-                    Container (
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("$contesolicitudfiltro"),
-                            Disenos().textonuevasolicitudazul("solicitudes"),
-                          ],
-                        ),
-                      ),
-
+                      margin: const EdgeInsets.symmetric(vertical: 10.0),
+                        width: containerWidth,
+                        child: selectfecha()
                     ),
                   ],
                 ),
-                //Tercera columna
-                Column(
-                  children: [
-                    // Ganancias brutas obtenidas
-                    Container(
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(gananciasobtenidas)}}"),
-                            Disenos().textonuevasolicitudazul("Ganancias obtenidas"),
-                          ],
-                        ),
-                      ),
+              ),
 
-                    ),
-                    // Dinero de ventas
-                    Container (
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(ventasobtenidas)}}"),
-                            Disenos().textonuevasolicitudazul("Dinero de ventas"),
-                          ],
-                        ),
-                      ),
+              //segunda columna
+              Column(
+                children: [
+                  // # ventas
+                  campoInformacion([
+                    descripText("$conteoServiciosAgendadofiltro", themeApp.whitecolor),
+                    descripText("Ventas", themeApp.whitecolor),
+                  ]),
 
-                    ),
-                  ],
-                ),
-                //Cuarta columna
-                Column(
-                  children: [
-                    // Costo de ventas
-                    Container(
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("${NumberFormat("#,###", "es_ES").format(costotutoresobtenido)}}"),
-                            Disenos().textonuevasolicitudazul("Costos de ventas"),
-                          ],
-                        ),
-                      ),
+                  // # solicitudes
+                  campoInformacion([
+                    descripText("$contesolicitudfiltro", themeApp.whitecolor),
+                    descripText("Solicitudes", themeApp.whitecolor),
+                  ]),
+                ],
+              ),
 
-                    ),
-                    // % de rentabilidad
-                    Container (
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("$percentganacia"),
-                            Disenos().textonuevasolicitudazul("% Ganancias"),
-                          ],
-                        ),
-                      ),
+              //Tercera columna
+              Column(
+                children: [
+                  // Ganancias brutas obtenidas
+                  campoInformacion([
+                    descripText(NumberFormat("#,###", "es_ES").format(gananciasobtenidas), themeApp.whitecolor),
+                    descripText("Ganancias obtenidas", themeApp.whitecolor),
+                  ]),
 
-                    ),
-                    Container (
-                      width: 120,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color: Config.colorazulventas,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Disenos().textonuevasolicitudazul("${percetnsolicitudes.toStringAsFixed(2)}"),
-                            Disenos().textonuevasolicitudazul("% solicitudes agendadas"),
-                          ],
-                        ),
-                      ),
+                  // Dinero de ventas
+                  campoInformacion([
+                    descripText(NumberFormat("#,###", "es_ES").format(ventasobtenidas), themeApp.whitecolor),
+                    descripText("Dinero de ventas", themeApp.whitecolor),
+                  ]),
+                ],
+              ),
+              //Cuarta columna
+              Column(
+                children: [
+                  // Costo de ventas
+                  campoInformacion([
+                    descripText(NumberFormat("#,###", "es_ES").format(costotutoresobtenido), themeApp.whitecolor),
+                    descripText("Costos de ventas", themeApp.whitecolor),
+                  ]),
 
+                  // % de rentabilidad
+                  campoInformacion([
+                    descripText("$percentganacia", themeApp.whitecolor),
+                    descripText("% Ganancias", themeApp.whitecolor),
+                  ]),
+
+                ],
+              ),
+
+              Column(
+                children: [
+                  campoInformacion([
+                    descripText(percetnsolicitudes.toStringAsFixed(2), themeApp.whitecolor),
+                    descripText("% solicitudes agendadas", themeApp.whitecolor),
+                  ]),
+                ],
+              )
+
+            ],
+          ),
+          //Segunda fila, gráficas
+          Row(
+            children: [
+              //Ventas
+              Column(
+                children: [
+                  Text('Ventas',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
+                  SfCartesianChart(
+                    primaryXAxis: DateTimeAxis(
+                      labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
+                      intervalType: DateTimeIntervalType.days,
+                      interval: 6,
+                      minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
+                      maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
                     ),
-                  ],
-                ),
-              ],
-            ),
-            //Segunda fila, gráficas
-            Row(
-              children: [
-                //Ventas
-                Column(
-                  children: [
-                    Text('Ventas',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
-                    SfCartesianChart(
-                      primaryXAxis: DateTimeAxis(
-                        labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
-                        intervalType: DateTimeIntervalType.days,
-                        interval: 6,
-                        minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
-                        maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
-                      ),
-                      series: <ChartSeries>[
-                        LineSeries<MapEntry<DateTime, int>, DateTime>(
-                            dataSource: ventasporDia.entries.toList(),
-                            xValueMapper: (entry, _) => entry.key,
-                            yValueMapper: (entry, _) => entry.value,
-                            name: "Solicitudes",
-                            width: 2,
-                            markerSettings: const MarkerSettings(isVisible: true)
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                //Ganancias
-                Column(
-                  children: [
-                    Text('Ganancias',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
-                    SfCartesianChart(
-                      primaryXAxis: DateTimeAxis(
-                        labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
-                        intervalType: DateTimeIntervalType.days,
-                        edgeLabelPlacement: EdgeLabelPlacement.values.first,
-                        minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
-                        maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
-                        interval: 4,
-                        rangePadding: ChartRangePadding.auto,
-                      ),
-                      title: ChartTitle(text: 'Gráfico de ganancias'),
-                      tooltipBehavior: _tooltipBehavior,
-                      series: <ChartSeries>[
-                        LineSeries<MapEntry<DateTime, int>, DateTime>(
-                          dataSource: GananciasporDia.entries.toList(),
+                    series: <ChartSeries>[
+                      LineSeries<MapEntry<DateTime, int>, DateTime>(
+                          dataSource: ventasporDia.entries.toList(),
                           xValueMapper: (entry, _) => entry.key,
                           yValueMapper: (entry, _) => entry.value,
                           name: "Solicitudes",
                           width: 2,
-                          markerSettings: const MarkerSettings(isVisible: true),
-                          dataLabelSettings: DataLabelSettings(
-                            labelAlignment: ChartDataLabelAlignment.top,
-                            labelPosition: ChartDataLabelPosition.outside,
-                          ),
-                        ),
-                      ],
+                          markerSettings: const MarkerSettings(isVisible: true)
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              //Ganancias
+              Column(
+                children: [
+                  Text('Ganancias',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
+                  SfCartesianChart(
+                    primaryXAxis: DateTimeAxis(
+                      labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
+                      intervalType: DateTimeIntervalType.days,
+                      edgeLabelPlacement: EdgeLabelPlacement.values.first,
+                      minimum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,1),
+                      maximum: DateTime(fecha_actual_filtro.year,fecha_actual_filtro.month,31),
+                      interval: 4,
+                      rangePadding: ChartRangePadding.auto,
                     ),
-                  ],
-                ),
-              ],
-            ),
-            //Tercera fila
-            Row(
-              children: [
-                Column(
-                  children: [
-                    Text('# AGENDADOS ${estadoCounts["AGENDADO"]}'),
-                    Text('# DISPONIBLE ${estadoCounts["DISPONIBLE"]}'),
-                    Text('# EXPIRADO ${estadoCounts["EXPIRADO"]}'),
-                    Text('# ESPERANDO ${estadoCounts["ESPERANDO"]}'),
-                    Text('# NO PODEMOS ${estadoCounts["NO PODEMOS"]}'),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+                    title: ChartTitle(text: 'Gráfico de ganancias'),
+                    tooltipBehavior: _tooltipBehavior,
+                    series: <ChartSeries>[
+                      LineSeries<MapEntry<DateTime, int>, DateTime>(
+                        dataSource: GananciasporDia.entries.toList(),
+                        xValueMapper: (entry, _) => entry.key,
+                        yValueMapper: (entry, _) => entry.value,
+                        name: "Solicitudes",
+                        width: 2,
+                        markerSettings: const MarkerSettings(isVisible: true),
+                        dataLabelSettings: const DataLabelSettings(
+                          labelAlignment: ChartDataLabelAlignment.top,
+                          labelPosition: ChartDataLabelPosition.outside,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          //Tercera fila
+          Row(
+            children: [
+              Column(
+                children: [
+                  Text('# AGENDADOS ${estadoCounts["AGENDADO"]}'),
+                  Text('# DISPONIBLE ${estadoCounts["DISPONIBLE"]}'),
+                  Text('# EXPIRADO ${estadoCounts["EXPIRADO"]}'),
+                  Text('# ESPERANDO ${estadoCounts["ESPERANDO"]}'),
+                  Text('# NO PODEMOS ${estadoCounts["NO PODEMOS"]}'),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
