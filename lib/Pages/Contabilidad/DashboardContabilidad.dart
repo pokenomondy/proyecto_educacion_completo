@@ -6,6 +6,8 @@ import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../Config/elements.dart';
+import '../../Config/strings.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Tutores_objet.dart';
@@ -73,19 +75,22 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
   int sumaPagosReembolsoTutores = 0;
   bool disabledbutton = false;
   Map<String, dynamic> uploadconfiguracion = {};
-  bool interfazpagos = false;
 
-  void SeleccionarServicoAgendado(ServicioAgendado servicioAgendado) async {
+
+  void SeleccionarServicoAgendado(ServicioAgendado servicioAgendado, List<ServicioAgendado> serviciosAgendadosList) async {
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
-      contabilidadProvider.seleccionarServicio(servicioAgendado);
+      ServicioAgendado servicioEnLista = serviciosAgendadosList.firstWhere((s) => s.codigo == servicioAgendado.codigo);
+      contabilidadProvider.seleccionarServicio(servicioEnLista);
+      contabilidadProvider.actualizarHistorialPorCodigo(servicioEnLista!.codigo);
     });
   }
 
   void eliminarServicioSeleccionado(){
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
-      //contabilidadProvider.clearServicioSeleccionado();
+      contabilidadProvider.clearServicioSeleccionado();
+      contabilidadProvider.clearHistorial();
     });
   }
 
@@ -94,8 +99,9 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
     return Consumer<ContabilidadProvider>(
         builder: (context, pagosProvider, child) {
           List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
-          if(interfazpagos){
-            SeleccionarServicoAgendado(servicioAgendado!);
+
+          if (servicioAgendado != null) {
+            SeleccionarServicoAgendado(servicioAgendado!,serviciosAgendadosList);
           }else{
             eliminarServicioSeleccionado();
           }
@@ -104,8 +110,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                 Row(
                   children: [
                     Container(
-                      height: 30,
-                      width: 200,
+                      width: widget.currentwidth,
                       child: AutoSuggestBox<ServicioAgendado>(
                         items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
                               (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
@@ -123,17 +128,13 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
                         onSelected: (item) {
                           setState(() {
                             servicioAgendado = item.value;
-                            setState(() {
-                              buscador = true;
-                              interfazpagos = true;
-                            });
+                            buscador = true;
                           });
                         },
                         onChanged: (text, reason) {
                           if (text.isEmpty ) {
                             setState(() {
-                              servicioAgendado = null; // Limpiar la selección cuando se borra el texto
-                              interfazpagos = false;
+                              servicioAgendado = null;
                             });
                           }
                         },
@@ -220,35 +221,110 @@ class TercerColumnContaDash extends StatefulWidget {
 }
 
 class TercerColumnContaDashState extends State<TercerColumnContaDash> {
-  List<bool> editarcasilla = [false, false,false,false,false,false,false,false,false,false,false,false,false];
+  List<bool> editarcasilla = List.generate(11, (index) => false);
+  //Pagos
+  int sumaPagosClientes = 0;
+  int sumaPagosTutores = 0;
+  int sumaPagosReembolsoCliente = 0;
+  int sumaPagosReembolsoTutores = 0;
+  bool disabledbutton = false;
+  Map<String, dynamic> uploadconfiguracion = {};
+  //lista de materias
+  List<Materia> materiaList = [];
+  Materia? selectedMateria;
+  //servicio seleccionado
+  ServicioAgendado? servicioAgendado;
+  DateTime cambiarfecha = DateTime.now();
+  //valor de cambio
+  int valorcambio= 0;
+  //lista de tutores
+  List<Tutores> tutoresList = [];
+  Tutores? selectedTutor;
+  //CAMBIOS
+  String cambio = "";
+
+  @override
+  void initState() {
+    loadTablas(); // Cargar los datos al inicializar el widget
+    super.initState();
+  }
+
+  Future<void> loadTablas() async {
+    final tutoresProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
+    materiaList = await stream_builders().cargarMaterias();
+    tutoresList = tutoresProvider.tutoresactivos;
+  }
+
+  void actualizarpagosMain(List<ServicioAgendado> servicioagendadoList,ServicioAgendado servicio) async{
+    uploadconfiguracion = await Utiles().actualizarpagos(servicio, context,servicioagendadoList);
+    servicioAgendado = servicio;
+    setState(() {
+      sumaPagosClientes = uploadconfiguracion['sumaPagosClientes'];
+      sumaPagosTutores = uploadconfiguracion['sumaPagosTutores'];
+      sumaPagosReembolsoCliente = uploadconfiguracion['sumaPagosReembolsoCliente'];
+      sumaPagosReembolsoTutores = uploadconfiguracion['sumaPagosReembolsoTutores'];
+    });
+  }
+
+  void clearProviderServicio(){
+    sumaPagosClientes = 0;
+    sumaPagosTutores = 0;
+    sumaPagosReembolsoCliente = 0;
+    sumaPagosReembolsoTutores = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ContabilidadProvider>(
         builder: (context, pagosProvider, child) {
           ServicioAgendado servicioAgendado = pagosProvider.servicioSeleccionado;
+          List<ServicioAgendado> servicioAgendadoList = pagosProvider.todoslosServiciosAgendados;
 
-          return Column(
-            children: [
-              textoymodificable('Sistema: ', servicioAgendado.codigo,0,true),
-              textoymodificable('Matería: ', servicioAgendado.materia,1,true),
-              textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,true),
-              textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,true),
-              textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
-              textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
-              textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
-              textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
-              textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,true),
-              textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,true),
-              textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,true),
-            ],
+          if(servicioAgendado.sistema!=""){
+            actualizarpagosMain(servicioAgendadoList,servicioAgendado);
+          }else{
+            clearProviderServicio();
+          }
+
+          return Container(
+            width: widget.currentwidth,
+            child: Column(
+              children: [
+                textoymodificable('Sistema: ', servicioAgendado.codigo,0,false),
+                textoymodificable('Matería: ', servicioAgendado.materia,1,true),
+                textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,false),
+                textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,false),
+                textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
+                textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
+                textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
+                textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
+                textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,false),
+                textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,false),
+                textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,false),
+                Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}'),
+                Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}')
+              ],
+            ),
           );
         }
     );
   }
 
   Widget textoymodificable(String text,String valor,int index,bool bool){
-    String? cambio = "";
+
+    /*
+    if (index == 1) {
+      if(selectedMateria!=null){
+        cambio = selectedMateria?.nombremateria;
+      }else{
+        cambio = valor;
+      }
+    }
+    else if(index == 6){
+      cambio = selectedTutor?.nombrewhatsapp;
+    }
+
+     */
 
     return Row(
       children: [
@@ -273,10 +349,96 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
           if (editarcasilla[index])
             Row(
               children: [
+                //Lista materias
+                if(index == 1)
+                  Container(
+                    height: 30,
+                    width: 300,
+                    child: AutoSuggestBox<Materia>(
+                      items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                            (materia) => AutoSuggestBoxItem<Materia>(
+                          value: materia,
+                          label: _truncateLabel(materia.nombremateria),
+                          onFocusChange: (focused) {
+                            if (focused) {
+                              debugPrint('Focused #${materia.nombremateria} - ');
+                            }
+                          },
+                        ),
+                      )
+                          .toList(),
+                      decoration: Disenos().decoracionbuscador(),
+                      onSelected: (item) {
+                        setState(() {
+                          selectedMateria = item.value;
+                          cambio = item.value!.nombremateria;
+                        });
+                      },
+                      onChanged: (text, reason) {
+                        if (text.isEmpty ) {
+                          setState(() {
+                            selectedMateria = null; // Limpiar la selección cuando se borra el texto
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                //Precio tutor y precio al cliente
+                if(index == 4 || index == 7)
+                  Container(
+                    width: 100,
+                    child: TextBox(
+                      placeholder: valor,
+                      onChanged: (value){
+                        valorcambio = int.parse(value);
+                        cambio = valorcambio.toString();
+                        print("el valor de cambio es $cambio");
+                      },
+                      maxLines: null,
+                    ),
+                  ),
+                //Tutores
+                if(index == 6)
+                  Container(
+                    height: 30,
+                    width: 300,
+                    child: AutoSuggestBox<Tutores>(
+                      items: tutoresList.map<AutoSuggestBoxItem<Tutores>>(
+                            (tutor) => AutoSuggestBoxItem<Tutores>(
+                          value: tutor,
+                          label: _truncateLabel(tutor.nombrewhatsapp),
+                          onFocusChange: (focused) {
+                            if (focused) {
+                              debugPrint('Focused #${tutor.nombrewhatsapp} - ');
+                            }
+                          },
+                        ),
+                      )
+                          .toList(),
+                      decoration: Disenos().decoracionbuscador(),
+                      onSelected: (item) {
+                        setState(() {
+                          print("seleccionado ${item.label}");
+                          selectedTutor = item.value; // Actualizar el valor seleccionado
+                          cambio = item.value!.nombrewhatsapp;
+                        });
+                      },
+                      onChanged: (text, reason) {
+                        if (text.isEmpty ) {
+                          setState(() {
+                            selectedTutor = null; // Limpiar la selección cuando se borra el texto
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                //Fecha de entrega
+                if(index == 5)
+                  selectfecha(context),
                 //actualizar variable
                 GestureDetector(
                   onTap: () async{
-                    //comprobaractualziardatos(index,cambio!,valor,valorcambio);
+                    comprobaractualziardatos(index,cambio!,valor,valorcambio);
                   },
                   child: Icon(FluentIcons.check_list),
                 ),
@@ -295,6 +457,107 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
       ],
     );
   }
+
+  Column selectfecha(BuildContext context){
+    return Column(
+      children: [
+        Container(
+          child: GestureDetector(
+            onTap: () async{
+              final date = await Utiles().pickDate(context,cambiarfecha);
+              if(date == null) return;
+
+              final newDateTime = DateTime(
+                date.year,
+                date.month,
+                date.day,
+                cambiarfecha.hour,
+                cambiarfecha.minute,
+              );
+
+              setState( () =>
+              cambiarfecha = newDateTime
+              );
+            },
+            child: Disenos().fecha_y_entrega('${cambiarfecha.day}/${cambiarfecha.month}/${cambiarfecha.year}',400),
+          ),
+        ),
+        Container(
+          child: GestureDetector(
+            onTap: () async {
+              final time = await FuncionesMaterial().pickTime(context,cambiarfecha);
+              if (time == null) return;
+
+              final newDateTime = DateTime(
+                cambiarfecha.year,
+                cambiarfecha.month,
+                cambiarfecha.day,
+                time.hour,
+                time.minute,
+              );
+              setState(() =>
+              cambiarfecha = newDateTime
+              );
+              final formattedTime = DateFormat('hh:mm a').format(cambiarfecha);
+              print(formattedTime);
+            },
+            child: Disenos().fecha_y_entrega(DateFormat('hh:mm  a').format(cambiarfecha), 400),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void comprobaractualziardatos(int index,String cambio,String valor, int valorcambio,) async{
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    int pagocliente = sumaPagosClientes-sumaPagosReembolsoCliente;
+    int pagoTutor = sumaPagosTutores-sumaPagosReembolsoTutores;
+    if(index == 1 && cambio == valor){
+      dialogs.error(Strings().errorseleccionemateria, Strings().errorglobalText);
+      Utiles().notificacion("Selecciona una materia", context, false,"desp");
+    }else if(index == 4 && sumaPagosClientes>0){
+      if(valorcambio < pagocliente ){
+        Utiles().notificacion("No se puede cambiar, porque el precio es < al pagado", context, false,"desp");
+        print("valor de cambio es $valorcambio y el pagocliente $pagocliente");
+      }else{
+        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
+        _cambiarprecio(index, valor, cambio, valorcambio);
+      }
+    }else if(index == 7 && sumaPagosTutores>0){
+      if(valorcambio < pagoTutor){
+        Utiles().notificacion("No se puede editar el precio porque hay pagos", context, false,"desp");
+        print("valor de cambio es $valorcambio y el pagocliente $pagoTutor");
+      }else{
+        Utiles().notificacion("CAMBIANDO PRECIO", context, true,"desp");
+        _cambiarprecio(index, valor, cambio, valorcambio);
+      }
+    } else if(index==5){
+      if(cambiarfecha.isBefore(DateTime.now())){
+        Utiles().notificacion("No se puede editar por la fecha", context, false,"desp");
+      }else{
+        _cambiarprecio(index, valor, cambio, valorcambio);
+      }
+    } else{
+      _cambiarprecio(index, valor, cambio, valorcambio);
+    }
+  }
+
+  Future<void> _cambiarprecio(int index,String valor,String cambio,int valorcambio) async{
+    print("a modificar el servicio ${servicioAgendado!.codigo}");
+    await Uploads().modifyServicioAgendado(index, servicioAgendado!.codigo, cambio!,valor!,valorcambio,cambiarfecha);
+    setState(() {
+      editarcasilla[index] = !editarcasilla[index];
+    });
+  }
+
+  String _truncateLabel(String label) {
+    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
+    if (label.length > maxLength) {
+      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
+    }
+    return label;
+  }
+
 }
 
 

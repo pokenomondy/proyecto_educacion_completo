@@ -53,7 +53,6 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => CuentasProvider()),
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
 
         //Nuevos notificadores creados
@@ -107,7 +106,7 @@ class MyApp extends StatelessWidget {
                 GoRoute(
                     path: 'home',
                     builder: (BuildContext context, GoRouterState state) {
-                      return Dashboard(showSolicitudesNew: false, solicitud: solicitudVacia, showTutoresDetalles: false, tutor: Tutores.empty(),);
+                      return Dashboard(showSolicitudesNew: false, showTutoresDetalles: false);
                     },
                     routes: <RouteBase>[
                       GoRoute(

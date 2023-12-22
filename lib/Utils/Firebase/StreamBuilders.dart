@@ -88,7 +88,7 @@ class stream_builders{
 
   // STREAMBUILDER DE SOLICITUDES
   Stream<List<Solicitud>> getTodasLasSolicitudes(BuildContext context) async*{
-    final ConfiguracionProvider = context.read<SolicitudProvider>();
+    final solicitudProvider = context.read<SolicitudProvider>();
     CollectionReference refsolicitud = referencias.solicitudes!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool solicitudescache = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
@@ -149,23 +149,21 @@ class stream_builders{
         String solicitudesJson = jsonEncode(solicitudList);
         await prefs.setString('solicitudes_list_stream', solicitudesJson);
         await prefs.setBool('cheched_solicitudes_descargadas_stream', true);
-        ConfiguracionProvider.clearSolicitudes();
-        ConfiguracionProvider.cargarTodasLasSolicitudes(solicitudList);
-        ConfiguracionProvider.actualizarEstados();
+        solicitudProvider.cargarTodasLasSolicitudes(solicitudList);
       }else{
-        List<Solicitud>? solicitudcacheado = await cargarsolicitudes();
-        solicitudcacheado = solicitudcacheado!
-            .where((servicioCachado) =>
-        solicitudList.indexWhere((s) => s.idcotizacion == servicioCachado.idcotizacion) == -1)
-            .toList();
-        solicitudcacheado.addAll(solicitudList);
-        String solicitudesJson = jsonEncode(solicitudcacheado);
-        await prefs.setString('solicitudes_list_stream', solicitudesJson);
-        ConfiguracionProvider.clearSolicitudes();
-        ConfiguracionProvider.cargarTodasLasSolicitudes(solicitudcacheado);
-        ConfiguracionProvider.actualizarEstados();
-      }
+        List<Solicitud>? solicitudCacheado = await cargarsolicitudes();
+        for (var solicitud in solicitudList) {
+          int indexExistente = solicitudCacheado!.indexWhere((s) => s.idcotizacion == solicitud.idcotizacion);
 
+          if (indexExistente != -1) {
+            solicitudProvider.modifySolicitud(solicitud);
+          } else {
+            solicitudProvider.addNewSolicitud(solicitud);
+          }
+        }
+        String solicitudesJson = jsonEncode(solicitudProvider.todaslasSolicitudes);
+        await prefs.setString('solicitudes_list_stream', solicitudesJson);
+      }
 
       yield solicitudList;
     }
@@ -198,6 +196,7 @@ class stream_builders{
 
   //Streambuilders de servicios agendados
   Stream<List<ServicioAgendado>> getServiciosAgendados(BuildContext context) async* {
+    final serviciosAgendadosProvider =  context.read<ContabilidadProvider>();
     CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? agendadocache = prefs.getBool('checked_serviciosAgendados') ?? false;
@@ -210,8 +209,7 @@ class stream_builders{
     }else{
       queryContabilidad = refcontabilidad.where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
       List<ServicioAgendado> serviciosAgendadosList = await cargarserviciosagendados();
-      final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-      ConfiguracionProvider.cargarTodosLosServicios(serviciosAgendadosList);
+      serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
       print("ya cacheados");
     }
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
@@ -310,22 +308,19 @@ class stream_builders{
         String solicitudesJson = jsonEncode(serviciosAgendadosList);
         await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
         await prefs.setBool('checked_serviciosAgendados', true);
-        final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-        ConfiguracionProvider.cargarTodosLosServicios(serviciosAgendadosList);
+        serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
       }else{
         List<ServicioAgendado> serrvicioscacheado = await cargarserviciosagendados();
-        for (var servicioCachado in serrvicioscacheado) {
-          int indexExistente = serviciosAgendadosList.indexWhere((s) => s.codigo == servicioCachado.codigo);
+        for (var servicio in serviciosAgendadosList) {
+          int indexExistente = serrvicioscacheado.indexWhere((s) => s.codigo == servicio.codigo);
           if (indexExistente != -1) {
-            serrvicioscacheado.remove(servicioCachado);
+            serviciosAgendadosProvider.modifyServicio(servicio);
+          }else{
+            serviciosAgendadosProvider.addNewServicio(servicio);
           }
         }
-        serrvicioscacheado.addAll(serviciosAgendadosList);
-        String solicitudesJson = jsonEncode(serrvicioscacheado);
+        String solicitudesJson = jsonEncode(serviciosAgendadosProvider.todoslosServiciosAgendados);
         await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
-        final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-        ConfiguracionProvider.clearServicios();
-        ConfiguracionProvider.cargarTodosLosServicios(serrvicioscacheado);
       }
       yield serviciosAgendadosList;
     }
@@ -389,10 +384,30 @@ class stream_builders{
         bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
         DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
         String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
-        int ultimaModificacion = TutorDoc.data().toString().contains('ultimaModificacion') ? TutorDoc.get('ultimaModificacion') : 1672534800; //Number
-
+        int ultimaModificacion = TutorDoc.data().toString().contains('ultimaModificacion') ? TutorDoc.get('ultimaModificacion') : 1672534800;
         List<Materia> materiaList = [];
+        if (TutorDoc.data() !=null && TutorDoc.data().toString().contains('materias')) {
+          var MateriaData = TutorDoc['materias'] as List<dynamic>;
+          materiaList = MateriaData.map((MateriaDato) {
+            String nombremateria = MateriaDato['nombremateria'];
+            int ultimaModificacion = MateriaDato.containsKey('ultimaModificacion') ? MateriaDato['ultimaModificacion'] : 1672534800;
+            Materia newmateria = Materia(nombremateria,ultimaModificacion);
+            return newmateria;
+          }).toList();
+        }
+
         List<CuentasBancarias> cuentasBancariasList = [];
+        if (TutorDoc.data() !=null && TutorDoc.data().toString().contains('cuentas')) {
+          var MateriaData = TutorDoc['cuentas'] as List<dynamic>;
+          cuentasBancariasList = MateriaData.map((cuentaDato) {
+            String tipoCuenta = cuentaDato['tipoCuenta'];
+            String numeroCuenta = cuentaDato['numeroCuenta'];
+            String numeroCedula = cuentaDato['numeroCedula'];
+            String nombreCuenta = cuentaDato['nombreCuenta'];
+            CuentasBancarias newcuentaBancaria = CuentasBancarias(tipoCuenta, numeroCuenta, numeroCedula, nombreCuenta);
+            return newcuentaBancaria;
+          }).toList();
+        }
         Tutores newTutores = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materiaList, cuentasBancariasList, activo, actualizartutores, rol,ultimaModificacion);
         tutoresList.add(newTutores);
         print("revisando tutor $uid");
@@ -403,14 +418,19 @@ class stream_builders{
         await prefs.setString('tutores_list_stream', solicitudesJson);
         await prefs.setBool('checked_tutores_stream', true);
         tutoresProviderUso.cargarTodosTutores(tutoresList);
-      }else{
+      }
+      else{
         List<Tutores> tutorescacheado = await cargarTutoresList();
-        tutorescacheado = tutorescacheado!
-            .where((servicioCachado) =>
-        tutoresList.indexWhere((s) => s.uid == servicioCachado.uid) == -1)
-            .toList();
-        tutorescacheado.addAll(tutoresList);
-        tutoresProviderUso.cargarTodosTutores(tutorescacheado);
+        for (var tutor in tutoresList) {
+          int indexExistente = tutorescacheado.indexWhere((s) => s.uid == tutor.uid);
+          if (indexExistente != -1) {
+            tutoresProviderUso.modifyTutor(tutor);
+          }else{
+            tutoresProviderUso.addNewTutor(tutor);
+          }
+        }
+
+        print("guardando en cache");
         String solicitudesJson = jsonEncode(tutorescacheado);
         await prefs.setString('tutores_list_stream', solicitudesJson);
       }

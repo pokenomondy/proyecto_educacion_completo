@@ -31,7 +31,7 @@ class ContabilidadProvider extends ChangeNotifier{
   List<ServicioAgendado> _todoslosServiciosAgendados = [];
   List<ServicioAgendado> get todoslosServiciosAgendados => _todoslosServiciosAgendados;
   //Seleccioanr servicio
-  late ServicioAgendado _servicioSeleccionado;
+  ServicioAgendado _servicioSeleccionado = ServicioAgendado.empty();
   ServicioAgendado get servicioSeleccionado => _servicioSeleccionado;
 
   //Historial
@@ -43,9 +43,13 @@ class ContabilidadProvider extends ChangeNotifier{
   //Contabilidad
   void cargarTodosLosServicios(List<ServicioAgendado> servicios) {
     _todoslosServiciosAgendados = servicios;
+    cargacompleta();
+    notifyListeners();
+  }
+
+  void cargacompleta(){
     cargarTodosLosPagos();
     cargarTodoElHistorial();
-    notifyListeners();
   }
 
   void clearServicios() {
@@ -57,13 +61,29 @@ class ContabilidadProvider extends ChangeNotifier{
     _todoslosServiciosAgendados.addAll(servicios);
   }
 
+  void addNewServicio(ServicioAgendado newServicioAgendado){
+    _todoslosServiciosAgendados.add(newServicioAgendado);
+    cargacompleta();
+    notifyListeners();
+  }
+
+  void modifyServicio(ServicioAgendado modiServcio){
+    int indexExistente = _todoslosServiciosAgendados.indexWhere((s) => s.codigo == modiServcio.codigo);
+    _todoslosServiciosAgendados[indexExistente] = modiServcio;
+    if (modiServcio.codigo == servicioSeleccionado.codigo) {
+      _servicioSeleccionado = modiServcio;
+    }
+    cargacompleta();
+    notifyListeners();
+  }
+
   //Servicio seleccionado
   void seleccionarServicio(ServicioAgendado servicio) {
     _servicioSeleccionado = servicio;
     notifyListeners();
   }
 
-  void limpiarServicioSeleccionado() {
+  void clearServicioSeleccionado() {
     _servicioSeleccionado = ServicioAgendado.empty();
     notifyListeners();
   }
@@ -71,6 +91,7 @@ class ContabilidadProvider extends ChangeNotifier{
   //pagos
   void cargarTodosLosPagos(){
     _todosLosPagos = _todoslosServiciosAgendados.expand((servicio) => servicio.pagos).toList();
+    notifyListeners();
   }
 
   void clearPagos(){
@@ -89,6 +110,7 @@ class ContabilidadProvider extends ChangeNotifier{
   //Historial
   void cargarTodoElHistorial(){
     _todosElHistorial = _todoslosServiciosAgendados.expand((servicio) => servicio.historial).toList();
+    notifyListeners();
   }
 
   void clearHistorial(){
@@ -113,8 +135,14 @@ class SolicitudProvider extends ChangeNotifier{
   List<Solicitud> get solicitudesDISPONIBLES => _solicitudesDISPONIBLES;
   List<Solicitud> get solicitudesESPERANDO => _solicitudesESPERANDO;
 
+  //Seleccionar solicitud
+  Solicitud _solicitudSeleccionado = Solicitud.empty();
+  Solicitud get solicitudSeleccionado => _solicitudSeleccionado;
+
+  //Todas las solcitudes
   void cargarTodasLasSolicitudes(List<Solicitud> solicitudes){
     _todaslasSolicitudes = solicitudes;
+    actualizarEstados();
     notifyListeners();
   }
 
@@ -141,6 +169,35 @@ class SolicitudProvider extends ChangeNotifier{
         .toList();
     notifyListeners();
   }
+
+  void addNewSolicitud(Solicitud newSolicitud){
+    _todaslasSolicitudes.add(newSolicitud);
+    actualizarEstados();
+    notifyListeners();
+  }
+
+  void modifySolicitud(Solicitud modifySolicitud) {
+    int indexExistente = _todaslasSolicitudes.indexWhere((s) => s.idcotizacion == modifySolicitud.idcotizacion);
+    _todaslasSolicitudes[indexExistente] = modifySolicitud;
+    if (modifySolicitud.idcotizacion == solicitudSeleccionado.idcotizacion) {
+      print("Actualizar solicitud de detalles");
+      _solicitudSeleccionado = modifySolicitud;
+    }
+    actualizarEstados();
+    notifyListeners();
+  }
+
+  //Servicio seleccionado
+  void seleccionarSolicitud(Solicitud solicitud){
+    _solicitudSeleccionado = solicitud;
+    notifyListeners();
+  }
+
+  void clearSolicitudseleccionado(){
+    _solicitudSeleccionado = Solicitud.empty();
+    notifyListeners();
+  }
+
 }
 
 //Tutores provider
@@ -152,11 +209,15 @@ class VistaTutoresProvider extends ChangeNotifier {
   List<Tutores> get tutoresactivos => _tutoresactivos;
   List<Tutores> get todosLosTutoresSeleccioando => todosLosTutores;
 
+  //Seleccionar tutor
+  Tutores _tutorSeleccionado = Tutores.empty();
+  Tutores get tutorSeleccionado => _tutorSeleccionado;
+
   String filtro = "";
 
   void cargarTodosTutores(List<Tutores> tutor){
     todosLosTutores = tutor.toList();
-    tutoresActivos();
+    actualizarListas();
     notifyListeners();
   }
 
@@ -202,12 +263,38 @@ class VistaTutoresProvider extends ChangeNotifier {
     setFiltro('TutorA');
   }
 
-
   void tutoresActivos(){
     _tutoresactivos = todosLosTutores.where((tutor) =>
     tutor.activo == true && tutor.rol == "TUTOR").toList();
   }
 
+  //alñadir y modificar tutores
+  void addNewTutor(Tutores tutor){
+    todosLosTutores.add(tutor);
+    actualizarListas();
+    notifyListeners();
+  }
+
+  void modifyTutor(Tutores modifyTutor){
+    int indexExistente = todosLosTutores.indexWhere((s) => s.uid == modifyTutor.uid);
+    todosLosTutores[indexExistente] = modifyTutor;
+    if (modifyTutor.uid == _tutorSeleccionado.uid) {
+      _tutorSeleccionado = modifyTutor;
+    }
+    actualizarListas();
+    notifyListeners();
+  }
+
+  //Servicio seleccionado
+  void seleccionarTutor(Tutores tutor){
+    _tutorSeleccionado = tutor;
+    notifyListeners();
+  }
+
+  void clearTutorSeleccionado(){
+    _tutorSeleccionado = Tutores.empty();
+    notifyListeners();
+  }
 
 }
 

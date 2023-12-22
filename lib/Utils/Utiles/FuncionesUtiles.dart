@@ -153,4 +153,10 @@ class Utiles{
   bool textoToBool(String? value) {
     return value?.toLowerCase() == 'true';
   }
+
+  bool obtenerBool(DateTime fecha) {
+    DateTime fechaActual = DateTime.now();
+    return fecha.isAfter(fechaActual);
+  }
+
 }

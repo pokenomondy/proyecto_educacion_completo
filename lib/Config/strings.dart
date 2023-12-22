@@ -1,7 +1,7 @@
 
 class Strings{
 
-  String appVersion = "1.0.22 ";
+  String appVersion = "1.0.23 ";
   String nombreApp = "Educacion App";
   //Strings de alertdialogs
   String errorUsarionoencontraTitle = 'Error, usuario no encontrado';
@@ -15,4 +15,6 @@ class Strings{
   String errorvalornulogeneral = "Error, tiene que asginar un valor";
   String errorvalorigualgeneral = "Error, tiene que asginar un valor diferente al ya asignado anteriormente";
 
+  //Strings de alerdialogs en cambio
+  String errorseleccionemateria = "Error, debe seleccionar un materia";
 }

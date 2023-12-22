@@ -11,6 +11,7 @@ import 'package:dashboard_admin_flutter/Pages/MainTutores/NotaTutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../Config/Config.dart';
 import 'package:intl/intl.dart';
@@ -198,17 +199,13 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   late TextStyle styleText = const TextStyle();
   late TextStyle styleTextSub = const TextStyle();
 
-
-
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     loadtablas(); // Cargar los datos al inicializar el widget
     super.initState();
-
     styleText = themeApp.styleText(14, false, themeApp.grayColor);
     styleTextSub = themeApp.styleText(15, true, themeApp.grayColor);
-
   }
 
 
@@ -220,7 +217,6 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
     });
     print("load tablas ejecutandose");
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -298,9 +294,11 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
 
                                         GestureDetector(
                                           onTap: (){
+                                            final tutorProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
                                             material.Navigator.push(context, material.MaterialPageRoute(
-                                              builder: (context)  => Dashboard(showSolicitudesNew: false, solicitud: Solicitud.empty(),tutor: tutor,showTutoresDetalles: true,),
+                                              builder: (context)  => Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
                                             ));
+                                            tutorProvider.seleccionarTutor(tutor);
                                           },
                                           child: AnimatedContainer(
                                             duration: const Duration(milliseconds: 500),
@@ -533,9 +531,11 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
 
   Future<void> loadDataTablasMaterias() async {
     materiaList = await stream_builders().cargarMaterias();
-    //carreraList = await LoadData().obtenercarreras();
-    //solicitudesList = await LoadData().obtenerSolicitudes();
-    //serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
+    carreraList = await stream_builders().cargarCarreras();
+    solicitudesList = (await stream_builders().cargarsolicitudes())!;
+    serviciosagendadosList = (await stream_builders().cargarserviciosagendados())!;
+    final tutoresProvider =  context.read<VistaTutoresProvider>();
+    tutoresList = tutoresProvider.todosLosTutores;
     setState(() {
       _materiacargarauto = true;
     });
@@ -555,13 +555,16 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   Future<void> busquedatutor(String materiabusqueda, String materiabusquedados, String materiaTres, String materiaCuatro, String materiaCinco,String carreraUno,String carreraDos,
       String carreraTres, String carreraCuatro, String carreraCinco
       ) async {
+
     if (materiabusqueda.isEmpty){
       tutoresFiltrados.clear();
     }else{
-      tutoresList = await stream_builders().cargarTutoresList();
+
       tutoresFiltrados = tutoresList.where((tutor) {
+        print("el tutor ${tutor.nombrewhatsapp} tiene ${tutor.materias.length}");
         return tutor.activo;
       }).where((tutor) {
+        print("tutor entrando");
         return tutor.materias.any((materia) =>
         materia.nombremateria == materiabusqueda);
       }).toList();
@@ -577,6 +580,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
         double? nota2 = tutorEvaluator?.retornocalificacion(tutor2);
         return nota2!.compareTo(nota1!);
       });
+
 
       setState(() {
         _cargadotutoresfiltradosmateria = true;
@@ -634,11 +638,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                               value: materia,
 
                               label: _truncateLabel(materia.nombremateria),
-                              onFocusChange: (focused) {
-                                if (focused) {
-                                  debugPrint('Focused #${materia.nombremateria} - ');
-                                }
-                              },
                             ),
                           )
                               .toList(),
@@ -661,6 +660,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                       ),
                     ),
 
+                    /*
                     material.Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: SizedBox(
@@ -804,6 +804,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                         ),
                       ),
                     ),
+
+                     */
                   ],
                 ),
 
@@ -851,7 +853,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                         ),
                       ),
                     ),
-
+                    /*
                     material.Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: SizedBox(
@@ -888,6 +890,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                         ),
                       ),
                     ),
+
 
                     material.Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
@@ -999,6 +1002,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                         ),
                       ),
                     ),
+
+                     */
                   ],
                 ),
               ],
@@ -1032,7 +1037,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
           Column(
             children: [
               SizedBox(
-                height: 600,
+                height: 300,
                 child: ListView.builder(
                     itemCount: tutoresFiltrados.length,
                     itemBuilder: (context,index){
@@ -1059,8 +1064,77 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                 ),
 
                                 material.Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
+
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+
+                                          _textAndTitle("Calificacion obtenida: ", tutorEvaluator!.retornocalificacion(tutore).toStringAsFixed(1)),
+                                          _nivelTutor("Nivel: ", tutorEvaluator!.retornocalificacion(tutore)),
+
+                                          material.Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+
+                                                material.Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: GestureDetector(
+                                                    onTap: (){
+
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 500),
+                                                      width: 25,
+                                                      height: 25,
+                                                      decoration: BoxDecoration(
+                                                        color: themeApp.primaryColor,
+                                                        borderRadius: BorderRadius.circular(80),
+                                                      ),
+                                                      child: Icon(material.Icons.add, color: themeApp.whitecolor,),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                material.Padding(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                                  child: GestureDetector(
+                                                    onTap: (){
+
+                                                    },
+                                                    child: AnimatedContainer(
+                                                      duration: const Duration(milliseconds: 500),
+                                                      width: 25,
+                                                      height: 25,
+                                                      decoration: BoxDecoration(
+                                                        color: themeApp.redColor,
+                                                        borderRadius: BorderRadius.circular(80),
+                                                      ),
+                                                      child: Icon(material.Icons.cancel, color: themeApp.whitecolor,),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                              ],
+                                            ),
+                                          )
+
+                                        ],
+                                      ),
+                                    ),
+
+                                    _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
+
+
+
+
+
+                                    /*
+
                                     Column(
                                       children: [
                                         Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
@@ -1092,9 +1166,12 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                         Text('ult fecha ${tutorEvaluator?.ultimaFechaCotizacionTutor(tutore.nombrewhatsapp)}'),
                                       ],
                                     ),
+
+                                     */
+
+
                                   ],
                                 )
-
                               ],
                             )),
                       );
@@ -1111,6 +1188,49 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
           ),
 
       ],
+    );
+  }
+
+  Padding _textAndTitle(String title, String text){
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
+          Text(text, style: themeApp.styleText(14, false, themeApp.grayColor),),
+        ],
+      ),
+    );
+  }
+
+  Padding _nivelTutor(String title, double calificacion){
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0, top: 2.0, bottom: 2.0, right: 30.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
+          Text(calificacion > 4 ? "Excelente" : calificacion >= 3 ? "Intermedio" : "Regular", style: themeApp.styleText(14, true, calificacion > 4 ? themeApp.greenColor : calificacion >= 3 ? themeApp.primaryColor : themeApp.redColor),),
+        ],
+      ),
+    );
+  }
+
+  CircularPercentIndicator _pieChart(double calificacion, double tamanio){
+    return CircularPercentIndicator(
+      radius: tamanio,
+      lineWidth: 5.0,
+      percent: calificacion / 5.0,
+      center: material.Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(calificacion.toString().length < 2 ? "$calificacion.0" : "$calificacion", style: themeApp.styleText(tamanio * 0.3, true, themeApp.primaryColor),),
+          Text("/5.0", style: themeApp.styleText(tamanio * 0.2, true, themeApp.primaryColor),)
+        ],
+      ),
+      circularStrokeCap: CircularStrokeCap.round,
+      progressColor: themeApp.primaryColor,
     );
   }
 }

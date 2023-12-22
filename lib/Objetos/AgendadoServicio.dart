@@ -6,10 +6,10 @@ class ServicioAgendado{
   String codigo = "";//Codigo
   String sistema = "";//SISTEMA - NACIONAL O INTERNACIONAL ( POR AHORA SOLO NACIONAL)
   String materia = "";//MATERIA
-  DateTime fechasistema = DateTime.now();//FECHA SISTEMA CREADO
+  DateTime fechasistema = DateTime(2023,1,1);//FECHA SISTEMA CREADO
   String cliente = "";//CLIENTE LIGADO
   int preciocobrado = 0;//PRECIO COBRADO - > PRECIO DE NOSOTROS
-  DateTime fechaentrega = DateTime.now();//FECHA DE ENTREGA CON HORA DE ENTREGA
+  DateTime fechaentrega = DateTime(2023,1,1);//FECHA DE ENTREGA CON HORA DE ENTREGA
   String tutor = "";//TUTOR
   int preciotutor = 0;//PRECIO TUTOR
   String identificadorcodigo = "0";//CODIGO - P / T

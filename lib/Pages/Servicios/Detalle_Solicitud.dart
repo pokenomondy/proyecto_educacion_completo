@@ -1,19 +1,20 @@
 import 'package:dashboard_admin_flutter/Config/theme.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
+import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
 
 class DetallesServicio extends StatefulWidget {
-  final Solicitud solicitud;
 
   const DetallesServicio({Key?key,
-    required this.solicitud,
   }) :super(key: key);
 
   @override
@@ -30,8 +31,8 @@ class DetallesServicioState extends State<DetallesServicio> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        PrimaryColumn(solicitud: widget.solicitud,currentwith: tamanowidth,),
-        SecundaryColumn(solicitud: widget.solicitud, currentwith: tamanowidth)
+        PrimaryColumn(currentwith: tamanowidth,),
+        SecundaryColumn(currentwith: tamanowidth)
       ],
     );
   }
@@ -39,11 +40,9 @@ class DetallesServicioState extends State<DetallesServicio> {
 }
 
 class PrimaryColumn extends StatefulWidget {
-  final Solicitud solicitud;
   final double currentwith;
 
   const PrimaryColumn({Key?key,
-    required this.solicitud,
     required this.currentwith,
   }) :super(key: key);
 
@@ -56,81 +55,63 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   String servicio = "";
   List<bool> editarcasilla = List.generate(10, (index) => false);
   List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
-  String? selectedServicio;
   Materia? selectedMateria;
   List<Materia> materiaList = [];
-  List<String> valores = [];
   String datoscambiostext = "";
   DateTime cambiarfecha = DateTime.now();
   final ThemeApp themeApp = ThemeApp();
+  //id cotización
+  int idcotizacionn = 0;
+  //Cambios
+  String? selectedServicio;
+  String? cambio;
 
   @override
   void initState() {
-    valores.add(widget.solicitud.servicio);
-    valores.add(widget.solicitud.idcotizacion.toString());
-    valores.add(widget.solicitud.materia);
-    valores.add("${DateFormat("dd/MM").format(widget.solicitud.fechaentrega)} ANTES DE ${DateFormat('hh:mma').format(widget.solicitud.fechaentrega)}");
-    valores.add(widget.solicitud.cliente.toString());
-    valores.add("${DateFormat("dd/MM").format(widget.solicitud.fechasistema)} A LAS ${DateFormat('hh:mma').format(widget.solicitud.fechasistema)}");
-    valores.add(widget.solicitud.estado);
-    valores.add(widget.solicitud.resumen);
-    valores.add(widget.solicitud.infocliente);
-    valores.add(widget.solicitud.urlArchivos);
     loadtablas();
-    cambiarfecha = widget.solicitud.fechaentrega;
     super.initState();
   }
 
   Future loadtablas() async{
-    //materiaList = await LoadData().tablasmateria();
+    //Cargar materias
+    final materiasProvider =  context.read<MateriasVistaProvider>();
+    materiaList = materiasProvider.todasLasMaterias;
   }
 
   @override
   Widget build(BuildContext context) {
-    return ItemsCard(
-      alignementColumn: MainAxisAlignment.start,
-      shadow: false,
-      width: widget.currentwith * 0.98,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-          child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-        ),
-        textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
-        textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
-        textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
-        textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
-        textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
-        textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
-        textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
-        textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
-        textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
-        textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
-      ],
+    return Consumer<SolicitudProvider>(
+        builder: (context, solicitudprovider, child) {
+          Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
+          idcotizacionn = solicitudSeleccionado.idcotizacion;
+
+          return ItemsCard(
+            alignementColumn: MainAxisAlignment.start,
+            shadow: false,
+            width: widget.currentwith * 0.98,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+              ),
+              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
+              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
+              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
+              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+            ],
+          );
+        }
     );
   }
 
-  Widget textoymodificable(String text, Solicitud solicitud, String servicio,int index, bool bool){
+  Widget textoymodificable(String text,String valor,int index, bool bool){
     const double verticalPadding = 3.0;
-    String? cambio = "";
-    String valor = valores[index];
-
-    if (index == 0) {
-      cambio = selectedServicio;
-    } else if (index == 1) {
-    } else if (index == 2) {
-      cambio = selectedMateria?.nombremateria;
-    } else if (index == 3) {
-      cambio = "";
-    } else if (index == 4) {
-    } else if (index == 5) {
-    } else if (index == 6) {
-    } else if (index == 7) {
-      cambio = datoscambiostext;
-    } else if (index == 8) {
-      cambio = datoscambiostext;
-    } else if (index == 9) {
-    }
 
     return Row(
       children: [
@@ -150,12 +131,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                     onTap: (){
                       setState(() {
                         editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        if (!editarcasilla[index]) {
-                          // Si se desactiva la edición, actualiza el texto original con el texto editado
-                          editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        }
                       });
-                      print("oprimido para cambiar");
                     },
                     child: const Icon(FluentIcons.edit),
                   )
@@ -176,7 +152,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                       child: TextBox(
                         placeholder: valor,
                         onChanged: (value){
-                          datoscambiostext = value;
+                          cambio = value;
                         },
                         maxLines: null,
                       ),
@@ -200,6 +176,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                           }).toList(),
                           onSelected: (item) {
                             selectedServicio = item.value;
+                            cambio = selectedServicio;
                           },
                           decoration: Disenos().decoracionbuscador(),
                           placeholder: 'Selecciona tu servicio',
@@ -233,8 +210,8 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                           decoration: Disenos().decoracionbuscador(),
                           onSelected: (item) {
                             setState(() {
-                              print("seleccionado ${item.label}");
                               selectedMateria = item.value; // Actualizar el valor seleccionado
+                              cambio = item.value?.nombremateria;
                             });
                           },
                           onChanged: (text, reason) {
@@ -259,13 +236,9 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                         padding: const EdgeInsets.symmetric(horizontal: 3.0),
                         child: GestureDetector(
                           onTap: () async{
-                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
+                            print("a cambiar $cambio!");
+                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,idcotizacionn);
                             setState(() {
-                              if(index !=3){
-                                valores[index] = cambio!;
-                              }else{
-                                valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
-                              }
                               editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
                             });
                           },
@@ -280,7 +253,6 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                             setState(() {
                               editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
                             });
-                            print("oprimido para cambiar");
                           },
                           child: const Icon(FluentIcons.cancel),
                         ),
@@ -355,11 +327,9 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   }
 
 class SecundaryColumn extends StatefulWidget {
-  final Solicitud solicitud;
   final double currentwith;
 
   const SecundaryColumn({Key?key,
-    required this.solicitud,
     required this.currentwith,
   }) :super(key: key);
 
@@ -374,45 +344,44 @@ class SecundaryColumnState extends State<SecundaryColumn> {
 
   @override
   Widget build(BuildContext context) {
-    return ItemsCard(
-      shadow: false,
-      cardColor: themeApp.primaryColor,
-      width: widget.currentwith * 0.98,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-          child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
-        ),
-        PrimaryStyleButton(
-          width: 130,
-          invert: true,
-            function: (){
-              DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion);
-            },
-            text: "Verificar"
-        ),
-        Expanded(
-          child: FutureBuilder(
-              future: DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion),
-              builder: (context,snapshot){
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Mientras se espera, mostrar un mensaje de carga
-                  return const Center(
-                    child: Text('cargando'), // O cualquier otro widget de carga
-                  );
-                } else if (snapshot.hasError) {
-                  // Si ocurre un error en el Future, mostrar un mensaje de error
-                  return const Center(
-                    child: Text("Error al cargar los datos"),
-                  );
-                } else {
-                  List<ArchivoResultado>? archivosList = snapshot.data;
+    return Consumer2<ConfiguracionAplicacion, SolicitudProvider>(
+      builder: (context, configuracionProviderselect, solicitudProviderselect, child) {
+        ConfiguracionPlugins? config = configuracionProviderselect.config;
+        Solicitud solicitud = solicitudProviderselect.solicitudSeleccionado;
 
-                  return _TarjetaArchivos(archivosList: archivosList);
-                }
-              }),
-        ),
-      ],
+        return ItemsCard(
+          shadow: false,
+          cardColor: themeApp.primaryColor,
+          width: widget.currentwith * 0.98,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+              child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+            ),
+            Expanded(
+              child: FutureBuilder(
+                  future: DriveApiUsage().viewarchivosolicitud(solicitud.idcotizacion,config!.idcarpetaSolicitudes),
+                  builder: (context,snapshot){
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      // Mientras se espera, mostrar un mensaje de carga
+                      return const Center(
+                        child: Text('cargando'), // O cualquier otro widget de carga
+                      );
+                    } else if (snapshot.hasError) {
+                      // Si ocurre un error en el Future, mostrar un mensaje de error
+                      return const Center(
+                        child: Text("Error al cargar los datos"),
+                      );
+                    } else {
+                      List<ArchivoResultado>? archivosList = snapshot.data;
+
+                      return _TarjetaArchivos(archivosList: archivosList);
+                    }
+                  }),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -146,7 +146,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       return Consumer<ContabilidadProvider>(
           builder: (context, pagosProvider, child) {
             List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
-            if(interfazpagos){
+            if(selectedservicio!=null){
               actualizarpagosMain(serviciosAgendadosList,selectedservicio!.codigo);
             }else{
               clearProviderPagos();

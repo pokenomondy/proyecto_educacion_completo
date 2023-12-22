@@ -240,11 +240,9 @@ class DriveApiUsage {
   }
 
   //mostrar archivos en lista
-  Future<List<ArchivoResultado>> viewarchivosolicitud(int idcotizacion)async{
+  Future<List<ArchivoResultado>> viewarchivosolicitud(int idcotizacion,String carpetaid)async{
     List<ArchivoResultado> resultados = [];
-    Config configuracion = Config();
     try{
-      String carpetaid = configuracion.idcarpetaSolicitudes!;
       final httpClient = await auth.clientViaServiceAccount(
         auth.ServiceAccountCredentials.fromJson({
           "type": "service_account",

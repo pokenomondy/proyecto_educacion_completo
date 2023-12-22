@@ -26,15 +26,11 @@ import 'Utils/Firebase/CollectionReferences.dart';
 
 class Dashboard extends StatefulWidget {
   final bool showSolicitudesNew;
-  final Solicitud solicitud;
   final bool showTutoresDetalles;
-  final Tutores tutor;
 
   const Dashboard({Key? key,
     required this.showSolicitudesNew,
-    required this.solicitud,
     required this.showTutoresDetalles,
-    required this.tutor,
   }) : super(key: key);
 
   @override
@@ -59,9 +55,6 @@ class DashboardState extends State<Dashboard> {
   late StreamController<List<Materia>> _streamControllerMaterias;
   late StreamController<List<Clientes>> _streamControllerClientes;
   late StreamController<List<Universidad>> _streamControllerUniversidades;
-
-
-  late ConfiguracionPlugins _configuracion;
 
 
   @override
@@ -136,7 +129,7 @@ class DashboardState extends State<Dashboard> {
               return <NavigationPaneItem>[
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
-                    body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): TutoresVista(),
+                    body: widget.showTutoresDetalles ? DetallesTutores(): TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor))),
               ];
             }else{
@@ -144,13 +137,13 @@ class DashboardState extends State<Dashboard> {
                 PaneItem(
                   icon: const Icon(FluentIcons.home),
                   title:  configuracionrol.panelnavegacion("Solicitudes",_currentPage == 0),
-                  body: widget.showSolicitudesNew ?  DetallesServicio(solicitud: widget.solicitud,) : SolicitudesNew(),
+                  body: widget.showSolicitudesNew ?  DetallesServicio() : SolicitudesNew(),
                   selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)),
                   key: const ValueKey('/home'),
                 ),
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
-                    body: widget.showTutoresDetalles ? DetallesTutores(tutor: widget.tutor,): const TutoresVista(),
+                    body: widget.showTutoresDetalles ? DetallesTutores(): const TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
@@ -173,102 +166,107 @@ class DashboardState extends State<Dashboard> {
               appBar: NavigationAppBar(
                 title: Container(
                   margin:  const EdgeInsets.only(left: 20),
-                  child:  Row(
+                  child: Row(
                     children: [
-                      Text(configuracion!.nombre_empresa, style: const TextStyle(fontSize: 32),),
-                      const Text("Dufy Amor", style: TextStyle(fontSize: 15),),
-                      StreamBuilder<List<ServicioAgendado>>(
-                        stream: _streamControllerServiciosAgendados.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('conta true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      const Text('Config true'),
-                      StreamBuilder<List<Materia>>(
-                        stream: _streamControllerMaterias.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      StreamBuilder<List<Clientes>>(
-                        stream: _streamControllerClientes.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Clientes true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      StreamBuilder<List<Solicitud>>(
-                        stream: _streamControllerSolicitudes.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Solicitudes true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      StreamBuilder<List<Tutores>>(
-                        stream: _streamControllerTutores.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Tutores true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      StreamBuilder<List<Carrera>>(
-                        stream: _streamControllerCarreras.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
-                      StreamBuilder<List<Universidad>>(
-                        stream: _streamControllerUniversidades.stream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            // No mostrar nada, ya que el stream está vacío
-                            return const Text('Universidades true'); // O cualquier otro widget que no muestre nada
-                          }
-                        },
-                      ),
+                      if(!widget.showSolicitudesNew)
+                      Row(
+                        children: [
+                          Text(configuracion!.nombre_empresa, style: const TextStyle(fontSize: 32),),
+                          const Text("Dufy Amor", style: TextStyle(fontSize: 15),),
+                          StreamBuilder<List<ServicioAgendado>>(
+                            stream: _streamControllerServiciosAgendados.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('conta true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          const Text('Config true'),
+                          StreamBuilder<List<Materia>>(
+                            stream: _streamControllerMaterias.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          StreamBuilder<List<Clientes>>(
+                            stream: _streamControllerClientes.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Clientes true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          StreamBuilder<List<Solicitud>>(
+                            stream: _streamControllerSolicitudes.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Solicitudes true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          StreamBuilder<List<Tutores>>(
+                            stream: _streamControllerTutores.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Tutores true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          StreamBuilder<List<Carrera>>(
+                            stream: _streamControllerCarreras.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                          StreamBuilder<List<Universidad>>(
+                            stream: _streamControllerUniversidades.stream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else {
+                                // No mostrar nada, ya que el stream está vacío
+                                return const Text('Universidades true'); // O cualquier otro widget que no muestre nada
+                              }
+                            },
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ),

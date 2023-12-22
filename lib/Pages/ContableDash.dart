@@ -29,11 +29,14 @@ class ContableDashboardState extends State<ContableDashboard> {
               title: const Text('Registrar pagos'),
               body: ContablePagos(),
             ),
+            /*
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('PAGOS PENDIENTES DASH'),
               body: ListaPagosDash(),
             ),
+            
+             */
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Dash contabilidad'),

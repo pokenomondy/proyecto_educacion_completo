@@ -24,6 +24,7 @@ import 'package:provider/provider.dart';
 import '../Config/elements.dart';
 import '../Config/strings.dart';
 import '../Dashboard.dart';
+import '../Objetos/Configuracion/Configuracion_Configuracion.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../Objetos/Tutores_objet.dart';
@@ -255,16 +256,16 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   Universidad? selectedUniversidadobject;
   double margen_solicitud = 10;
   List<File> files = [];
-  Config configuracion = Config();
   String carpetaurl = "";
 
   //Modo de carga
   bool cargandoservicio = false;
 
-  void main() async {
-    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
-    await configuracion.initConfig(); // Espera a que initConfig() se complete
-  }
+  //apoyo para configuiración
+  bool configuracionSolicitudes = false;
+  String idcarpetasolicitudesDrive = "";
+
+
 
   void updatedata(){
     setState(() {
@@ -526,17 +527,24 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                           Text('$uploadedCount archivos de ${selectedFiles?.length}')
                         ],
                       ),
-                    //cuadrar la subida de archivos, como llevar a cabo ?
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children:[
-                        if(configuracion.SolicitudesDriveApi)
-                          FilledButton(
-                              style: Disenos().boton_estilo(),
-                              child: Text('seleccionar archivos'), onPressed: (){
-                            selectFile();
-                          }),
-                      ],
+                    //Consumer de seleccionar archivos Drive Api
+                    Consumer<ConfiguracionAplicacion>(
+                      builder: (context, condifuracionProvider, child) {
+                        ConfiguracionPlugins? config = condifuracionProvider.config;
+                        configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+                        idcarpetasolicitudesDrive = config.idcarpetaSolicitudes;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children:[
+                            if(configuracionSolicitudes)
+                              FilledButton(
+                                  style: Disenos().boton_estilo(),
+                                  child: Text('seleccionar archivos'), onPressed: (){
+                                selectFile();
+                              }),
+                          ],
+                        );
+                      }
                     ),
                     //Botón para añadir servicio
                     FilledButton(
@@ -603,8 +611,8 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   }
 
   Future<void> uploadarchivosDrive() async{
-    if(configuracion.SolicitudesDriveApi){
-      final result = await DriveApiUsage().subirSolicitudes(configuracion.idcarpetaSolicitudes!, selectedFiles,numsolicitud.toString());
+    if(configuracionSolicitudes){
+      final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,numsolicitud.toString());
       print("Número de archivos subidos: ${result.numberfilesUploaded}");
       print("URL de la carpeta: ${result.folderUrl}");
       //Ahora avisar numero de archivos subidos y url
@@ -1065,8 +1073,11 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                     onTap: () {
                                       print("Ver detalles");
                                       material.Navigator.push(context, material.MaterialPageRoute(
-                                        builder: (context)  => Dashboard(showSolicitudesNew: true, solicitud: solicitud,tutor: tutoresVacia,showTutoresDetalles: false,),
+                                        builder: (context)  => Dashboard(showSolicitudesNew: true, showTutoresDetalles: false,),
                                       ));
+                                      //Vamos a seleccionar el servicio
+                                      final solicitudProvider = Provider.of<SolicitudProvider>(context, listen: false);
+                                      solicitudProvider.seleccionarSolicitud(solicitud);
                                     },
                                     child: material.Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -1112,7 +1123,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       ),
     );
   }
-
 
   void copiarSolicitud(String servicio, int idcotizacion, String materia, DateTime fechaentrega, String resumen, String infocliente, String urlArchivos) {
     String horaRealizada = "";
