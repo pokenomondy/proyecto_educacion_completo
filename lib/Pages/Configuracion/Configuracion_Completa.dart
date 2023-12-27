@@ -208,13 +208,6 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                               style: TextStyle(fontWeight: FontWeight.bold),),
                           ),
                           //Bases de datos en Stream
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text('Activar datos en tiempo real: (bool tiempo real)',
-                              style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
-                          ),
-                          Text('Esta opción solo activarse, cuando se requieren que los datos esten disponibles en multiples sitemas todo el tiempo,'
-                              'esto puede ser algo riesgoso porque tiene mas inciendcia en bases de datos'),
                         ],
                       ),
                     ],

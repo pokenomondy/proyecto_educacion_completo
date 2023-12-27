@@ -168,7 +168,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
           }
       );
     }
-  
+
     void comprobacionpagos(int debecliente,int debetutor) async{
       if(selectedtipopago=="CLIENTES"){
         if(debecliente == 0){

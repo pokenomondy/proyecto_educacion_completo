@@ -73,6 +73,9 @@ void main() async {
         //Tutores
         ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
 
+        //Vista de archivos
+        ChangeNotifierProvider(create: (context) => ArchivoVistaDrive()),
+
 
       ],
       child: MyApp(),

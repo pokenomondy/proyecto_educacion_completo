@@ -9,6 +9,7 @@ import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/RegistrarPago.dart';
 import '../Objetos/Solicitud.dart';
 import '../Objetos/Tutores_objet.dart';
+import '../Utils/Drive Api/GoogleDrive.dart';
 
 class ConfiguracionAplicacion extends ChangeNotifier {
   ConfiguracionPlugins? config;
@@ -367,4 +368,32 @@ class UniversidadVistaProvider extends ChangeNotifier{
     _todasLasUniversidades.clear();
     notifyListeners();
   }
+}
+
+//Archivo vista provider
+class ArchivoVistaDrive extends ChangeNotifier{
+  List<ArchivoResultado> _todosLosArchivos = [];
+
+  List<ArchivoResultado> get todosLosArchivos => _todosLosArchivos;
+
+  void cargarTodosLosArchivos(List<ArchivoResultado> archivos){
+    _todosLosArchivos.addAll(archivos);
+    notifyListeners();
+  }
+
+  void clearTodosLosArchivos(){
+    _todosLosArchivos.clear();
+    notifyListeners();
+  }
+
+  void deleteArchivo(String archivoId) {
+    _todosLosArchivos.removeWhere((archivo) => archivo.id == archivoId);
+    notifyListeners();
+  }
+
+  void addNewArchivos(ArchivoResultado archivoResultado){
+    _todosLosArchivos.add(archivoResultado);
+    notifyListeners();
+  }
+
 }

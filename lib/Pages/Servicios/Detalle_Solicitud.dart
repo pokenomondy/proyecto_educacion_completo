@@ -4,13 +4,17 @@ import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
+import '../../Utils/Utiles/FuncionesUtiles.dart';
 
 class DetallesServicio extends StatefulWidget {
 
@@ -22,6 +26,7 @@ class DetallesServicio extends StatefulWidget {
 }
 
 class DetallesServicioState extends State<DetallesServicio> {
+
 
 
   @override
@@ -341,49 +346,114 @@ class SecundaryColumn extends StatefulWidget {
 class SecundaryColumnState extends State<SecundaryColumn> {
   List<ArchivoResultado> archivosresultados = [];
   final ThemeApp themeApp = ThemeApp();
+  //comprobar si tenemos licencia
+  bool configuracionSolicitudes = false;
+  //Documento
+  List<PlatformFile>? selectedFiles ;
+  String archivoNombre = "";
+  String _archivoExtension = "";
+  //
+  bool cargarArchivos = false;
+
+  void actualizarArchivos(int idcotizacion,String carpetaid) async{
+    await DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
+    setState(() {
+      cargarArchivos = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<ConfiguracionAplicacion, SolicitudProvider>(
-      builder: (context, configuracionProviderselect, solicitudProviderselect, child) {
+    final currentheight = MediaQuery.of(context).size.height;
+    return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
+      builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
         ConfiguracionPlugins? config = configuracionProviderselect.config;
         Solicitud solicitud = solicitudProviderselect.solicitudSeleccionado;
+        List<ArchivoResultado> archivoList = archivoDriveProvider.todosLosArchivos;
+          configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+
+          if(!cargarArchivos){
+            print("cargando archivos");
+            actualizarArchivos(solicitud.idcotizacion,config.idcarpetaSolicitudes);
+          }
 
         return ItemsCard(
           shadow: false,
           cardColor: themeApp.primaryColor,
           width: widget.currentwith * 0.98,
+          height: currentheight,
+
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children:[
+                if(configuracionSolicitudes)
+                  FilledButton(
+                      style: Disenos().boton_estilo(),
+                      child: Text('seleccionar archivos'), onPressed: (){
+                    selectFile();
+                  }),
+              ],
+            ),
+            //Archivos nombre que se van a subir
+            if(selectedFiles  != null)
+              Column(
+                children: selectedFiles!.map((file) {
+                  return Container(
+                    color: Colors.blue,
+                    child: Text(file.name),
+                  );
+                }).toList(),
+              ),
+            FilledButton(
+                child: Text('Subir mas archivos'),
+                onPressed: (){
+                  subirarchivos(config.idcarpetaSolicitudes,solicitud.idcotizacion.toString());
+                }
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
               child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
             ),
             Expanded(
-              child: FutureBuilder(
-                  future: DriveApiUsage().viewarchivosolicitud(solicitud.idcotizacion,config!.idcarpetaSolicitudes),
-                  builder: (context,snapshot){
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      // Mientras se espera, mostrar un mensaje de carga
-                      return const Center(
-                        child: Text('cargando'), // O cualquier otro widget de carga
-                      );
-                    } else if (snapshot.hasError) {
-                      // Si ocurre un error en el Future, mostrar un mensaje de error
-                      return const Center(
-                        child: Text("Error al cargar los datos"),
-                      );
-                    } else {
-                      List<ArchivoResultado>? archivosList = snapshot.data;
-
-                      return _TarjetaArchivos(archivosList: archivosList);
-                    }
-                  }),
+              child: _TarjetaArchivos(archivosList: archivoList),
             ),
+
           ],
         );
       },
     );
   }
+
+  Future subirarchivos(String idcarpetasolicitudesDrive, String idsolicitud) async{
+    final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,idsolicitud,context);
+    print("Número de archivos subidos: ${result.numberfilesUploaded}");
+    print("URL de la carpeta: ${result.folderUrl}");
+    //Ahora avisar numero de archivos subidos y url
+  }
+
+  Future selectFile() async{
+    if(kIsWeb){
+      final result = await FilePicker.platform.pickFiles(type: FileType.any, allowMultiple: true);
+
+      if (result != null && result.files.isNotEmpty) {
+        final fileName = result.files.first.name;
+        final fileextension = result.files.first.extension;
+        setState(() {
+          selectedFiles  = result.files;
+          archivoNombre = fileName;
+          _archivoExtension = fileextension!;
+          print(fileName);
+          print(fileextension);
+        });
+        print("extension archivo");
+        print(_archivoExtension);
+        print("Nombre del archivo");
+      }}else{
+      print('Aqui no va a pasar');
+    }
+  }
+
 }
 
 class _TarjetaArchivos extends StatefulWidget{
@@ -419,38 +489,63 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
                 itemBuilder: (context,index) {
                   ArchivoResultado? archivo = widget.archivosList?[index];
 
-                  return GestureDetector(
-                    onTap: (){
-                      print("te toco");
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                      child: Card(
-                        child:Column(
-                          children: [
-                            //nombre del archivo
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo!.nombrearchivo)),
-                              ],
-                            ),
-                            //extension de pdf
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo.mimeType)),
-                              ],
-                            ),
-                            //id de archivo
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo.id)),
-                              ],
-                            ),
-                          ],
-                        ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                    child: Card(
+                      child:Column(
+                        children: [
+                          //nombre del archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(archivo!.nombrearchivo),
+                            ],
+                          ),
+                          //id de archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(archivo.id),
+                            ],
+                          ),
+                          //Url del archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                  child: Text(archivo.linkVistaArchivo),
+                              onTap: (){
+                                _abrirEnlace(archivo.linkVistaArchivo);
+                              },),
+                            ],
+                          ),
+                          //acciones
+                          Row(
+                            children: [
+                              //ver archivo -- LOGRADO
+
+                              //Descargar archvio -- LOGRADO
+
+                              //eliminar archivo --
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  GestureDetector(
+                                    child: Text('Eliminar archivo'),
+                                    onTap: (){
+                                      DriveApiUsage().eliminarArchivo(archivo.id,context);
+                                    },),
+                                ],
+                              ),
+
+                              //cambiar nombre -- TOCA VER
+
+                              //informacón de archivo -- LOGRADO
+
+                              //Actividad de archivo -- TOCA VER
+                            ],
+                          )
+                        ],
                       ),
                     ),
                   );
@@ -459,6 +554,14 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
         ),
       ],
     );
+  }
+
+  void _abrirEnlace(String enlace) async {
+    if (await canLaunch(enlace)) {
+      await launch(enlace);
+    } else {
+      throw 'No se pudo abrir el enlace $enlace';
+    }
   }
 }
 
