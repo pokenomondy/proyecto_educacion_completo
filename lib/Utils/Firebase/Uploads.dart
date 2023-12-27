@@ -29,6 +29,7 @@ import 'StreamBuilders.dart';
 
 class Uploads{
   CollectionReferencias referencias =  CollectionReferencias();
+  int timestamphoy = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
   Uploads() {
     _initialize();
@@ -39,13 +40,14 @@ class Uploads{
   }
 
 
+  //SOLICITUDES
   //añadir servicio
   void addServicio (String servicio,String cotizacion,int idcotizacion,String materia, String carrera,DateTime fechaentrega, String resumen, String infocliente, int cliente,String urlarchivo) async{
   await referencias.initCollections();
   DateTime fechaactualizacion = DateTime.now();
   CollectionReference solicitud = referencias.solicitudes!;
   List<Cotizacion> cotizaciones = [];
-  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now(),DateTime.now().millisecondsSinceEpoch ~/ 1000);
+  Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now(),timestamphoy);
   print("subido con exito servicio $idcotizacion");
   await solicitud.doc("$idcotizacion").set(newservice.toMap());
 }
@@ -70,20 +72,19 @@ class Uploads{
     if(index!=3){
       uploadinformacion = {
         '$variable': texto,
-        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        'ultimaModificacion' : timestamphoy,
       };
     }else{
       uploadinformacion = {
         '$variable': dateTime,
-        'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        'ultimaModificacion' : timestamphoy,
       };
     }
 
     print("Upload Información: $uploadinformacion");
     await solicitud.doc(idcotizacionfire.toString()).update(uploadinformacion);
   }
-
-//añadir cotización
+  //añadir cotización
   Future<void> addCotizacion(int idcotizacion,int cotizacion,String uidtutor,String nombretutor,int tiempoconfirmacion, String comentariocotizacion, String Agenda, DateTime fechaconfirmacion) async {
     await referencias.initCollections();
     List<Cotizacion> cotizaciones = [];
@@ -91,52 +92,40 @@ class Uploads{
     Cotizacion newcotizacion = Cotizacion(cotizacion, uidtutor, nombretutor, tiempoconfirmacion, comentariocotizacion, Agenda, fechaconfirmacion);
     await cotizacionReference.update({
       'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
+      'ultimaModificacion' : timestamphoy,
     });
   }
 
+  //SERVICIOS AGENDADOS
   //añadir servicio agendado
   Future<void> addServicioAgendado(String codigo,String sistema,String materia,String cliente,int preciocobrado,DateTime fechaentrega,String tutor,int preciotutor,String identificadorcodigo,int idsolicitud, int numerocontabilidadagenda,String entregado) async {
     await referencias.initCollections();
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = referencias.contabilidad!;
     List<RegistrarPago> pagos = [];
-    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],DateTime.now().millisecondsSinceEpoch ~/ 1000);
+    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],timestamphoy);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
 
     print(idsolicitud);
     cambiarEstadoSolicitud(idsolicitud,"AGENDADO");
   }
-
+  //Cambiar estado de servicio, a agendado
   Future<void> cambiarEstadoSolicitud(int idsolicitud,String motivo) async{
     await referencias.initCollections();
     CollectionReference expiradoglobal = referencias.solicitudes!;
     Map<String, dynamic> dataAgendado = {
       'Estado': motivo,
-      'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      'ultimaModificacion' : timestamphoy,
     };
     expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
-
-    /*
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('solicitudes_list') ?? '';
-    List<dynamic> CarreraData = jsonDecode(solicitudesJson);
-    List solicitudList = CarreraData.map((tutorData) =>
-        Solicitud.fromJson(tutorData as Map<String, dynamic>)).toList();
-    // Actualizar la lista de clientes local con el cliente actualizado
-    int indexToUpdate = solicitudList.indexWhere((solicitud) => solicitud.idcotizacion == idsolicitud);
-    if (indexToUpdate != -1) {
-      solicitudList[indexToUpdate].estado = motivo;
-    }
-    String solicitudListdos = jsonEncode(solicitudList);
-    await prefs.setString('solicitudes_list', solicitudListdos);
-
-     */
   }
+
 
   //modificar un servicio agendado
   Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
     await referencias.initCollections();
     String variable = "";
+    String fecha = "";
     CollectionReference contabilidad = referencias.contabilidad!;
     Map<String, dynamic> uploadinformacion = {};
     if(index == 1){
@@ -149,6 +138,7 @@ class Uploads{
       variable = "identificadorcodigo";
     }else if(index == 5){
       variable = "fechaentrega";
+      texto = DateFormat('dd-MM-yyyy-hh:mm:ssa').format(fechas);
     }else if(index == 6){
       variable = "tutor";
     }
@@ -167,7 +157,6 @@ class Uploads{
       };
     }
 
-    String fecha = DateFormat('dd-MM-yyyy-hh:mm:ssa').format(DateTime.now());
     await contabilidad.doc(codigo).update(uploadinformacion);
     //Guardamos el historial del cambio
     HistorialAgendado newhistorial = HistorialAgendado(DateTime.now(), textoanterior, texto, variable,codigo);
@@ -226,7 +215,7 @@ class Uploads{
     //Ya queda subido el nuevo tutor
   }
   //Modificar infomración de tutor
-  Future<void> modifyinfotutor(int index,String texto,Tutores tutor, int num, BuildContext context) async{
+  Future<void> modifyinfotutor(int index,String texto,String uid, int num, BuildContext context) async{
     await referencias.initCollections();
     String variable = "";
     bool activo = false;
@@ -262,26 +251,28 @@ class Uploads{
     }
 
     CollectionReference tutores = referencias.tutores!;
-    await tutores.doc(tutor.uid).update(uploadinformacion);
+    await tutores.doc(uid).update(uploadinformacion);
   }
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
     await referencias.initCollections();
-    CollectionReference cuentas = referencias.tutores!;
+    DocumentReference cuentas = referencias.tutores!.doc(uidtutor.toString())!;
     CuentasBancarias newcuenta = CuentasBancarias(Tipocuenta, NumeroCuenta, NumeroCedula, NombreCuenta);
-    print("Subido nueva cuenta bancaria");
-    await cuentas.doc(Tipocuenta).set(newcuenta.toMap());
+    await cuentas.update({
+      'cuentas' :FieldValue.arrayUnion([newcuenta.toMap()]),
+      'ultimaModificacion' : timestamphoy,
+    });
 
   }
   //Subir materia de tutor
   void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
     await referencias.initCollections();
-    CollectionReference materias = referencias.tutores!.doc(uidtutor.toString()).collection("MATERIA");
+    DocumentReference materias = referencias.tutores!.doc(uidtutor.toString());
     Materia newmateria = Materia(nombremateria,DateTime.now().millisecondsSinceEpoch ~/ 1000);
-    await materias.doc(nombremateria).set(newmateria.toMap());
-    //Actualizar de forma local
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    await materias.update({
+      'materias' : FieldValue.arrayUnion([newmateria.toMap()]),
+      'ultimaModificacion' : timestamphoy,
+    });
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {

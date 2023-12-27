@@ -48,6 +48,8 @@ class Tutores{
       'actualizartutores' : actualizartutores,
       'rol' : rol,
       'ultimaModificacion' : ultimaModificacion,
+      'materias' : materias,
+      'cuentas' : cuentas,
     };
   }
 

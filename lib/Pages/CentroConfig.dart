@@ -1,13 +1,4 @@
-import 'package:dashboard_admin_flutter/Config/Config.dart';
-import 'package:dashboard_admin_flutter/Config/theme.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import '../Objetos/Solicitud.dart';
-import '../Utils/Firebase/DeleteLocalData.dart';
-import '../Utils/Firebase/Uploads.dart';
 import 'Configuracion/AgregarVariables.dart';
 import 'Configuracion/Configuracion_Completa.dart';
 import 'Configuracion/EditarClientes.dart';

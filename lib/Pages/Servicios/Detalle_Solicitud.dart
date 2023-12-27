@@ -1,19 +1,24 @@
 import 'package:dashboard_admin_flutter/Config/theme.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
+import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
+import '../../Utils/Utiles/FuncionesUtiles.dart';
 
 class DetallesServicio extends StatefulWidget {
-  final Solicitud solicitud;
 
   const DetallesServicio({Key?key,
-    required this.solicitud,
   }) :super(key: key);
 
   @override
@@ -23,6 +28,7 @@ class DetallesServicio extends StatefulWidget {
 class DetallesServicioState extends State<DetallesServicio> {
 
 
+
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
@@ -30,8 +36,8 @@ class DetallesServicioState extends State<DetallesServicio> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        PrimaryColumn(solicitud: widget.solicitud,currentwith: tamanowidth,),
-        SecundaryColumn(solicitud: widget.solicitud, currentwith: tamanowidth)
+        PrimaryColumn(currentwith: tamanowidth,),
+        SecundaryColumn(currentwith: tamanowidth)
       ],
     );
   }
@@ -39,11 +45,9 @@ class DetallesServicioState extends State<DetallesServicio> {
 }
 
 class PrimaryColumn extends StatefulWidget {
-  final Solicitud solicitud;
   final double currentwith;
 
   const PrimaryColumn({Key?key,
-    required this.solicitud,
     required this.currentwith,
   }) :super(key: key);
 
@@ -56,81 +60,63 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   String servicio = "";
   List<bool> editarcasilla = List.generate(10, (index) => false);
   List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
-  String? selectedServicio;
   Materia? selectedMateria;
   List<Materia> materiaList = [];
-  List<String> valores = [];
   String datoscambiostext = "";
   DateTime cambiarfecha = DateTime.now();
   final ThemeApp themeApp = ThemeApp();
+  //id cotización
+  int idcotizacionn = 0;
+  //Cambios
+  String? selectedServicio;
+  String? cambio;
 
   @override
   void initState() {
-    valores.add(widget.solicitud.servicio);
-    valores.add(widget.solicitud.idcotizacion.toString());
-    valores.add(widget.solicitud.materia);
-    valores.add("${DateFormat("dd/MM").format(widget.solicitud.fechaentrega)} ANTES DE ${DateFormat('hh:mma').format(widget.solicitud.fechaentrega)}");
-    valores.add(widget.solicitud.cliente.toString());
-    valores.add("${DateFormat("dd/MM").format(widget.solicitud.fechasistema)} A LAS ${DateFormat('hh:mma').format(widget.solicitud.fechasistema)}");
-    valores.add(widget.solicitud.estado);
-    valores.add(widget.solicitud.resumen);
-    valores.add(widget.solicitud.infocliente);
-    valores.add(widget.solicitud.urlArchivos);
     loadtablas();
-    cambiarfecha = widget.solicitud.fechaentrega;
     super.initState();
   }
 
   Future loadtablas() async{
-    //materiaList = await LoadData().tablasmateria();
+    //Cargar materias
+    final materiasProvider =  context.read<MateriasVistaProvider>();
+    materiaList = materiasProvider.todasLasMaterias;
   }
 
   @override
   Widget build(BuildContext context) {
-    return ItemsCard(
-      alignementColumn: MainAxisAlignment.start,
-      shadow: false,
-      width: widget.currentwith * 0.98,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-          child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-        ),
-        textoymodificable('Tipo de servicio',widget.solicitud,servicio,0,false,),
-        textoymodificable('Id cotización ',widget.solicitud,servicio,1,true),
-        textoymodificable('Matería  ',widget.solicitud,servicio,2,false),
-        textoymodificable('Fecha de entrega  ',widget.solicitud,servicio,3,false),
-        textoymodificable('Cliente  ',widget.solicitud,servicio,4,true),
-        textoymodificable('fecha sistema  ',widget.solicitud,servicio,5,true),
-        textoymodificable('Estado  ',widget.solicitud,servicio,6,true),
-        textoymodificable('Resumen  ',widget.solicitud,servicio,7,false),
-        textoymodificable('Info cliente ',widget.solicitud,servicio,8,false),
-        textoymodificable('url archivos ',widget.solicitud,servicio,9,true),
-      ],
+    return Consumer<SolicitudProvider>(
+        builder: (context, solicitudprovider, child) {
+          Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
+          idcotizacionn = solicitudSeleccionado.idcotizacion;
+
+          return ItemsCard(
+            alignementColumn: MainAxisAlignment.start,
+            shadow: false,
+            width: widget.currentwith * 0.98,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+              ),
+              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
+              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
+              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
+              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+            ],
+          );
+        }
     );
   }
 
-  Widget textoymodificable(String text, Solicitud solicitud, String servicio,int index, bool bool){
+  Widget textoymodificable(String text,String valor,int index, bool bool){
     const double verticalPadding = 3.0;
-    String? cambio = "";
-    String valor = valores[index];
-
-    if (index == 0) {
-      cambio = selectedServicio;
-    } else if (index == 1) {
-    } else if (index == 2) {
-      cambio = selectedMateria?.nombremateria;
-    } else if (index == 3) {
-      cambio = "";
-    } else if (index == 4) {
-    } else if (index == 5) {
-    } else if (index == 6) {
-    } else if (index == 7) {
-      cambio = datoscambiostext;
-    } else if (index == 8) {
-      cambio = datoscambiostext;
-    } else if (index == 9) {
-    }
 
     return Row(
       children: [
@@ -150,12 +136,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                     onTap: (){
                       setState(() {
                         editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        if (!editarcasilla[index]) {
-                          // Si se desactiva la edición, actualiza el texto original con el texto editado
-                          editarcasilla[index] = editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                        }
                       });
-                      print("oprimido para cambiar");
                     },
                     child: const Icon(FluentIcons.edit),
                   )
@@ -176,7 +157,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                       child: TextBox(
                         placeholder: valor,
                         onChanged: (value){
-                          datoscambiostext = value;
+                          cambio = value;
                         },
                         maxLines: null,
                       ),
@@ -200,6 +181,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                           }).toList(),
                           onSelected: (item) {
                             selectedServicio = item.value;
+                            cambio = selectedServicio;
                           },
                           decoration: Disenos().decoracionbuscador(),
                           placeholder: 'Selecciona tu servicio',
@@ -233,8 +215,8 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                           decoration: Disenos().decoracionbuscador(),
                           onSelected: (item) {
                             setState(() {
-                              print("seleccionado ${item.label}");
                               selectedMateria = item.value; // Actualizar el valor seleccionado
+                              cambio = item.value?.nombremateria;
                             });
                           },
                           onChanged: (text, reason) {
@@ -259,13 +241,9 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                         padding: const EdgeInsets.symmetric(horizontal: 3.0),
                         child: GestureDetector(
                           onTap: () async{
-                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,solicitud.idcotizacion);
+                            print("a cambiar $cambio!");
+                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,idcotizacionn);
                             setState(() {
-                              if(index !=3){
-                                valores[index] = cambio!;
-                              }else{
-                                valores[index] = "${DateFormat("dd/MM").format(cambiarfecha)} ANTES DE ${DateFormat('hh:mma').format(cambiarfecha)}";
-                              }
                               editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
                             });
                           },
@@ -280,7 +258,6 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                             setState(() {
                               editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
                             });
-                            print("oprimido para cambiar");
                           },
                           child: const Icon(FluentIcons.cancel),
                         ),
@@ -355,11 +332,9 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   }
 
 class SecundaryColumn extends StatefulWidget {
-  final Solicitud solicitud;
   final double currentwith;
 
   const SecundaryColumn({Key?key,
-    required this.solicitud,
     required this.currentwith,
   }) :super(key: key);
 
@@ -371,50 +346,114 @@ class SecundaryColumn extends StatefulWidget {
 class SecundaryColumnState extends State<SecundaryColumn> {
   List<ArchivoResultado> archivosresultados = [];
   final ThemeApp themeApp = ThemeApp();
+  //comprobar si tenemos licencia
+  bool configuracionSolicitudes = false;
+  //Documento
+  List<PlatformFile>? selectedFiles ;
+  String archivoNombre = "";
+  String _archivoExtension = "";
+  //
+  bool cargarArchivos = false;
+
+  void actualizarArchivos(int idcotizacion,String carpetaid) async{
+    await DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
+    setState(() {
+      cargarArchivos = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ItemsCard(
-      shadow: false,
-      cardColor: themeApp.primaryColor,
-      width: widget.currentwith * 0.98,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-          child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
-        ),
-        PrimaryStyleButton(
-          width: 130,
-          invert: true,
-            function: (){
-              DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion);
-            },
-            text: "Verificar"
-        ),
-        Expanded(
-          child: FutureBuilder(
-              future: DriveApiUsage().viewarchivosolicitud(widget.solicitud.idcotizacion),
-              builder: (context,snapshot){
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Mientras se espera, mostrar un mensaje de carga
-                  return const Center(
-                    child: Text('cargando'), // O cualquier otro widget de carga
-                  );
-                } else if (snapshot.hasError) {
-                  // Si ocurre un error en el Future, mostrar un mensaje de error
-                  return const Center(
-                    child: Text("Error al cargar los datos"),
-                  );
-                } else {
-                  List<ArchivoResultado>? archivosList = snapshot.data;
+    final currentheight = MediaQuery.of(context).size.height;
+    return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
+      builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
+        ConfiguracionPlugins? config = configuracionProviderselect.config;
+        Solicitud solicitud = solicitudProviderselect.solicitudSeleccionado;
+        List<ArchivoResultado> archivoList = archivoDriveProvider.todosLosArchivos;
+          configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
 
-                  return _TarjetaArchivos(archivosList: archivosList);
+          if(!cargarArchivos){
+            print("cargando archivos");
+            actualizarArchivos(solicitud.idcotizacion,config.idcarpetaSolicitudes);
+          }
+
+        return ItemsCard(
+          shadow: false,
+          cardColor: themeApp.primaryColor,
+          width: widget.currentwith * 0.98,
+          height: currentheight,
+
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children:[
+                if(configuracionSolicitudes)
+                  FilledButton(
+                      style: Disenos().boton_estilo(),
+                      child: Text('seleccionar archivos'), onPressed: (){
+                    selectFile();
+                  }),
+              ],
+            ),
+            //Archivos nombre que se van a subir
+            if(selectedFiles  != null)
+              Column(
+                children: selectedFiles!.map((file) {
+                  return Container(
+                    color: Colors.blue,
+                    child: Text(file.name),
+                  );
+                }).toList(),
+              ),
+            FilledButton(
+                child: Text('Subir mas archivos'),
+                onPressed: (){
+                  subirarchivos(config.idcarpetaSolicitudes,solicitud.idcotizacion.toString());
                 }
-              }),
-        ),
-      ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+              child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+            ),
+            Expanded(
+              child: _TarjetaArchivos(archivosList: archivoList),
+            ),
+
+          ],
+        );
+      },
     );
   }
+
+  Future subirarchivos(String idcarpetasolicitudesDrive, String idsolicitud) async{
+    final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,idsolicitud,context);
+    print("Número de archivos subidos: ${result.numberfilesUploaded}");
+    print("URL de la carpeta: ${result.folderUrl}");
+    //Ahora avisar numero de archivos subidos y url
+  }
+
+  Future selectFile() async{
+    if(kIsWeb){
+      final result = await FilePicker.platform.pickFiles(type: FileType.any, allowMultiple: true);
+
+      if (result != null && result.files.isNotEmpty) {
+        final fileName = result.files.first.name;
+        final fileextension = result.files.first.extension;
+        setState(() {
+          selectedFiles  = result.files;
+          archivoNombre = fileName;
+          _archivoExtension = fileextension!;
+          print(fileName);
+          print(fileextension);
+        });
+        print("extension archivo");
+        print(_archivoExtension);
+        print("Nombre del archivo");
+      }}else{
+      print('Aqui no va a pasar');
+    }
+  }
+
 }
 
 class _TarjetaArchivos extends StatefulWidget{
@@ -450,38 +489,63 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
                 itemBuilder: (context,index) {
                   ArchivoResultado? archivo = widget.archivosList?[index];
 
-                  return GestureDetector(
-                    onTap: (){
-                      print("te toco");
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                      child: Card(
-                        child:Column(
-                          children: [
-                            //nombre del archivo
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo!.nombrearchivo)),
-                              ],
-                            ),
-                            //extension de pdf
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo.mimeType)),
-                              ],
-                            ),
-                            //id de archivo
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(child: Text(archivo.id)),
-                              ],
-                            ),
-                          ],
-                        ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                    child: Card(
+                      child:Column(
+                        children: [
+                          //nombre del archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(archivo!.nombrearchivo),
+                            ],
+                          ),
+                          //id de archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(archivo.id),
+                            ],
+                          ),
+                          //Url del archivo
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                  child: Text(archivo.linkVistaArchivo),
+                              onTap: (){
+                                _abrirEnlace(archivo.linkVistaArchivo);
+                              },),
+                            ],
+                          ),
+                          //acciones
+                          Row(
+                            children: [
+                              //ver archivo -- LOGRADO
+
+                              //Descargar archvio -- LOGRADO
+
+                              //eliminar archivo --
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  GestureDetector(
+                                    child: Text('Eliminar archivo'),
+                                    onTap: (){
+                                      DriveApiUsage().eliminarArchivo(archivo.id,context);
+                                    },),
+                                ],
+                              ),
+
+                              //cambiar nombre -- TOCA VER
+
+                              //informacón de archivo -- LOGRADO
+
+                              //Actividad de archivo -- TOCA VER
+                            ],
+                          )
+                        ],
                       ),
                     ),
                   );
@@ -490,6 +554,14 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
         ),
       ],
     );
+  }
+
+  void _abrirEnlace(String enlace) async {
+    if (await canLaunch(enlace)) {
+      await launch(enlace);
+    } else {
+      throw 'No se pudo abrir el enlace $enlace';
+    }
   }
 }
 

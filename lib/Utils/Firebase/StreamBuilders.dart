@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:js';
+import 'package:intl/intl.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:flutter/scheduler.dart';
@@ -25,6 +26,30 @@ import 'package:rxdart/rxdart.dart';
 class stream_builders{
   CollectionReferencias referencias =  CollectionReferencias();
 
+  //Update de estadisticas de lectura
+  Future estadisticasLectutaFirestore(int num_lecturas) async{
+    await referencias.initCollections();
+    CollectionReference rutaEstadisticasFirestore = referencias.configuracion!.doc("Plugins").collection("LECTURA_ESCRITURA");
+
+    final fechaActual = DateTime.now();
+    final fechaActualString = DateFormat('dd-MM-yyyy').format(fechaActual);
+
+    final estadisticasDoc = rutaEstadisticasFirestore.doc(fechaActualString);
+    final estadisticaSnapshot = await estadisticasDoc.get();
+
+    if(estadisticaSnapshot.exists){
+      await estadisticasDoc.update({
+        'lecturas_subidas' : FieldValue.increment(num_lecturas),
+      });
+    }else{
+      await estadisticasDoc.set({
+      'lecturas_subidas' : FieldValue.increment(num_lecturas),
+      'fecha': fechaActual,
+      });
+    }
+
+  }
+
   //Configuración de Streambuilders, 3 streambuilders, CONFIGURACIÓN
   Stream<ConfiguracionPlugins> getstreamConfiguracion(BuildContext context) async*{
     CollectionReference refconfiguracion = referencias.configuracion!;
@@ -45,6 +70,7 @@ class stream_builders{
       },
     );
     await for (Map<String, dynamic> snapshots in combinedStream) {
+      int counter = 0;
       Map<String, dynamic> dataConfiguracion = snapshots['configuracion'].data() as Map<String, dynamic>;
       Map<String, dynamic> dataPlugins = snapshots['plugins'].data() as Map<String, dynamic>;
       Map<String, dynamic> dataMensajes = snapshots['mensajes'].data() as Map<String, dynamic>;
@@ -74,6 +100,9 @@ class stream_builders{
       //carguemos a provider
       final ConfiguracionProvider = context.read<ConfiguracionAplicacion>();
       ConfiguracionProvider.cargarConfiguracion(newconfig);
+      counter = counter+3; //son 3 documentos diferentes los que se leen, por eso debe ser asi
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de configuración $counter");
       yield newconfig!;
     }
   }
@@ -88,7 +117,7 @@ class stream_builders{
 
   // STREAMBUILDER DE SOLICITUDES
   Stream<List<Solicitud>> getTodasLasSolicitudes(BuildContext context) async*{
-    final ConfiguracionProvider = context.read<SolicitudProvider>();
+    final solicitudProvider = context.read<SolicitudProvider>();
     CollectionReference refsolicitud = referencias.solicitudes!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool solicitudescache = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
@@ -108,6 +137,8 @@ class stream_builders{
     await for (QuerySnapshot solicitudSnapshot in querySolicitud) {
       List<Solicitud> solicitudList = [];
       print("Ejecutando Solciitudes Stream");
+
+      int counter = 0;
 
       for (var solicitudDoc in solicitudSnapshot.docs) {
         String servicio = solicitudDoc['Servicio'];
@@ -143,30 +174,31 @@ class stream_builders{
         print("consultado solicitud $idcotizacion");
         Solicitud newsolicitud = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, fechasistema, estado, cotizaciones,fechaactualizacion,urlarchivo,actualizarsolicitudes,ultimaModificacion);
         solicitudList.add(newsolicitud);
+        counter++;
       }
 
       if(!solicitudescache){
         String solicitudesJson = jsonEncode(solicitudList);
         await prefs.setString('solicitudes_list_stream', solicitudesJson);
         await prefs.setBool('cheched_solicitudes_descargadas_stream', true);
-        ConfiguracionProvider.clearSolicitudes();
-        ConfiguracionProvider.cargarTodasLasSolicitudes(solicitudList);
-        ConfiguracionProvider.actualizarEstados();
+        solicitudProvider.cargarTodasLasSolicitudes(solicitudList);
       }else{
-        List<Solicitud>? solicitudcacheado = await cargarsolicitudes();
-        solicitudcacheado = solicitudcacheado!
-            .where((servicioCachado) =>
-        solicitudList.indexWhere((s) => s.idcotizacion == servicioCachado.idcotizacion) == -1)
-            .toList();
-        solicitudcacheado.addAll(solicitudList);
-        String solicitudesJson = jsonEncode(solicitudcacheado);
+        List<Solicitud>? solicitudCacheado = await cargarsolicitudes();
+        for (var solicitud in solicitudList) {
+          int indexExistente = solicitudCacheado!.indexWhere((s) => s.idcotizacion == solicitud.idcotizacion);
+
+          if (indexExistente != -1) {
+            solicitudProvider.modifySolicitud(solicitud);
+          } else {
+            solicitudProvider.addNewSolicitud(solicitud);
+          }
+        }
+        String solicitudesJson = jsonEncode(solicitudProvider.todaslasSolicitudes);
         await prefs.setString('solicitudes_list_stream', solicitudesJson);
-        ConfiguracionProvider.clearSolicitudes();
-        ConfiguracionProvider.cargarTodasLasSolicitudes(solicitudcacheado);
-        ConfiguracionProvider.actualizarEstados();
       }
 
-
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de solicitudes $counter");
       yield solicitudList;
     }
   }
@@ -198,6 +230,7 @@ class stream_builders{
 
   //Streambuilders de servicios agendados
   Stream<List<ServicioAgendado>> getServiciosAgendados(BuildContext context) async* {
+    final serviciosAgendadosProvider =  context.read<ContabilidadProvider>();
     CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? agendadocache = prefs.getBool('checked_serviciosAgendados') ?? false;
@@ -210,14 +243,14 @@ class stream_builders{
     }else{
       queryContabilidad = refcontabilidad.where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
       List<ServicioAgendado> serviciosAgendadosList = await cargarserviciosagendados();
-      final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-      ConfiguracionProvider.cargarTodosLosServicios(serviciosAgendadosList);
+      serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
       print("ya cacheados");
     }
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
       List<ServicioAgendado> serviciosAgendadosList = [];
 
       print("Ejecutando Contabilidad Stream");
+      int counter = 0;
 
       for (var servicio in servicioSnapshot.docs) {
         try {
@@ -301,6 +334,7 @@ class stream_builders{
           );
 
           serviciosAgendadosList.add(newservicioagendado);
+          counter++;
         } catch (e) {
           print(e);
         }
@@ -310,23 +344,22 @@ class stream_builders{
         String solicitudesJson = jsonEncode(serviciosAgendadosList);
         await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
         await prefs.setBool('checked_serviciosAgendados', true);
-        final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-        ConfiguracionProvider.cargarTodosLosServicios(serviciosAgendadosList);
+        serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
       }else{
         List<ServicioAgendado> serrvicioscacheado = await cargarserviciosagendados();
-        for (var servicioCachado in serrvicioscacheado) {
-          int indexExistente = serviciosAgendadosList.indexWhere((s) => s.codigo == servicioCachado.codigo);
+        for (var servicio in serviciosAgendadosList) {
+          int indexExistente = serrvicioscacheado.indexWhere((s) => s.codigo == servicio.codigo);
           if (indexExistente != -1) {
-            serrvicioscacheado.remove(servicioCachado);
+            serviciosAgendadosProvider.modifyServicio(servicio);
+          }else{
+            serviciosAgendadosProvider.addNewServicio(servicio);
           }
         }
-        serrvicioscacheado.addAll(serviciosAgendadosList);
-        String solicitudesJson = jsonEncode(serrvicioscacheado);
+        String solicitudesJson = jsonEncode(serviciosAgendadosProvider.todoslosServiciosAgendados);
         await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
-        final ConfiguracionProvider =  context.read<ContabilidadProvider>();
-        ConfiguracionProvider.clearServicios();
-        ConfiguracionProvider.cargarTodosLosServicios(serrvicioscacheado);
       }
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de contabilidad $counter");
       yield serviciosAgendadosList;
     }
   }
@@ -375,8 +408,9 @@ class stream_builders{
     }
     await for (QuerySnapshot tutoresSnapshot in queryTutores) {
       List<Tutores> tutoresList = [];
-
       print("Ejecutando Tutores Stream");
+
+      int counter = 0;
 
       for (var TutorDoc in tutoresSnapshot.docs) {
         String nombrewhatsapp = TutorDoc['nombre Whatsapp'];
@@ -389,13 +423,34 @@ class stream_builders{
         bool activo = TutorDoc.data().toString().contains('activo') ? TutorDoc.get('activo') : true;
         DateTime actualizartutores = TutorDoc.data().toString().contains('actualizartutores') ? TutorDoc.get('actualizartutores').toDate() : DateTime(2023,1,1,0,0); //Number
         String rol = TutorDoc.data().toString().contains('rol') ? TutorDoc.get('rol') : "TUTOR";
-        int ultimaModificacion = TutorDoc.data().toString().contains('ultimaModificacion') ? TutorDoc.get('ultimaModificacion') : 1672534800; //Number
-
+        int ultimaModificacion = TutorDoc.data().toString().contains('ultimaModificacion') ? TutorDoc.get('ultimaModificacion') : 1672534800;
         List<Materia> materiaList = [];
+        if (TutorDoc.data() !=null && TutorDoc.data().toString().contains('materias')) {
+          var MateriaData = TutorDoc['materias'] as List<dynamic>;
+          materiaList = MateriaData.map((MateriaDato) {
+            String nombremateria = MateriaDato['nombremateria'];
+            int ultimaModificacion = MateriaDato.containsKey('ultimaModificacion') ? MateriaDato['ultimaModificacion'] : 1672534800;
+            Materia newmateria = Materia(nombremateria,ultimaModificacion);
+            return newmateria;
+          }).toList();
+        }
+
         List<CuentasBancarias> cuentasBancariasList = [];
+        if (TutorDoc.data() !=null && TutorDoc.data().toString().contains('cuentas')) {
+          var MateriaData = TutorDoc['cuentas'] as List<dynamic>;
+          cuentasBancariasList = MateriaData.map((cuentaDato) {
+            String tipoCuenta = cuentaDato['tipoCuenta'];
+            String numeroCuenta = cuentaDato['numeroCuenta'];
+            String numeroCedula = cuentaDato['numeroCedula'];
+            String nombreCuenta = cuentaDato['nombreCuenta'];
+            CuentasBancarias newcuentaBancaria = CuentasBancarias(tipoCuenta, numeroCuenta, numeroCedula, nombreCuenta);
+            return newcuentaBancaria;
+          }).toList();
+        }
         Tutores newTutores = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materiaList, cuentasBancariasList, activo, actualizartutores, rol,ultimaModificacion);
         tutoresList.add(newTutores);
         print("revisando tutor $uid");
+        counter++;
       }
 
       if(!serviciosAgendadosCache){
@@ -403,18 +458,24 @@ class stream_builders{
         await prefs.setString('tutores_list_stream', solicitudesJson);
         await prefs.setBool('checked_tutores_stream', true);
         tutoresProviderUso.cargarTodosTutores(tutoresList);
-      }else{
+      }
+      else{
         List<Tutores> tutorescacheado = await cargarTutoresList();
-        tutorescacheado = tutorescacheado!
-            .where((servicioCachado) =>
-        tutoresList.indexWhere((s) => s.uid == servicioCachado.uid) == -1)
-            .toList();
-        tutorescacheado.addAll(tutoresList);
-        tutoresProviderUso.cargarTodosTutores(tutorescacheado);
+        for (var tutor in tutoresList) {
+          int indexExistente = tutorescacheado.indexWhere((s) => s.uid == tutor.uid);
+          if (indexExistente != -1) {
+            tutoresProviderUso.modifyTutor(tutor);
+          }else{
+            tutoresProviderUso.addNewTutor(tutor);
+          }
+        }
+
+        print("guardando en cache");
         String solicitudesJson = jsonEncode(tutorescacheado);
         await prefs.setString('tutores_list_stream', solicitudesJson);
       }
-
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de tutores $counter");
       yield tutoresList;
     }
 
@@ -468,6 +529,7 @@ class stream_builders{
     await for (QuerySnapshot MateriaSnapshot in queryMaterias) {
       List<Materia> materiaList = [];
       print("Ejecutando Materias Stream");
+      int counter = 0;
       for (var MateriaDoc in MateriaSnapshot.docs) {
         String nombremateria = MateriaDoc['nombremateria'];
         int ultimaModificacion = MateriaDoc.data().toString().contains('ultimaModificacion') ? MateriaDoc.get('ultimaModificacion') : 1672534800; //Number
@@ -475,6 +537,7 @@ class stream_builders{
         Materia newmateria = Materia(nombremateria, ultimaModificacion);
         materiaList.add(newmateria);
         print("cargando materia $nombremateria");
+        counter++;
       }
 
       if(!materiascache){
@@ -498,6 +561,8 @@ class stream_builders{
         materiasProvider.cargarTodasLasMaterias(materiacacheadoList);
       }
 
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de materias $counter");
       yield materiaList;
     }
   }
@@ -548,6 +613,7 @@ class stream_builders{
     await for (QuerySnapshot clienteSnapshot in queryCLientes) {
       List<Clientes> clienteList = [];
       print("Ejecutando Clientes Stream");
+      int counter = 0;
 
       for (var clienteDoc in clienteSnapshot.docs) {
         String Carrera = clienteDoc['Carrera'];
@@ -563,6 +629,7 @@ class stream_builders{
         print("consultado cliente $numero");
         Clientes newClientes = Clientes(Carrera, Universidadd, nombreCliente, numero,nombrecompletoCliente,fechaActualizacion,procedencia,fechaContacto,ultimaModificacion);
         clienteList.add(newClientes);
+        counter++;
       }
       if(!clientescache){
         String solicitudesJson = jsonEncode(clienteList);
@@ -581,6 +648,8 @@ class stream_builders{
         clienteProviderUso.cargarTodosLosClientes(clientescacheado);
       }
 
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de clientes $counter");
       yield clienteList;
     }
   }
@@ -631,6 +700,9 @@ class stream_builders{
       List<Universidad> universidadList = [];
       print("Ejecutando Universidad Stream");
 
+      int counter = 0;
+
+
       for (var UniversidadDoc in UniversidadSnapshot.docs) {
         String nombreuniversidad = UniversidadDoc['nombre Universidad'];
         int ultimaModificacion = UniversidadDoc.data().toString().contains('ultimaModificacion') ? UniversidadDoc.get('ultimaModificacion') : 1672534800; //Number
@@ -638,6 +710,7 @@ class stream_builders{
         Universidad newuniversidad = Universidad(nombreuniversidad,ultimaModificacion);
         universidadList.add(newuniversidad);
         print("cargando universidad $nombreuniversidad");
+        counter++;
       }
       if(!universidadcache){
         String solicitudesJson = jsonEncode(universidadList);
@@ -655,6 +728,8 @@ class stream_builders{
         await prefs.setString('universidades_List_Stream', solicitudesJson);
         universidadProvider.cargarTodasLasUniversidades(universidadCacheadoList);
       }
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de universidades $counter");
       yield universidadList;
     }
 
@@ -705,6 +780,7 @@ class stream_builders{
     await for (QuerySnapshot CarrerasSnapshot in queryCarreras) {
       print("Ejecutando Carrera Stream");
       List<Carrera> carreraList = [];
+      int counter = 0;
 
       for (var CarreraDoc in CarrerasSnapshot.docs) {
         String nombrecarrera = CarreraDoc['nombre carrera'];
@@ -713,6 +789,7 @@ class stream_builders{
         Carrera newcarrera = Carrera(nombrecarrera,ultimaModificacion);
         carreraList.add(newcarrera);
         print("cargando carrera $nombrecarrera");
+        counter++;
       }
       if(!carreracache){
         String solicitudesJson = jsonEncode(carreraList);
@@ -731,6 +808,8 @@ class stream_builders{
         carreraProviderUso.cargarTodasLasCarreras(carreraCacheadoList);
       }
 
+      estadisticasLectutaFirestore(counter);
+      print("se han contado de carreras $counter");
       yield carreraList;
     }
   }
@@ -760,13 +839,7 @@ class stream_builders{
     }
   }
 
-
-
-
-
-
-
-
+  //TOCA ARREGLAR ESTO - SISTEMA DE TUTORES
   //Obtener contabilidad en stream, Serbivio agendado de tutor
   Stream<List<ServicioAgendado>> getServicidosAgendadosTutor(String nombretutor) async* {
     CollectionReference refcontabilidad = referencias.contabilidad!;
