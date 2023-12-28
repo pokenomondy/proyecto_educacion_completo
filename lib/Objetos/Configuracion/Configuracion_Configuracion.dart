@@ -16,8 +16,11 @@ class ConfiguracionPlugins{
   String CONFIRMACION_CLIENTE = "";
   String SOLICITUD = "";
 
+  int ultimaModificacion = 1672534800;
+
+
   ConfiguracionPlugins(this.PrimaryColor,this.SecundaryColor,this.idcarpetaPagos,this.idcarpetaSolicitudes,this.nombre_empresa,
-      this.PagosDriveApiFecha,this.SolicitudesDriveApiFecha,this.basicoFecha,this.CONFIRMACION_CLIENTE,this.SOLICITUD);
+      this.PagosDriveApiFecha,this.SolicitudesDriveApiFecha,this.basicoFecha,this.CONFIRMACION_CLIENTE,this.SOLICITUD,this.ultimaModificacion);
 
   Map<String,dynamic> toMap(){
     return{
@@ -31,7 +34,22 @@ class ConfiguracionPlugins{
       'basicoFecha' : basicoFecha,
       'CONFIRMACION_CLIENTE' : CONFIRMACION_CLIENTE,
       'SOLICITUD' : SOLICITUD,
+      'ultimaModificacion' : ultimaModificacion,
     };
+  }
+
+  ConfiguracionPlugins.empty() {
+    PrimaryColor = "";
+    SecundaryColor = "";
+    idcarpetaPagos = "";
+    idcarpetaSolicitudes = "";
+    nombre_empresa = "";
+    PagosDriveApiFecha = DateTime(2023,1,1);
+    SolicitudesDriveApiFecha = DateTime(2023,1,1);
+    basicoFecha = DateTime(2023,1,1);
+    CONFIRMACION_CLIENTE = "";
+    SOLICITUD = "";
+    ultimaModificacion = 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -46,6 +64,7 @@ class ConfiguracionPlugins{
       'basicoFecha' : basicoFecha.toIso8601String(),
       'CONFIRMACION_CLIENTE' : CONFIRMACION_CLIENTE,
       'SOLICITUD' : SOLICITUD,
+      'ultimaModificacion' : ultimaModificacion,
     };
   }
 
@@ -61,6 +80,7 @@ class ConfiguracionPlugins{
         DateTime.parse(json['basicoFecha']),
         json['CONFIRMACION_CLIENTE'],
         json['SOLICITUD'],
+        json['ultimaModificacion'],
     );
   }
 }

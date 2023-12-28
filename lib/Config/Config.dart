@@ -10,38 +10,19 @@ import 'package:flutter/material.dart' as material;
 
 class Config {
   //Configuración inicial
-  Map<String, dynamic> configuracion_inicial = {}; // Configuración inicial del proyecto
-  String nombreempresa = "Error, reportar"; //Nombre de la empresa del proyecto
-  Color primaryColor = Color(0xFF235FD9); //Color primario de la plataforma
+  Color primaryColor = Color(0xFF235FD9); //NO SE PUEDE CAMBIAR, TOCA ELIMINAR
   Color Secundarycolor = Color(0xFF235FD9); //Color primario de la plataforma
-  String idcarpetaPagos = "";
-  String? idcarpetaSolicitudes;
-  //plugins
-  Map<String, dynamic> configuracion_plugins = {}; //plugins
-  Map<String, dynamic> configuracion_mensajes = {}; //mensajes
-  //booleanos de configuración
-  bool PagosDriveApi = false;
-  bool SolicitudesDriveApi = false;
-  bool basicoNormal = false;
-  //
-  DateTime basicofecha = DateTime.now();
-  DateTime SolicitudesDriveApiFecha = DateTime.now();
-  DateTime PagosDriveApiFecha = DateTime.now();
+
+
   //info de tutor
   String rol = "";
   final currentUser = FirebaseAuth.instance.currentUser;
-  //mensajes
-  String mensaje_solicitd = "";
-  String mensaje_confirmacionCliente = "";
-  //Tiempo de actualizaicón
-  Duration tiempoActualizacion = Duration.zero;
 
   Config() {
     initConfig();
   } //Inicializar la configuración
 
   Future<void> initConfig() async {
-    //Toca cargar el streambuilder aca para cargar los datos
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
       rol = await LoadData().verificar_rol(currentUser);
@@ -57,8 +38,13 @@ class Config {
 
   //Responsives
   int computador = 1200;
-  int tablet = 620;
-  int celular = 620;
+  int tablet = 620; //a esta se le deben restar 80
+  int celular = 620; //al celular se le debe restar 20
+  //Vistas vistas vistas
+  //ejemplos de como se ha manejado el responsive
+  //final currentwidth = MediaQuery.of(context).size.width;
+  //final currentheight = MediaQuery.of(context).size.height-140;
+  //final tamanowidth = (currentwidth/3)-30;
 
   //Carpeta de Pagos
   String carpetapagos = "1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N";

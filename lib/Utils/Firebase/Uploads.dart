@@ -10,6 +10,7 @@ import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.da
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:googleapis/driveactivity/v2.dart' as drive;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,7 +40,6 @@ class Uploads{
     await referencias.initCollections();
   }
 
-
   //SOLICITUDES
   //añadir servicio
   void addServicio (String servicio,String cotizacion,int idcotizacion,String materia, String carrera,DateTime fechaentrega, String resumen, String infocliente, int cliente,String urlarchivo) async{
@@ -49,6 +49,7 @@ class Uploads{
   List<Cotizacion> cotizaciones = [];
   Solicitud newservice = Solicitud(servicio, idcotizacion, materia, fechaentrega, resumen, infocliente, cliente, DateTime.now(), "DISPONIBLE", cotizaciones,fechaactualizacion,urlarchivo,DateTime.now(),timestamphoy);
   print("subido con exito servicio $idcotizacion");
+  await stream_builders().estadisticasEscrituraFirestore(1);
   await solicitud.doc("$idcotizacion").set(newservice.toMap());
 }
   //Modificar un servicio
@@ -82,6 +83,7 @@ class Uploads{
     }
 
     print("Upload Información: $uploadinformacion");
+    await stream_builders().estadisticasEscrituraFirestore(1);
     await solicitud.doc(idcotizacionfire.toString()).update(uploadinformacion);
   }
   //añadir cotización
@@ -94,6 +96,7 @@ class Uploads{
       'cotizaciones' : FieldValue.arrayUnion([newcotizacion.toMap()]),
       'ultimaModificacion' : timestamphoy,
     });
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
 
   //SERVICIOS AGENDADOS
@@ -105,8 +108,8 @@ class Uploads{
     List<RegistrarPago> pagos = [];
     ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],timestamphoy);
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
+    await stream_builders().estadisticasEscrituraFirestore(1);
 
-    print(idsolicitud);
     cambiarEstadoSolicitud(idsolicitud,"AGENDADO");
   }
   //Cambiar estado de servicio, a agendado
@@ -117,9 +120,9 @@ class Uploads{
       'Estado': motivo,
       'ultimaModificacion' : timestamphoy,
     };
-    expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
+    await expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
-
 
   //modificar un servicio agendado
   Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
@@ -164,6 +167,7 @@ class Uploads{
       'historial' : FieldValue.arrayUnion([newhistorial.toMap()]),
       'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
     });
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Entregar trabajos tutores
   Future<void> modifyServicioAgendadoEntregado(String codigo)async {
@@ -175,6 +179,7 @@ class Uploads{
       "entregadotutor": "ENTREGADO",
     };
     await contabilidad.doc(codigo).update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Entregar trabajos clientes
   Future<void> modifyServicioAgendadoEntregadoCliente(String codigo,String motivoentrega)async {
@@ -192,6 +197,7 @@ class Uploads{
       "entregadocliente": motivoentregaFirestore,
     };
     await contabilidad.doc(codigo).update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
 
   Future addinfotutor(String nombrewhatsapp,String nombrecompleto,int numerowhatsapp,String carrera,String correogmail,String univerisdad, uid) async{
@@ -201,18 +207,8 @@ class Uploads{
     List<CuentasBancarias> cuentas = [];
     Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR",DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await tutor.doc(uid).set(newtutor.toMap());
-    print("se subio un nuevo tutor");
-    print(newtutor);
-    //agregamos este tutor a la lista de tutores ya creada
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('tutores_list') ?? '';
-    List<dynamic> ClienteData = jsonDecode(solicitudesJson);
-    List tutoresList = ClienteData.map((tutorData) => Tutores.fromJson(tutorData as Map<String, dynamic>)).toList();
-    tutoresList.add(newtutor);
-    //Ahora guardamos la lista con el nuevo tutor agregado
-    String solicitudesJsonsave = jsonEncode(tutoresList);
-    await prefs.setString('tutores_list', solicitudesJsonsave);
-    //Ya queda subido el nuevo tutor
+    await stream_builders().estadisticasEscrituraFirestore(1);
+
   }
   //Modificar infomración de tutor
   Future<void> modifyinfotutor(int index,String texto,String uid, int num, BuildContext context) async{
@@ -252,6 +248,7 @@ class Uploads{
 
     CollectionReference tutores = referencias.tutores!;
     await tutores.doc(uid).update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //añadir cuentas
   Future<void> addCuentaBancaria(String uidtutor,String Tipocuenta, String NumeroCuenta, String NumeroCedula, String NombreCuenta) async {
@@ -262,7 +259,7 @@ class Uploads{
       'cuentas' :FieldValue.arrayUnion([newcuenta.toMap()]),
       'ultimaModificacion' : timestamphoy,
     });
-
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Subir materia de tutor
   void addMateriaTutor(String uidtutor,String nombremateria,{Function(Materia)? onMateriaAdded}) async{
@@ -273,6 +270,7 @@ class Uploads{
       'materias' : FieldValue.arrayUnion([newmateria.toMap()]),
       'ultimaModificacion' : timestamphoy,
     });
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {
@@ -290,6 +288,7 @@ class Uploads{
     clientesList.add(newcliente);
     String solicitudesJsonother = jsonEncode(clientesList);
     await prefs.setString('clientes_list', solicitudesJsonother);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Modificaar cliente
   Future<void> modifyCliente(int index,String numerocliente,String cambio)async{
@@ -311,6 +310,7 @@ class Uploads{
     };
 
     await refcliente.doc(numerocliente).update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
 
   }
 
@@ -338,6 +338,8 @@ class Uploads{
     }
     String clientesJson = jsonEncode(clientesList);
     await prefs.setString('clientes_list', clientesJson);
+    await stream_builders().estadisticasEscrituraFirestore(1);
+
   }
   //Registramos un nuevo pago a servicio
   Future<void> addPago(int idconfirmacion, ServicioAgendado servicio, String tipopago, int valor, String referencia, DateTime fechapago, String metodopago, BuildContext context) async {
@@ -367,13 +369,12 @@ class Uploads{
         'ultimaModificacion' : DateTime.now().millisecondsSinceEpoch ~/ 1000,
       });
     }
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
-
 
   Future<int> obtenerNumeroDePagosRegistrados(int idcontable) async {
     await referencias.initCollections();
-    //List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
-    List<ServicioAgendado>? serviciosAgendados;
+    List<ServicioAgendado>? serviciosAgendados = await stream_builders().cargarserviciosagendados();
 
     // Verifica si serviciosAgendados no es nulo y no está vacío
     if (serviciosAgendados != null && serviciosAgendados.isNotEmpty) {
@@ -424,6 +425,7 @@ class Uploads{
     // Guardar la lista actualizada
     String solicitudesJsondos = jsonEncode(solicitudListData);
     await prefs.setString('contabilidad_list', solicitudesJsondos);
+    await stream_builders().estadisticasEscrituraFirestore(1);
 
   }
   //Agregar carrera a tabla
@@ -432,6 +434,7 @@ class Uploads{
     CollectionReference carreraCollection = referencias.tablascarreras!;
     Carrera newcarrera = Carrera(nombrecarrera,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await carreraCollection.doc(nombrecarrera).set(newcarrera.toMap());
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Agregar unversidad a tabla
   Future<void> addUniversidad(String nombreuniversidad) async {
@@ -439,7 +442,7 @@ class Uploads{
     CollectionReference universidadCollection = referencias.tablasuniversidades!;
     Universidad newuniversidad = Universidad(nombreuniversidad,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await universidadCollection.doc(nombreuniversidad).set(newuniversidad.toMap());
-    //universidades en cache
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Envíar configuración inicial
   Future<void> uploadconfiginicial(String Primarycolor,String Secundarycolor,String nombre_empresa,String idcarpetaPagos,String idcarpetaSol) async{
@@ -458,6 +461,7 @@ class Uploads{
     String solicitudesJson = jsonEncode(uploadconfiguracion);
     await prefs.setString('configuracion_inicial_List', solicitudesJson);
     await prefs.setBool('datos_descargados_configinicial', true);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //uploadmsgs
   Future<void> uploadconfigmensaje(String text, String s) async{
@@ -467,6 +471,7 @@ class Uploads{
       '$s':  text,
     };
     await actualizadores.doc("MENSAJES").update(uploadconfiguracion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
   Future<void> uploadconfigmensajeinicial(String mensajeconfirmacion,String mensajesolicitud) async {
     await referencias.initCollections();
@@ -476,6 +481,7 @@ class Uploads{
       'SOLICITUD' : mensajesolicitud,
     };
     await actualizadores.doc("MENSAJES").set(uploadconfiguracion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
 
   //Subir materias de forma local
@@ -485,6 +491,7 @@ class Uploads{
     CollectionReference referencemateria = referencias.tablasmaterias!;
     Materia newmateria = Materia(nombremateria,DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await referencemateria.doc(nombremateria).set(newmateria.toMap());
+    await stream_builders().estadisticasEscrituraFirestore(1);
   }
 
 

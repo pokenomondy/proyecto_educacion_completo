@@ -67,11 +67,11 @@ class TutoresVistaVistaState extends State<TutoresVista> {
               ],),
           if(currentwidth < 1200 && currentwidth > 620)
             Container(
-                width: currentwidth,
+                width: currentwidth-80,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
           if(currentwidth <= 620)
             Container(
-                width: currentwidth,
+                width: currentwidth-20,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
 
         ],
@@ -181,7 +181,7 @@ class _TarjetaTutores extends StatefulWidget{
 }
 
 class _TarjetaTutoresState extends State<_TarjetaTutores> {
-  late String? selectedTipoCuenta;
+  late String? selectedTipCuenta;
   final List<String> tipoCuentaList = ['NEQUI','PAYPAL','BANCOLOMBIA','DAVIPLATA','BINANCE'];
   String numeroCuenta = "";
   String cedula = "";
@@ -191,7 +191,6 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   List<Solicitud> solicitudesList = [];
   bool dataLoaded = false;
 
-  List<Tutores> tutoresList = [];
   String Busqueda = "";
   Tutores? selectedTutor;
 
@@ -225,6 +224,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
     return Consumer<VistaTutoresProvider>(
         builder: (context, tutorProvider, child) {
           List<Tutores> tutores = tutorProvider.tutorseleccionado;
+          List<Tutores> tutoresList = tutorProvider.todosLosTutores;
 
           return Column(
             children: [

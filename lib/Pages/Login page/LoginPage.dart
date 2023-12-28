@@ -7,10 +7,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Config/Config.dart';
 import '../../Config/elements.dart';
 import '../../Config/theme.dart';
 import '../../Utils/Firebase/CollectionReferences.dart';
+import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Utils/Firebase/Load_Data.dart';
 
   class LoginPage extends StatefulWidget {
@@ -26,9 +28,7 @@ import '../../Utils/Firebase/Load_Data.dart';
     User? currentUser;
     FirebaseAuth? authdirection;
     CollectionReference? firestoredirection;
-
     CollectionReferencias referencias =  CollectionReferencias();
-
 
     @override
     void initState(){
@@ -38,14 +38,22 @@ import '../../Utils/Firebase/Load_Data.dart';
 
     @override
     void dispose() {
-      // Realiza la limpieza necesaria al eliminar el widget
-      // Por ejemplo, cancelar cualquier controlador o suscripción
       correo.dispose();
       contrasena.dispose();
       super.dispose();
     }
 
     Future redireccion() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool versioncache = prefs.getBool("${Strings().appVersion}_version") ?? false;
+      if(!versioncache){
+        print("eliminando variables por actualziación");
+        await DeleteLocalData().deleteAllLocalData();
+        await prefs.setBool("${Strings().appVersion}_version", true);
+      }else{
+        print("no hay nueva versión");
+      }
+
       if(Config.dufyadmon==true){
         currentUser = FirebaseAuth.instance.currentUser;
         authdirection = FirebaseAuth.instance;

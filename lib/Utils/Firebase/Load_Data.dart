@@ -12,43 +12,20 @@ import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadisticas/Contabilida.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:googleapis/driveactivity/v2.dart' as drive;
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
+import '../../Providers/Providers.dart';
 import 'CollectionReferences.dart';
 
 class LoadData {
   final db = FirebaseFirestore.instance; //inicializar firebase
   CollectionReferencias referencias =  CollectionReferencias();
-
-
-  //Obtener en tiempo real, numero de servicio a publicar
-  Stream<int> cargarnumerodesolicitudes() async* {
-    await referencias.initCollections();
-    CollectionReference referencesolicitudes = referencias.solicitudes!;
-    await for (QuerySnapshot snapshot in referencesolicitudes.snapshots()) {
-      int numDocumentos = snapshot.size;
-      if(!Config.dufyadmon){
-        yield numDocumentos + 1;
-      }else{
-        yield numDocumentos + 473;
-      }
-    }
-  }
-
-  //Obtener numero de contabilidades en tiempo real
-  Stream<int> cargarnumerocontabilidad() async* {
-    await referencias.initCollections();
-    CollectionReference referencecontabilidad = referencias.contabilidad!;
-    await for (QuerySnapshot snapshot in referencecontabilidad.snapshots()){
-      int numDocumentos = snapshot.size;
-      //print("numero obtenido $numDocumentos");
-      yield numDocumentos + 922;
-    }
-  }
 
   //Leer configuración inicial, que es la priemra que hay
   Future<Map<String, dynamic>> configuracion_inicial() async {
@@ -59,7 +36,7 @@ class LoadData {
     if (!datosDescargados) {
       try {
         DocumentSnapshot getconfiguracioninicial = await referencias.configuracion!.doc("CONFIGURACION").get();
-
+        int counter = 1;
         if (getconfiguracioninicial.exists) {
           String primaryColor = getconfiguracioninicial.get('Primarycolor') ?? '';
           String Secundarycolor = getconfiguracioninicial.get('Secundarycolor') ?? '';
@@ -79,6 +56,7 @@ class LoadData {
           await prefs.setString('configuracion_inicial_List', solicitudesJson);
           await prefs.setBool('datos_descargados_configinicial', true);
 
+          await  stream_builders().estadisticasLectutaFirestore(counter);
           return uploadconfiguracion;
         } else {
           // El documento no existe, puedes devolver una lista vacía o lo que sea adecuado para tu aplicación.
@@ -100,112 +78,12 @@ class LoadData {
     }
   }
 
-  //Leer plugins, para ver cuales estan o no estan
-  Future<Map<String, dynamic>> configuracion_plugins() async {
-    await referencias.initCollections();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_plugins') ?? false;
-    if (!datosDescargados) {
-      try {
-        print("descarngado plugins");
-        DocumentSnapshot getplugins = await referencias.configuracion!.doc("Plugins").get();
-        if (getplugins.exists) {
-          DateTime basicoFecha = getplugins.get('basicoFecha').toDate() ?? DateTime.now();
-          DateTime SolicitudesDriveApiFecha = getplugins.get('SolicitudesDriveApiFecha').toDate() ?? DateTime.now();
-          DateTime PagosDriveApiFecha = getplugins.get('PagosDriveApiFecha').toDate() ?? DateTime.now();
-          //Guardar variable
-          DateTime verificador = getplugins.get('verificadoractualizar').toDate() ?? DateTime.now();
-
-          Map<String, dynamic> uploadconfiguracion = {
-            'basicoFecha' : basicoFecha.toIso8601String(),
-            'SolicitudesDriveApiFecha' : SolicitudesDriveApiFecha.toIso8601String(),
-            'PagosDriveApiFecha' : PagosDriveApiFecha.toIso8601String(),
-            'verificador' : verificador.toIso8601String(),
-          };
-
-          String solicitudesJson = jsonEncode(uploadconfiguracion);
-          await prefs.setString('configuracion_plugins', solicitudesJson);
-          await prefs.setBool('datos_descargados_plugins', true);
-
-          print("guardando plugins");
-
-          return uploadconfiguracion;
-        } else {
-          return {};
-        }
-      } catch (e) {
-        print("Error: $e");
-        return {};
-      }
-    } else {
-      CollectionReference actualizacion = db.collection("ACTUALIZACION");
-      DocumentSnapshot actualizacionsnapshots = await actualizacion.doc("Plugins").get();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
-      Map<String, dynamic> servicioData = actualizacionsnapshots.data() as Map<String, dynamic>;
-      if (solicitudesJson.isNotEmpty) {
-        Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-        //Verificador de tiempo
-        return configuracion;
-      } else {
-        return {};
-      }
-    }
-  }
-
-  //Mnesajes personalizados
-  Future<Map<String, dynamic>> configuracion_mensajes() async {
-    await referencias.initCollections();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_config_mensajes') ?? false;
-
-    if (!datosDescargados) {
-      try {
-        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion!.doc("MENSAJES").get();
-
-        if (getconfiguracioninicial.exists) {
-          String msjsolicitudes = getconfiguracioninicial.get('SOLICITUD') ?? '';
-          String msjconfirmacion_cliente = getconfiguracioninicial.get('CONFIRMACION_CLIENTE') ?? '';
-
-
-          Map<String, dynamic> uploadconfiguracion = {
-            'SOLICITUDES': msjsolicitudes,
-            'CONFIRMACION_CLIENTE' : msjconfirmacion_cliente,
-          };
-
-          String solicitudesJson = jsonEncode(uploadconfiguracion);
-          await prefs.setString('configuracion_mensajes_list', solicitudesJson);
-          await prefs.setBool('datos_descargados_config_mensajes', true);
-
-          return uploadconfiguracion;
-        } else {
-          // El documento no existe, puedes devolver una lista vacía o lo que sea adecuado para tu aplicación.
-          return {};
-        }
-      } catch (e) {
-        print("Error: $e");
-        return {};
-      }
-    } else {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String solicitudesJson = prefs.getString('configuracion_mensajes_list') ?? '';
-      await prefs.setBool('datos_descargados_config_mensajes', false); //hAY QUE BORRAR ESTO DESPUES DE GENERAR EL CHACHEADO
-      if (solicitudesJson.isNotEmpty) {
-        Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-        return configuracion;
-      } else {
-        return {};
-      }
-    }
-  }
-
   //Tutores en local
   Future getinfotutor(User currentUser) async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool datosDescargados = prefs.getBool('datos_descargadios_getinfotutor') ?? false;
     if (!datosDescargados) {
-      //print("Datos de tutor de cero");
       DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
       String nametutor = getutoradmin.get('nombre Whatsapp');
       String Correo_gmail = getutoradmin.get('Correo gmail');
@@ -217,6 +95,7 @@ class LoadData {
       String solicitudesJson = jsonEncode(datos_tutor);
       await prefs.setString('informacion_tutor', solicitudesJson);
       await prefs.setBool('datos_descargadios_getinfotutor', true);
+      await  stream_builders().estadisticasLectutaFirestore(1);
       return datos_tutor;
     }else{
       //print("Datos de tutor cacheado");
@@ -231,7 +110,6 @@ class LoadData {
 
 
   }
-
   Future<String> verificar_rol(User currentUser) async {
     await referencias.initCollections();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -241,6 +119,7 @@ class LoadData {
       String rol = getutoradmin.get('rol') ?? '';
       await prefs.setString('rol_usuario', rol);
       await prefs.setBool('datos_Descargados_verificar_rol', true);
+      await  stream_builders().estadisticasLectutaFirestore(1);
       return rol;
     }else{
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -250,23 +129,8 @@ class LoadData {
 
   }
 
-  Future tiempoactualizacion() async{
-    await referencias.initCollections();
-    try{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String solicitudesJson = prefs.getString('configuracion_plugins') ?? '';
-      Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-      DateTime verificador = configuracion['verificador'] != null ? DateTime.parse(configuracion['verificador']) : DateTime.now();
-      Duration diferenciaTiempo = DateTime.now().difference(verificador);
-      return diferenciaTiempo;
-    }catch(e){
-      //print('Error en tiempoActualizacion: $e');
-      //print("duracion es cero");
-      return Duration.zero;
-    }
-  }
 
-  //Cargar lista de emrpesas y contraseñas
+  //Cargar lista de emrpesas y contraseñas -- Este contador lo asume Liba Soluciones
   Future cargaListaEmpresas() async{
     await referencias.initCollections();
     CollectionReference referencelistaempresas = referencias.listaEmpresas!;

@@ -43,7 +43,7 @@ class MainTutoresDashState extends State<MainTutoresDash> {
         appBar: NavigationAppBar(
           title: Container(
             margin:  const EdgeInsets.only(left: 20),
-            child:   Text(configuracion.nombreempresa,
+            child:   Text("Nombre Empresa",
               style: TextStyle(fontSize: 32),),
           ),
         ),
