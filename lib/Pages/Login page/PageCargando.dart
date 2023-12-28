@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart' as material;
 import '../../Objetos/Solicitud.dart';
 import '../../Objetos/Tutores_objet.dart';
-import '../../Utils/Firebase/ActualizarInformacion.dart';
 import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Config/theme.dart';
@@ -182,11 +181,11 @@ class PageCargandoState extends State<PageCargando> {
     await actualizacion.doc("Plugins").update(servicioData);
     prefs.remove('datos_descargados_plugins');
     prefs.remove('configuracion_plugins');
-    LoadData().configuracion_plugins();
   }
 
   @override
   Widget build(BuildContext context) {
+    /*
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -223,5 +222,7 @@ class PageCargandoState extends State<PageCargando> {
             }),
       ],
     );
+     */
+    return Container();
   }
 }

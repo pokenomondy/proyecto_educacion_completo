@@ -28,8 +28,8 @@ class ArchivoResultado{
   final String linkthumbalLink;
   final String iconLink;
   final String linkDescargaArchivo;
-  final String size;
-  final String horaCracion;
+  final String size; //
+  final String horaCracion; //
 
   ArchivoResultado(this.nombrearchivo,this.id,this.fileExtension,this.linkVistaArchivo
       ,this.linkthumbalLink,this.size,this.iconLink,this.horaCracion,this.linkDescargaArchivo);

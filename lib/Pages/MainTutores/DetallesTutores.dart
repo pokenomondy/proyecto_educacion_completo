@@ -1,4 +1,5 @@
 import 'package:dashboard_admin_flutter/Config/elements.dart';
+import 'package:dashboard_admin_flutter/Config/strings.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
@@ -83,6 +84,8 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
   String uidtutor = "";
   bool activo = false;
   bool volveraconsultar = false;
+  List<Materia> materiaListTutor = [];
+  List<CuentasBancarias> cuentasBancariasTutor = [];
 
   @override
   void initState() {
@@ -132,6 +135,8 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
         builder: (context, tutorProvider, child) {
           Tutores tutorseleccionado = tutorProvider.tutorSeleccionado;
           uidtutor = tutorseleccionado.uid;
+          materiaListTutor = tutorseleccionado.materias;
+          cuentasBancariasTutor = tutorseleccionado.cuentas;
 
           if(!volveraconsultar){
             activo = tutorseleccionado.activo;
@@ -161,6 +166,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
               if(cargadotablamaterias)
                 Column(
                   children: [
+                    //MATERIAS
                     Container(
                       height: 30,
                       margin: const EdgeInsets.symmetric(vertical: 10.0),
@@ -170,25 +176,19 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                               (materia) => AutoSuggestBoxItem<Materia>(
                             value: materia,
                             label: materia.nombremateria,
-                            onFocusChange: (focused) {
-                              if (focused) {
-                                debugPrint('Focused #${materia.nombremateria} - ');
-                              }
-                            },
                           ),
                         )
                             .toList(),
                         decoration: Disenos().decoracionbuscador(),
                         onSelected: (item) {
                           setState(() {
-                            print("seleccionado ${item.label}");
-                            selectedMateria = item.value; // Actualizar el valor seleccionado
+                            selectedMateria = item.value;
                           });
                         },
                         onChanged: (text, reason) {
                           if (text.isEmpty ) {
                             setState(() {
-                              selectedMateria = null; // Limpiar la selección cuando se borra el texto
+                              selectedMateria = null;
                             });
                           }
                         },
@@ -196,53 +196,58 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                     ),
                     PrimaryStyleButton(
                        function: () async{
-                     Uploads().addMateriaTutor(uidtutor, selectedMateria!.nombremateria);
+                         verificarUploadMateria();
                    },
                        text: "Subir materia"
                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
+                    //CUENTAS BANCARÍAS
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
+                        ),
+                        ComboBox<String>(
+                          value: selectedTipoCuenta,
+                          items: tipoCuentaList.map<ComboBoxItem<String>>((e) {
+                            return ComboBoxItem<String>(
+                              value: e,
+                              child: Text(e),
+                            );
+                          }).toList(),
+                          onChanged: (text) {
+                            setState(() {
+                              selectedTipoCuenta = text; // Update the local variable
+                            });
+                          },
+                          placeholder: const Text('Tipo de cuenta'),
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: numeroCuentaBancaria,
+                            placeholder: "Numero Cuenta Bancaria"
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: cedulaTutor,
+                            placeholder: "Cedula Cuenta Bancaria"
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: nombreCedulaTutor,
+                            placeholder: "Nombre Cedula"
+                        ),
+                        PrimaryStyleButton(
+                            function: (){
+                              verificarUploadCuentaBancaria();
+                            },
+                            text: "Subir Cuenta"
+                        ),
+                      ],
                     ),
-                    ComboBox<String>(
-                      value: selectedTipoCuenta,
-                      items: tipoCuentaList.map<ComboBoxItem<String>>((e) {
-                        return ComboBoxItem<String>(
-                          value: e,
-                          child: Text(e),
-                        );
-                      }).toList(),
-                      onChanged: (text) {
-                        setState(() {
-                          selectedTipoCuenta = text; // Update the local variable
-                        });
-                      },
-                      placeholder: const Text('Tipo de cuenta'),
-                    ),
-                    RoundedTextField(
-                        topMargin: 3,
-                        bottomMargin: 3,
-                        controller: numeroCuentaBancaria,
-                        placeholder: "Numero Cuenta Bancaria"
-                    ),
-                    RoundedTextField(
-                        topMargin: 3,
-                        bottomMargin: 3,
-                        controller: cedulaTutor,
-                        placeholder: "Cedula Cuenta Bancaria"
-                    ),
-                    RoundedTextField(
-                        topMargin: 3,
-                        bottomMargin: 3,
-                        controller: nombreCedulaTutor,
-                        placeholder: "Nombre Cedula"
-                    ),
-                    PrimaryStyleButton(
-                  function: (){
-                Uploads().addCuentaBancaria(uidtutor, selectedTipoCuenta!, numeroCuentaBancaria.text, cedulaTutor.text, nombreCedulaTutor.text);
-              },
-                  text: "Subir Cuenta"
-              ),
                   ],
                 ),
             ],
@@ -363,10 +368,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
               //actualizar variable
               GestureDetector(
                 onTap: () async{
-                  await Uploads().modifyinfotutor(index, cambio!, uidtutor,cambionum,context);
-                  setState(() {
-                    editarcasilla[index] = !editarcasilla[index];
-                  });
+                  verificarUploadTutor(index,cambio);
                 },
                 child: const Icon(FluentIcons.check_list),
               ),
@@ -385,6 +387,51 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
     );
   }
 
+  Future verificarUploadTutor(int index, String cambiotextlocal) async{
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(cambiotextlocal == ""){
+      //mensaje de error
+      dialogs.error(Strings().errorTextoNulo,Strings().errorglobalText);
+    }else{
+      await Uploads().modifyinfotutor(index, cambio!, uidtutor,cambionum,context);
+      //mensaje de exito
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+      setState(() {
+        editarcasilla[index] = !editarcasilla[index];
+        cambionum = 0;
+        cambio = "";
+      });
+    }
+  }
+
+  void verificarUploadMateria(){
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(selectedMateria== null){
+      dialogs.error(Strings().errorseleccionemateria,Strings().errorglobalText);
+    }else if( materiaListTutor.any((materia) => materia.nombremateria == selectedMateria!.nombremateria)){
+      dialogs.error(Strings().errorMateriaRegistrada,Strings().errorglobalText);
+    }else{
+      Uploads().addMateriaTutor(uidtutor, selectedMateria!.nombremateria);
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+    }
+  }
+
+  void verificarUploadCuentaBancaria(){
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(selectedTipoCuenta == null || numeroCuentaBancaria == "" || cedulaTutor == "" || nombreCedulaTutor == ""){
+      dialogs.error(Strings().errroCuentasBancaria,Strings().errorglobalText);
+    }else{
+      Uploads().addCuentaBancaria(uidtutor, selectedTipoCuenta!, numeroCuentaBancaria.text, cedulaTutor.text, nombreCedulaTutor.text);
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+      setState(() {
+        numeroCuentaBancaria.dispose();
+        cedulaTutor.dispose();
+        nombreCedulaTutor.dispose();
+        selectedTipoCuenta = null;
+        //Toca reiniciar todas las variables y meter waiting cargando
+      });
+    }
+  }
 }
 
 class SecundaryColumnTutores extends StatefulWidget {

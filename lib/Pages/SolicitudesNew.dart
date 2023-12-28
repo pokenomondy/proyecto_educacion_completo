@@ -1,6 +1,8 @@
 import 'dart:html';
 import 'dart:math';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
+import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
@@ -228,7 +230,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   List<Clientes> clienteList = [];
   List<Tutores> tutoresList = [];
   DateTime fechaentrega = DateTime.now();
-  int numsolicitud = 0;
   String resumen = "";
   String infocliente = "";
   bool anteproyecto = false;
@@ -265,7 +266,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   bool configuracionSolicitudes = false;
   String idcarpetasolicitudesDrive = "";
 
-
+  int numSolicitud = 0;
 
   void updatedata(){
     setState(() {
@@ -278,7 +279,6 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     selectedServicio = null;
     selectedCliente = null;
     selectedMateria = null;
-    numcotizacionstream = LoadData().cargarnumerodesolicitudes();
     super.initState();
   }
 
@@ -355,21 +355,18 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Disenos().textonuevasolicitudblanco("ID cotización"),
-                    //Numero de cotización
-                    StreamBuilder(
-                      stream: numcotizacionstream,
-                      builder: (context, snapshot){
-                        if (snapshot.hasError) {
-                          return const Center(child: Text('Error al cargar las solicitudes'));
-                        }
+                    //Numero de cotización - obtenemos con Consumer
+                    Consumer<SolicitudProvider>
+                      (builder: (context, numcotizacion, child) {
 
-                        if (!snapshot.hasData) {
-                          return const Center(child: Text('cargando'));
-                        }
-                        int? numSolicitud = snapshot.data;
-                        numsolicitud = numSolicitud!;
-                        return Disenos().textonuevasolicitudblanco(numSolicitud.toString());
-                      },
+                      if(!Config.dufyadmon){
+                        numSolicitud =  numcotizacion.todaslasSolicitudes.length + 1;
+                      }else{
+                        numSolicitud = numcotizacion.todaslasSolicitudes.length + 473;
+                      }
+
+                      return Disenos().textonuevasolicitudblanco(numSolicitud.toString());
+                    }
                     ),
                   ],
                 ),
@@ -597,14 +594,13 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
       });
       await uploadarchivosDrive();
       setState(() {
-        numcotizacionstream = LoadData().cargarnumerodesolicitudes();
         selectedFiles = [];
         uploadedCount = 0;
       });
       DateTime fecha = DateTime(fechaentrega.year,fechaentrega.month,fechaentrega.day,fechaentrega.hour,fechaentrega.minute);
       String? materia = selectedMateria?.nombremateria.toString();
       print(fecha);
-      Uploads().addServicio(selectedServicio!, "NADA", numsolicitud, materia!, selectedCliente!.universidad.toString(), fecha , resumen, infocliente, selectedCliente!.numero,carpetaurl);
+      Uploads().addServicio(selectedServicio!, "NADA", numSolicitud, materia!, selectedCliente!.universidad.toString(), fecha , resumen, infocliente, selectedCliente!.numero,carpetaurl);
       Utiles().notificacion("Servicio solicitado con exito",context,true,"Bien rey");
       eliminar_Datos();
     }
@@ -612,7 +608,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
 
   Future<void> uploadarchivosDrive() async{
     if(configuracionSolicitudes){
-      final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,numsolicitud.toString(),context);
+      final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,numSolicitud.toString(),context);
       print("Número de archivos subidos: ${result.numberfilesUploaded}");
       print("URL de la carpeta: ${result.folderUrl}");
       //Ahora avisar numero de archivos subidos y url
@@ -892,18 +888,20 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   String editnombrewspcliente = "";
   final GlobalKey<CuadroSolicitudesState> statefulBuilderKey = GlobalKey<CuadroSolicitudesState>();
   String codigo = "";
-  Config configuracion = Config();
   bool configloaded = false;
   Tutores tutoresVacia = Tutores.empty();
+  ConfiguracionPlugins configuracionapp = ConfiguracionPlugins.empty();
+
+  int numCotizacionAgenda = 0;
 
   @override
   void initState() {
-    configuracion.initConfig().then((_) {
-      setState(() {
-        configloaded = true;
-      });
-    });
     super.initState();
+    loadtabla();
+  }
+
+  Future loadtabla() async{
+    configuracionapp = (await stream_builders().cargarconfiguracion()) as ConfiguracionPlugins;
   }
 
   void update(){
@@ -1134,7 +1132,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       horaRealizada = '${DateFormat('hh:mma').format(fechaentrega)}';
     }
 
-    String solicitud = configuracion.mensaje_solicitd;
+    String solicitud = configuracionapp.SOLICITUD;
 
     solicitud = solicitud.replaceAll("/servicio/", servicio);
     solicitud = solicitud.replaceAll("/idcotizacion/", idcotizacion.toString());
@@ -1462,19 +1460,16 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                   child: Text("Agendar trabajo", style: themeApp.styleText(24, true, themeApp.primaryColor),),
                 ),
 
-                StreamBuilder(
-                  stream: LoadData().cargarnumerocontabilidad(),
-                  builder: (context, snapshot){
-                    if (snapshot.hasError) {
-                      return const Center(child: Text('Error al cargar las solicitudes'));
+                Consumer<ContabilidadProvider>(
+                  builder: (context, pagosProvider, child) {
+                    if(!Config.dufyadmon){
+                      numCotizacionAgenda =  pagosProvider.todoslosServiciosAgendados.length + 1;
+                    }else{
+                      numCotizacionAgenda =  pagosProvider.todoslosServiciosAgendados.length + 922;
                     }
-                    if (!snapshot.hasData) {
-                      return const Center(child: Text('cargando'));
-                    }
-                    int? numSolicitud = snapshot.data;
-                    numerocontabilidadagenda = numSolicitud!;
-                    return Text("id contabilidad $numSolicitud", style: styleText,);
-                  },
+                    return Text("id contabilidad $numCotizacionAgenda", style: styleText,);
+
+                  }
                 ),
 
                 material.Padding(
@@ -1602,120 +1597,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     );
   }
 
-  void agendartrabajo(BuildContext context, Solicitud solicitud, Cotizacion cotizacion) async {
-    final currentwidth = MediaQuery.of(context).size.width;
-    print("se dibja show diaglog");
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          key: statefulBuilderKey,
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Agendar trabajo'),
-              content: Column(
-                children: [
-                  //Numero de servicio agendado
-                  StreamBuilder(
-                    stream: LoadData().cargarnumerocontabilidad(),
-                    builder: (context, snapshot){
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error al cargar las solicitudes'));
-                      }
-                      if (!snapshot.hasData) {
-                        return Center(child: Text('cargando'));
-                      }
-                      int? numSolicitud = snapshot.data;
-                      numerocontabilidadagenda = numSolicitud!;
-                      return Text("id contabilidad $numSolicitud");
-                    },
-                  ),
-                  //ssitema
-                  ComboBox<String>(
-                    value: selectedSistema,
-                    items: SistemaList.map<ComboBoxItem<String>>((e) {
-                      return ComboBoxItem<String>(
-                        child: Text(e),
-                        value: e,
-                      );
-                    }).toList(),
-                    onChanged: (text) {
-                      setState(() {
-                        selectedSistema = text; // Update the local variable
-                      });
-                    },
-                    placeholder: const Text('Seleccionar sistema de servicio'),
-                  ),
-                  //Precio del tutor
-                  SizedBox(
-                    width: currentwidth-80,
-                    child: Text("Precio tutor: ${cotizacion.cotizacion}"),
-                  ),
-                  //precio cobrado
-                  SizedBox(
-                    width: currentwidth-80,
-                    child: TextBox(
-                      placeholder: 'Precio cobrado',
-                      onChanged: (value){
-                        setState(() {
-                        });
-                      },
-                      maxLines: null,
-                    ),
-                  ),
-                  //identificador de codigo
-                  //Prospecto cliente o no?, para ver si hay que actualizarle información
-                  Text(stringnombrecliente),
-                  if(stringpropsectocliente == "PROSPECTO CLIENTE" || stringnombrecliente == "NO REGISTRADO")
-                    GestureDetector(
-                      child: Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                            color: Config.secundaryColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Icon(FluentIcons.add,
-                            color: Config().primaryColor,
-                            weight: 30,)),
-                      onTap: (){
-                        print("agregar nuevo prospecto de cliente");
-                        addInfoFaltanteCliente(context,solicitud);
-                      },
-                    ),
-                  //Mensaje de confirmación
-                  if(stringpropsectocliente != 'PROSPECTO CLIENTE' || stringnombrecliente == "NO REGISTRADO")
-                    FilledButton(child: Text('Copiar confirmación'),
-                        onPressed: (){
-                          copiarConfirmacion(solicitud,true,cotizacion);
-                        }
-                    ),
-                  FilledButton(child: Text('Copiar confirmación tutor'),
-                      onPressed: (){
-                        copiarConfirmacion(solicitud,false,cotizacion);
-                      }
-                  ),
-                ],
-              ),
-              actions: [
-                Button(
-                  child: const Text('Subir Servicio'),
-                  onPressed: () {
-                    comprobacionagendartrabajo(cotizacion,solicitud,context);
-                  },
-                ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<void> comprobacionagendartrabajo(Cotizacion cotizacion, Solicitud solicitud, BuildContext context) async {
     if(selectedSistema==null){
       Utiles().notificacion("Selecciona un sistema", context, false,"ya sea nacional o internacional");
@@ -1815,7 +1696,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       fechita = "${DateFormat("dd/MM").format(solicitud.fechaentrega)} ${DateFormat('hh:mma').format(solicitud.fechaentrega)}";
     }
 
-    String confirmacion = configuracion.mensaje_confirmacionCliente;
+    String confirmacion = configuracionapp.CONFIRMACION_CLIENTE;
 
     confirmacion = confirmacion.replaceAll("/servicioplural/", servicio);
     confirmacion = confirmacion.replaceAll("/servicio/", solicitud.servicio);

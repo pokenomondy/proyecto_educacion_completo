@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:js';
 import 'package:intl/intl.dart';
@@ -25,37 +26,82 @@ import 'package:rxdart/rxdart.dart';
 
 class stream_builders{
   CollectionReferencias referencias =  CollectionReferencias();
+  Queue<int> colaActualizaciones = Queue<int>();
+  Queue<int> colaActualizacionesEscritura = Queue<int>();
 
+
+  //Estos metodos, generan una lectura, esta la debe asumir LIBA SOLUCIONES
   //Update de estadisticas de lectura
-  Future estadisticasLectutaFirestore(int num_lecturas) async{
-    await referencias.initCollections();
-    CollectionReference rutaEstadisticasFirestore = referencias.configuracion!.doc("Plugins").collection("LECTURA_ESCRITURA");
+  Future<void> estadisticasLectutaFirestore(int numLecturas) async {
+    colaActualizaciones.add(numLecturas);
 
-    final fechaActual = DateTime.now();
-    final fechaActualString = DateFormat('dd-MM-yyyy').format(fechaActual);
-
-    final estadisticasDoc = rutaEstadisticasFirestore.doc(fechaActualString);
-    final estadisticaSnapshot = await estadisticasDoc.get();
-
-    if(estadisticaSnapshot.exists){
-      await estadisticasDoc.update({
-        'lecturas_subidas' : FieldValue.increment(num_lecturas),
-      });
-    }else{
-      await estadisticasDoc.set({
-      'lecturas_subidas' : FieldValue.increment(num_lecturas),
-      'fecha': fechaActual,
-      });
+    if (colaActualizaciones.length == 1) {
+      await _procesarColaActualizaciones();
     }
+  }
+  Future<void> _procesarColaActualizaciones() async {
+    while (colaActualizaciones.isNotEmpty) {
+      int numLecturas = colaActualizaciones.removeFirst();
+      await referencias.initCollections();
+      CollectionReference rutaEstadisticasFirestore = referencias.configuracion!.doc("Plugins").collection("LECTURA_ESCRITURA");
 
+      final fechaActual = DateTime.now();
+      final fechaActualString = DateFormat('dd-MM-yyyy').format(fechaActual);
+
+      final estadisticasDoc = rutaEstadisticasFirestore.doc(fechaActualString);
+      final estadisticaSnapshot = await estadisticasDoc.get();
+
+      if(estadisticaSnapshot.exists){
+        await estadisticasDoc.update({
+          'lecturas_subidas' : FieldValue.increment(numLecturas),
+        });
+      }else{
+        await estadisticasDoc.set({
+          'lecturas_subidas' : FieldValue.increment(numLecturas),
+          'fecha': fechaActual,
+        });
+      }
+      await Future.delayed(Duration(seconds: 2));
+    }
+  }
+  //update de estadisticas de escritura
+  Future<void> estadisticasEscrituraFirestore(int numLecturas) async {
+    colaActualizacionesEscritura.add(numLecturas);
+
+    if (colaActualizacionesEscritura.length == 1) {
+      await _procesarColaEscritura();
+    }
+  }
+  Future<void> _procesarColaEscritura() async {
+    while (colaActualizacionesEscritura.isNotEmpty) {
+      int numLecturas = colaActualizacionesEscritura.removeFirst();
+      await referencias.initCollections();
+      CollectionReference rutaEstadisticasFirestore = referencias.configuracion!.doc("Plugins").collection("LECTURA_ESCRITURA");
+
+      final fechaActual = DateTime.now();
+      final fechaActualString = DateFormat('dd-MM-yyyy').format(fechaActual);
+
+      final estadisticasDoc = rutaEstadisticasFirestore.doc(fechaActualString);
+      final estadisticaSnapshot = await estadisticasDoc.get();
+
+      if(estadisticaSnapshot.exists){
+        await estadisticasDoc.update({
+          'escrituras_subidas' : FieldValue.increment(numLecturas),
+        });
+      }else{
+        await estadisticasDoc.set({
+          'escrituras_subidas' : FieldValue.increment(numLecturas),
+          'fecha': fechaActual,
+        });
+      }
+      await Future.delayed(Duration(seconds: 2));
+    }
   }
 
   //Configuración de Streambuilders, 3 streambuilders, CONFIGURACIÓN
   Stream<ConfiguracionPlugins> getstreamConfiguracion(BuildContext context) async*{
     CollectionReference refconfiguracion = referencias.configuracion!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('cached_configuracion_descargadas') ?? false;
-    ConfiguracionPlugins? newconfig;
     Stream<DocumentSnapshot> queryConfiguracion = refconfiguracion.doc("CONFIGURACION").snapshots();
     Stream<DocumentSnapshot> queryPlugins = refconfiguracion.doc("Plugins").snapshots();
     Stream<DocumentSnapshot> queryMensajes = refconfiguracion.doc("MENSAJES").snapshots();
@@ -91,8 +137,9 @@ class stream_builders{
       //Documento mensajes
       String CONFIRMACION_CLIENTE = dataMensajes['CONFIRMACION_CLIENTE'] ?? '';
       String SOLICITUD = dataMensajes['SOLICITUD'] ?? '';
+      int ultimaModificacion = dataMensajes.containsKey('ultimaModificacion') ? dataMensajes['ultimaModificacion'] : 1672534800;
 
-      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD);
+      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD,ultimaModificacion);
 
       String configJson = jsonEncode(newconfig);
       await prefs.setString('configuracion_list_stream', configJson);
@@ -106,13 +153,12 @@ class stream_builders{
       yield newconfig!;
     }
   }
-  Future<List<ConfiguracionPlugins>?> cargarconfiguracion() async{
+  Future<ConfiguracionPlugins> cargarconfiguracion() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('configuracion_list_stream') ?? '';
-    List<dynamic> clienteData = jsonDecode(solicitudesJson);
-    List<ConfiguracionPlugins> configuracionPlugins = clienteData.map((clienteData) =>
-        ConfiguracionPlugins.fromJson(clienteData as Map<String, dynamic>)).toList();
-    return configuracionPlugins;
+    Map<String, dynamic> clienteData = jsonDecode(solicitudesJson);
+    ConfiguracionPlugins configuracion = ConfiguracionPlugins.fromJson(clienteData);
+    return configuracion; // Return a single instance, not a list
   }
 
   // STREAMBUILDER DE SOLICITUDES
@@ -838,6 +884,11 @@ class stream_builders{
       return ultimaModificacion;
     }
   }
+
+  //STREAMBUILDER DE - DRIVE API USAGE - USO DE FIREBASE USAGE
+
+
+
 
   //TOCA ARREGLAR ESTO - SISTEMA DE TUTORES
   //Obtener contabilidad en stream, Serbivio agendado de tutor

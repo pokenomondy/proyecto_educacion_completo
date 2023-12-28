@@ -29,24 +29,52 @@ class ContaDashState extends State<ContaDash> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/3)-30;
+    final currentheight = MediaQuery.of(context).size.height;
+    final tamanowidthtriple = (currentwidth/3)-30;
+    final tamanowidthdouble = (currentwidth/2)-30;
     return Container(
       child: Row(
         children: [
-          PrimaryColumnContaDash(currentwidth: tamanowidth,),
-          TercerColumnContaDash(currentwidth: tamanowidth,),
-          SecundaryColumnContaDash(currentwidth: tamanowidth,),
+          if(currentwidth >= 1200)
+            Row(
+              children: [
+                PrimaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+                TercerColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+                SecundaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+              ],
+            ),
+          if(currentwidth < 1200 && currentwidth > 620)
+            getResponsve(tamanowidthdouble,currentwidth,currentheight),
+          if(currentwidth <= 620)
+            getResponsve(tamanowidthdouble,currentwidth,currentheight),
+
         ],
       ),
+    );
+  }
+
+  Widget getResponsve(double doblewidth,double widthhentero, double currentheight){
+    return Column(
+      children: [
+        PrimaryColumnContaDash(currentwidth: widthhentero-50,currentheight: 80,),
+        Row(
+          children: [
+            TercerColumnContaDash(currentwidth: doblewidth-40,currentheight: currentheight-250,),
+            SecundaryColumnContaDash(currentwidth: doblewidth-40,currentheight: currentheight-250,),
+          ],
+        )
+      ],
     );
   }
 }
 
 class PrimaryColumnContaDash extends StatefulWidget {
   final double currentwidth;
+  final double currentheight;
 
   const PrimaryColumnContaDash({Key?key,
     required this.currentwidth,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -105,44 +133,45 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
           }else{
             eliminarServicioSeleccionado();
           }
-          return Column(
-            children: [
-                Row(
-                  children: [
-                    Container(
-                      width: widget.currentwidth,
-                      child: AutoSuggestBox<ServicioAgendado>(
-                        items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
-                              (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
-                            value: servicioagendado,
-                            label: servicioagendado.codigo,
-                            onFocusChange: (focused) {
-                              if (focused) {
-                                debugPrint('Focused #${servicioagendado.codigo} - ');
-                              }
-                            },
-                          ),
-                        )
-                            .toList(),
-                        decoration: Disenos().decoracionbuscador(),
-                        onSelected: (item) {
-                          setState(() {
-                            servicioAgendado = item.value;
-                            buscador = true;
-                          });
-                        },
-                        onChanged: (text, reason) {
-                          if (text.isEmpty ) {
-                            setState(() {
-                              servicioAgendado = null;
-                            });
+          return Container(
+            height: widget.currentheight,
+            width: widget.currentwidth,
+            child: Row(
+              children: [
+                Container(
+                  height: 50,
+                  width: 200,
+                  child: AutoSuggestBox<ServicioAgendado>(
+                    items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
+                          (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
+                        value: servicioagendado,
+                        label: servicioagendado.codigo,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused #${servicioagendado.codigo} - ');
                           }
                         },
                       ),
-                    ),
-                  ],
+                    )
+                        .toList(),
+                    decoration: Disenos().decoracionbuscador(),
+                    onSelected: (item) {
+                      setState(() {
+                        servicioAgendado = item.value;
+                        buscador = true;
+                      });
+                    },
+                    onChanged: (text, reason) {
+                      if (text.isEmpty ) {
+                        setState(() {
+                          servicioAgendado = null;
+                        });
+                      }
+                    },
+                  ),
                 ),
-            ],
+              ],
+            ),
           );
         }
     );
@@ -152,9 +181,11 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
 
 class SecundaryColumnContaDash extends StatefulWidget {
   final double currentwidth;
+  final double currentheight;
 
   const SecundaryColumnContaDash({Key?key,
     required this.currentwidth,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -172,13 +203,14 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
           return Container(
             color: Colors.green,
             width: widget.currentwidth,
+            height: widget.currentheight,
             child: Column(
               children: [
                 Text('Aquí tenemos historial'),
                   Column(
                     children: [
                       Container(
-                        height: 800,
+                        height: 600,
                         child: ListView.builder(
                           itemCount: historialDelServicioSeleccionado.length,
                           itemBuilder: (context, index) {
@@ -210,9 +242,11 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
 
 class TercerColumnContaDash extends StatefulWidget {
   final double currentwidth;
+  final double currentheight;
 
   const TercerColumnContaDash({Key?key,
     required this.currentwidth,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -288,6 +322,7 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
 
           return Container(
             width: widget.currentwidth,
+            height: widget.currentheight,
             child: Column(
               children: [
                 textoymodificable('Sistema: ', servicioAgendado.codigo,0,false),

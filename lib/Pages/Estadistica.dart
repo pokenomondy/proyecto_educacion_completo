@@ -17,7 +17,6 @@ class _EstadisticaState extends State<Estadistica> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
     return NavigationView(
       pane: NavigationPane(
           selected: _selectedpage,
@@ -42,7 +41,7 @@ class _EstadisticaState extends State<Estadistica> {
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Estadisticas'),
-              body: EstadisticaMain(currentwidth: currentwidth,),
+              body: EstadisticaMain(),
             ),
             /*
             PaneItem(
