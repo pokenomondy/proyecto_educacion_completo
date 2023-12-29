@@ -133,7 +133,7 @@ class LoadData {
   //Cargar lista de emrpesas y contraseñas -- Este contador lo asume Liba Soluciones
   Future cargaListaEmpresas() async{
     await referencias.initCollections();
-    CollectionReference referencelistaempresas = referencias.listaEmpresas!;
+    CollectionReference referencelistaempresas = referencias.claves!;
     QuerySnapshot querylistaEmpresas = await referencelistaempresas.get();
     List<Map<String, dynamic>> listaClaves = [];
     for (var EmpresaDoc in querylistaEmpresas.docs){

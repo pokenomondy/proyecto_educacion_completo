@@ -20,6 +20,7 @@ class Strings{
 
   //Error global
   String errorglobalText = "Error";
+  String errroDebeLLenarTodo = "Error, debe llenar todos los campos";
   String errorTextoNulo = "Debe ingresar un valor para cambiar";
   String errroCuentasBancaria = "Error, debe llenar todos los campos para llenar la cuenta Bancaria";
 
