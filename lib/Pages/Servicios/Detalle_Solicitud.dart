@@ -53,14 +53,17 @@ class DetallesServicioState extends State<DetallesServicio> {
               PrimaryColumn(currentwith: widthCompleto,currentheight: 0,),
             ],
           ),
+
         if(widthCompleto <= 620)
-          Container(
-            height: heightCompleto,
-            child: Column(
-              children: [
-                PrimaryColumn(currentwith: widthCompleto, currentheight: -1,),
-                SecundaryColumn(currentwith: widthCompleto, currentheight: -1),
-              ],
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  PrimaryColumn(currentwith: widthCompleto, currentheight: -1,),
+                  SecundaryColumn(currentwith: widthCompleto, currentheight: -1),
+
+                ],
+              ),
             ),
           ),
       ],
@@ -411,53 +414,51 @@ class SecundaryColumnState extends State<SecundaryColumn> {
           actualizarArchivos(solicitud!.idcotizacion,config!.idcarpetaSolicitudes);
         }
 
-        return Expanded(
-          child: ItemsCard(
-            shadow: false,
-            height: widget.currentheight,
-            cardColor: themeApp.primaryColor,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-                child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
-              ),
-              PrimaryStyleButton(
-                  buttonColor: themeApp.grayColor,
-                  tapColor: themeApp.blackColor,
-                  invert: true,
-                  function: (){
-                    selectFile();
-                  }, text: "Seleccionar archivos"),
+        return ItemsCard(
+          alignementColumn: MainAxisAlignment.start,
+          shadow: false,
+          width: widget.currentwith,
+          height: widget.currentheight,
+          cardColor: themeApp.primaryColor,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+              child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
+            ),
+            PrimaryStyleButton(
+                buttonColor: themeApp.grayColor,
+                tapColor: themeApp.blackColor,
+                invert: true,
+                function: (){
+                  selectFile();
+                }, text: "Seleccionar archivos"),
 
-              //Archivos nombre que se van a subir
-              if(selectedFiles  != null)
-                Column(
-                  children: selectedFiles!.map((file) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                      color: themeApp.primaryColor,
-                      child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
-                    );
-                  }).toList(),
-                ),
-
-              PrimaryStyleButton(
-                  invert: true,
-                  function: (){
-                    subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
-                  }, text: "Subir mas archivos"),
-
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-                child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+            //Archivos nombre que se van a subir
+            if(selectedFiles  != null)
+              Column(
+                children: selectedFiles!.map((file) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                    color: themeApp.primaryColor,
+                    child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
+                  );
+                }).toList(),
               ),
 
-              Expanded(
-                child: _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == 0 ? 1 : 4,),
-              ),
+            PrimaryStyleButton(
+                invert: true,
+                function: (){
+                  subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
+                }, text: "Subir mas archivos"),
 
-            ],
-          ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+              child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+            ),
+
+            _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == -1 ? 1 : 4,),
+
+          ],
         );
       },
     );
@@ -537,12 +538,15 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
     });
 
     return ItemsCard(
+      alignementColumn: MainAxisAlignment.start,
       shadow: false,
       cardColor: themeApp.primaryColor,
       children: [
         Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
 
-        Expanded(
+        material.Card(
+          color: themeApp.whitecolor.withOpacity(0),
+          shadowColor: themeApp.whitecolor.withOpacity(0),
           child: SingleChildScrollView(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
