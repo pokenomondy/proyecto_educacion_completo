@@ -445,25 +445,29 @@ class Uploads{
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Envíar configuración inicial
-  Future<void> uploadconfiginicial(String Primarycolor,String Secundarycolor,String nombre_empresa,String idcarpetaPagos,String idcarpetaSol) async{
+  Future<void> addconfiginicial(String Primarycolor,String Secundarycolor,String nombre_empresa,String idcarpetaPagos,String idcarpetaSol,String confirmacion, String solicitud) async{
     await referencias.initCollections();
     CollectionReference actualizadores = referencias.configuracion!;
-    Map<String, dynamic> uploadconfiguracion = {
+    Map<String, dynamic> uploadConfiguracion = {
       'Primarycolor':  Primarycolor,
       'Secundarycolor':  Secundarycolor,
       'nombre_empresa':  nombre_empresa,
       'idcarpetaPagos' : idcarpetaPagos,
       'idcarpetaSolicitudes' : idcarpetaSol,
     };
-    await actualizadores.doc("CONFIGURACION").set(uploadconfiguracion);
-    //Ahora, como es la primera vez, toca guardar de forma local
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = jsonEncode(uploadconfiguracion);
-    await prefs.setString('configuracion_inicial_List', solicitudesJson);
-    await prefs.setBool('datos_descargados_configinicial', true);
+    Map<String, dynamic> uploadMensajes = {
+      'CONFIRMACION_CLIENTE':  confirmacion,
+      'SOLICITUD':  solicitud,
+    };
+
+    await actualizadores.doc("CONFIGURACION").set(uploadConfiguracion);
+    await actualizadores.doc("MENSAJES").set(uploadMensajes);
+    //mensajes
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //uploadmsgs
+
+
   Future<void> uploadconfigmensaje(String text, String s) async{
     await referencias.initCollections();
     CollectionReference actualizadores = referencias.configuracion!;

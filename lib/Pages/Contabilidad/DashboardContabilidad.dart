@@ -28,14 +28,21 @@ class ContaDashState extends State<ContaDash> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
+    //tamaño completo de width
+    final widthcompleto = MediaQuery.of(context).size.width;
+    //tamaño completo de height
     final currentheight = MediaQuery.of(context).size.height;
-    final tamanowidthtriple = (currentwidth/3)-30;
-    final tamanowidthdouble = (currentwidth/2)-30;
+    //triple para pc
+    final tamanowidthtriple = (widthcompleto/3)-20;
+    //doble para tablet
+    final tamanowidthdouble = (widthcompleto/2)-40;
+    //doble para celular
+    final tamanowidthdoubleCelular = (widthcompleto/2);
+
     return Container(
       child: Row(
         children: [
-          if(currentwidth >= 1200)
+          if(widthcompleto >= 1200)
             Row(
               children: [
                 PrimaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
@@ -43,10 +50,10 @@ class ContaDashState extends State<ContaDash> {
                 SecundaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
               ],
             ),
-          if(currentwidth < 1200 && currentwidth > 620)
-            getResponsve(tamanowidthdouble,currentwidth,currentheight),
-          if(currentwidth <= 620)
-            getResponsve(tamanowidthdouble,currentwidth,currentheight),
+          if(widthcompleto < 1200 && widthcompleto > 620)
+            getResponsve(tamanowidthdouble,widthcompleto-80,currentheight-180),
+          if(widthcompleto <= 620)
+            getResponsve(tamanowidthdoubleCelular,widthcompleto,currentheight-180),
 
         ],
       ),
@@ -56,11 +63,11 @@ class ContaDashState extends State<ContaDash> {
   Widget getResponsve(double doblewidth,double widthhentero, double currentheight){
     return Column(
       children: [
-        PrimaryColumnContaDash(currentwidth: widthhentero-50,currentheight: 80,),
+        PrimaryColumnContaDash(currentwidth: widthhentero,currentheight: 80,),
         Row(
           children: [
-            TercerColumnContaDash(currentwidth: doblewidth-40,currentheight: currentheight-250,),
-            SecundaryColumnContaDash(currentwidth: doblewidth-40,currentheight: currentheight-250,),
+            TercerColumnContaDash(currentwidth: doblewidth,currentheight: currentheight,),
+            SecundaryColumnContaDash(currentwidth: doblewidth,currentheight: currentheight,),
           ],
         )
       ],
@@ -136,6 +143,7 @@ class PrimaryColumnContaDashState extends State<PrimaryColumnContaDash> {
           return Container(
             height: widget.currentheight,
             width: widget.currentwidth,
+            color: Colors.yellow,
             child: Row(
               children: [
                 Container(
@@ -201,6 +209,7 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
         builder: (context, historialProvider, child) {
           List<HistorialAgendado> historialDelServicioSeleccionado = historialProvider.historialDelServicioSeleccionado;
           return Container(
+
             color: Colors.green,
             width: widget.currentwidth,
             height: widget.currentheight,
@@ -320,27 +329,34 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
             clearProviderServicio();
           }
 
-          return Container(
-            width: widget.currentwidth,
-            height: widget.currentheight,
-            child: Column(
-              children: [
-                textoymodificable('Sistema: ', servicioAgendado.codigo,0,false),
-                textoymodificable('Matería: ', servicioAgendado.materia,1,true),
-                textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,false),
-                textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,false),
-                textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
-                textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
-                textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
-                textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
-                textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,false),
-                textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,false),
-                textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,false),
-                Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}'),
-                Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}')
-              ],
-            ),
-          );
+          if(servicioAgendado.sistema==""){
+            return Container(
+              width: widget.currentwidth,
+              height: widget.currentheight,
+            );
+          }else{
+            return Container(
+              width: widget.currentwidth,
+              height: widget.currentheight,
+              child: Column(
+                children: [
+                  textoymodificable('Sistema: ', servicioAgendado.codigo,0,false),
+                  textoymodificable('Matería: ', servicioAgendado.materia,1,true),
+                  textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,false),
+                  textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,false),
+                  textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
+                  textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
+                  textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
+                  textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
+                  textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,false),
+                  textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,false),
+                  textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,false),
+                  Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}'),
+                  Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}')
+                ],
+              ),
+            );
+          }
         }
     );
   }

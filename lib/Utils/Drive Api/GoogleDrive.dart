@@ -81,19 +81,24 @@ class DriveApiUsage {
         final query = "mimeType='application/vnd.google-apps.folder' and name='${nombrecarpetanueva}' and '$carpetaId' in parents";
         final carpetaExistente = await driveApi.files.list(q: query);
 
-        if (carpetaExistente != null && carpetaExistente.files!.isNotEmpty) {
-          print("carpeta ya existe");
-          final result = await subirArhivo(carpetaPrincipal.files!.first, selectedFiles!,context);
-          return result;
-        } else {
-          print("carpeta nueva");
-          final foldernew = drive.File()
-            ..name = '$nombrecarpetanueva' // Nombre de la carpeta
-            ..mimeType = 'application/vnd.google-apps.folder' // Indicar que estás creando una carpeta
-            ..parents = [carpetaId]; // ID de la carpeta principal
-          final nuevaCarpetaDentro = await driveApi.files.create(foldernew);
-          final result = await subirArhivo(nuevaCarpetaDentro, selectedFiles!,context);
-          return result;
+        if(selectedFiles!=null){
+          if (carpetaExistente != null && carpetaExistente.files!.isNotEmpty) {
+            print("carpeta ya existe");
+            final result = await subirArhivo(carpetaPrincipal.files!.first, selectedFiles!,context);
+            return result;
+          } else {
+            print("carpeta nueva");
+            final foldernew = drive.File()
+              ..name = '$nombrecarpetanueva' // Nombre de la carpeta
+              ..mimeType = 'application/vnd.google-apps.folder' // Indicar que estás creando una carpeta
+              ..parents = [carpetaId]; // ID de la carpeta principal
+            final nuevaCarpetaDentro = await driveApi.files.create(foldernew);
+            final result = await subirArhivo(nuevaCarpetaDentro, selectedFiles!,context);
+            return result;
+          }
+        }else{
+          print("no se debe crear carpeta");
+          return ResultadosUpload(0, '');
         }
       }
       return ResultadosUpload(0, '');

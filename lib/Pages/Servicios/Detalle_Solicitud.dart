@@ -28,17 +28,41 @@ class DetallesServicio extends StatefulWidget {
 
 class DetallesServicioState extends State<DetallesServicio> {
 
-
-
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = currentwidth/2 -30;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    //Completo
+    final widthCompleto = MediaQuery.of(context).size.width;
+    //tamaño para computador y tablet
+    final tamanowidthdobleComputador = (widthCompleto/2)-30;
+    //currentheight completo
+    final heightCompleto = MediaQuery.of(context).size.height-80;
+
+    return Column(
       children: [
-        PrimaryColumn(currentwith: tamanowidth,),
-        SecundaryColumn(currentwith: tamanowidth)
+        if(widthCompleto >= 1200)
+          Row(
+            children: [
+              PrimaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,),
+              SecundaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,)
+            ],
+          ),
+
+        if(widthCompleto < 1200 && widthCompleto > 620)
+          Column(
+            children: [
+              PrimaryColumn(currentwith: widthCompleto,currentheight: 0,),
+            ],
+          ),
+        if(widthCompleto <= 620)
+          Container(
+            height: heightCompleto,
+            child: Column(
+              children: [
+                PrimaryColumn(currentwith: widthCompleto, currentheight: -1,),
+                SecundaryColumn(currentwith: widthCompleto, currentheight: -1),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -47,9 +71,11 @@ class DetallesServicioState extends State<DetallesServicio> {
 
 class PrimaryColumn extends StatefulWidget {
   final double currentwith;
+  final double currentheight;
 
   const PrimaryColumn({Key?key,
     required this.currentwith,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -91,27 +117,27 @@ class PrimaryColumnState extends State<PrimaryColumn> {
           Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
           idcotizacionn = solicitudSeleccionado.idcotizacion;
 
-          return Expanded(
-            child: ItemsCard(
-              alignementColumn: MainAxisAlignment.start,
-              shadow: false,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-                  child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-                ),
-                textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
-                textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
-                textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
-                textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
-                textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
-                textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
-                textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
-                textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
-                textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
-                textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
-              ],
-            ),
+          return ItemsCard(
+            alignementColumn: MainAxisAlignment.start,
+            shadow: false,
+            width: widget.currentwith * 0.98,
+            height: widget.currentheight,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+              ),
+              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
+              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
+              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
+              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+            ],
           );
         }
     );
@@ -331,13 +357,16 @@ class PrimaryColumnState extends State<PrimaryColumn> {
     );
   }
 
-  }
+}
 
 class SecundaryColumn extends StatefulWidget {
   final double currentwith;
+  final double currentheight;
 
   const SecundaryColumn({Key?key,
     required this.currentwith,
+    required this.currentheight,
+
   }) :super(key: key);
 
   @override
@@ -356,31 +385,36 @@ class SecundaryColumnState extends State<SecundaryColumn> {
   String _archivoExtension = "";
   //
   bool cargarArchivos = false;
+  ConfiguracionPlugins? config;
+  Solicitud? solicitud;
+  List<ArchivoResultado>? archivoList;
+
 
   void actualizarArchivos(int idcotizacion,String carpetaid) async{
-    await DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
-    setState(() {
-      cargarArchivos = true;
-    });
+    DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
+    cargarArchivos = true;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
     return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
       builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
-        ConfiguracionPlugins? config = configuracionProviderselect.config;
-        Solicitud solicitud = solicitudProviderselect.solicitudSeleccionado;
-        List<ArchivoResultado> archivoList = archivoDriveProvider.todosLosArchivos;
-          configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+        config = configuracionProviderselect.config;
+        solicitud = solicitudProviderselect.solicitudSeleccionado;
+        archivoList = archivoDriveProvider.todosLosArchivos;
+        configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
 
-          if(!cargarArchivos){
-            print("cargando archivos");
-            actualizarArchivos(solicitud.idcotizacion,config.idcarpetaSolicitudes);
-          }
+        if(!cargarArchivos){
+          print("cargando archivos");
+          actualizarArchivos(solicitud!.idcotizacion,config!.idcarpetaSolicitudes);
+        }
 
         return Expanded(
           child: ItemsCard(
             shadow: false,
+            height: widget.currentheight,
             cardColor: themeApp.primaryColor,
             children: [
               Padding(
@@ -388,12 +422,12 @@ class SecundaryColumnState extends State<SecundaryColumn> {
                 child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
               ),
               PrimaryStyleButton(
-                buttonColor: themeApp.grayColor,
-                tapColor: themeApp.blackColor,
-                invert: true,
-                function: (){
-                selectFile();
-              }, text: "Seleccionar archivos"),
+                  buttonColor: themeApp.grayColor,
+                  tapColor: themeApp.blackColor,
+                  invert: true,
+                  function: (){
+                    selectFile();
+                  }, text: "Seleccionar archivos"),
 
               //Archivos nombre que se van a subir
               if(selectedFiles  != null)
@@ -408,10 +442,10 @@ class SecundaryColumnState extends State<SecundaryColumn> {
                 ),
 
               PrimaryStyleButton(
-                invert: true,
-                function: (){
-                subirarchivos(config.idcarpetaSolicitudes,solicitud.idcotizacion.toString());
-              }, text: "Subir mas archivos"),
+                  invert: true,
+                  function: (){
+                    subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
+                  }, text: "Subir mas archivos"),
 
               Padding(
                 padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
@@ -419,7 +453,7 @@ class SecundaryColumnState extends State<SecundaryColumn> {
               ),
 
               Expanded(
-                child: _TarjetaArchivos(archivosList: archivoList),
+                child: _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == 0 ? 1 : 4,),
               ),
 
             ],
@@ -462,9 +496,11 @@ class SecundaryColumnState extends State<SecundaryColumn> {
 
 class _TarjetaArchivos extends StatefulWidget{
   final List<ArchivoResultado>? archivosList;
+  final int numcontenedor;
 
   const _TarjetaArchivos({Key?key,
     required this.archivosList,
+    required this.numcontenedor,
   }) :super(key: key);
 
   @override
@@ -480,7 +516,6 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
   Widget build(BuildContext context) {
     TextStyle styleText([Color? color]) => themeApp.styleText(14, false, color?? themeApp.whitecolor);
 
-    const int numContenedores = 4;
 
     Expanded containWidgets(List<Widget> children) => Expanded(
       child: Padding(
@@ -493,10 +528,10 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
       ),
     );
 
-    List<Widget> contenedores = List.generate(numContenedores, (index){
+    List<Widget> contenedores = List.generate(widget.numcontenedor, (index){
       return containWidgets([
         for (int i = 0; i < widget.archivosList!.length; i++)
-          if ((i + 1) % numContenedores == (index + 1) % numContenedores)
+          if ((i + 1) % widget.numcontenedor == (index + 1) % widget.numcontenedor)
             _TarjetaArchivo(archivo: widget.archivosList![i]),
       ]);
     });
@@ -521,13 +556,6 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
     );
   }
 
-  void _abrirEnlace(String enlace) async {
-    if (await canLaunch(enlace)) {
-      await launch(enlace);
-    } else {
-      throw 'No se pudo abrir el enlace $enlace';
-    }
-  }
 }
 
 class _TarjetaArchivo extends StatelessWidget{
@@ -545,8 +573,6 @@ class _TarjetaArchivo extends StatelessWidget{
     const double radioButton = 22;
     final ThemeApp themeApp = ThemeApp();
 
-    void vistaArchivo() => /*Cuadrar Vista de archivo*/ print("Funcionando");
-
     TextStyle styleText([double? tamanio]) => themeApp.styleText(tamanio?? 14, false, themeApp.blackColor);
     material.SizedBox textResponsive(String text, TextStyle styleText) => material.SizedBox(
       width: double.infinity,
@@ -554,9 +580,9 @@ class _TarjetaArchivo extends StatelessWidget{
     );
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 5.0),
-      backgroundColor: themeApp.whitecolor,
-      borderRadius: BorderRadius.circular(20),
+        margin: const EdgeInsets.symmetric(vertical: 5.0),
+        backgroundColor: themeApp.whitecolor,
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0),
           child: material.SizedBox(
@@ -568,7 +594,9 @@ class _TarjetaArchivo extends StatelessWidget{
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
-                      onDoubleTap: vistaArchivo,
+                      onDoubleTap: (){
+                        _abrirEnlace(archivo.linkVistaArchivo);
+                      },
                       child: Image.network(
                         archivo.iconLink,
                         width: imageTamanio,
@@ -583,7 +611,10 @@ class _TarjetaArchivo extends StatelessWidget{
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
-                    child: textResponsive(archivo.nombrearchivo, styleText())
+                      child: textResponsive(archivo.nombrearchivo, styleText()),
+                    onDoubleTap: (){
+                        _abrirEnlace(archivo.linkVistaArchivo);
+                    },
                   ),
                 ),
 
@@ -599,19 +630,19 @@ class _TarjetaArchivo extends StatelessWidget{
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     CircularButton(
-                      radio: radioButton,
-                      iconData: material.Icons.download,
-                      function: (){
-
-                      }
+                        radio: radioButton,
+                        iconData: material.Icons.download,
+                        function: (){
+                          _abrirEnlace(archivo.linkDescargaArchivo);
+                        }
                     ),
                     CircularButton(
-                      radio: radioButton,
-                      buttonColor: themeApp.redColor,
-                      iconData: material.Icons.clear,
-                      function: (){
-
-                      }
+                        radio: radioButton,
+                        buttonColor: themeApp.redColor,
+                        iconData: material.Icons.clear,
+                        function: (){
+                          DriveApiUsage().eliminarArchivo(archivo.id,context);
+                        }
                     ),
                   ],
                 )
@@ -622,5 +653,14 @@ class _TarjetaArchivo extends StatelessWidget{
         )
     );
   }
+
+  void _abrirEnlace(String enlace) async {
+    if (await canLaunch(enlace)) {
+      await launch(enlace);
+    } else {
+      throw 'No se pudo abrir el enlace $enlace';
+    }
+  }
+
 
 }
