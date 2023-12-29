@@ -282,12 +282,12 @@ class UtilDialogs{
   
   void exito(String text, String title) => showDialog(
     context: context,
-    builder: (BuildContext context) => _successDialog(text, title)
+    builder: (BuildContext exitoContext) => _successDialog(text, title, exitoContext)
   );
 
   void confirmar (String text, String title, VoidCallback function, [VoidCallback? cancelFunction]) => showDialog(
         context: context,
-        builder: (BuildContext context) =>  _confirmDialog(text, title, function, cancelFunction ?? (){})
+        builder: (BuildContext confirmContext) =>  _confirmDialog(confirmContext, text, title, function, cancelFunction ?? (){})
   );
 
   void cargar(String text, String title) => showDialog(
@@ -324,7 +324,7 @@ class UtilDialogs{
     );
   }
 
-  dialog.Dialog _successDialog(String text, String title){
+  dialog.Dialog _successDialog(String text, String title, BuildContext exitoContext){
     final ThemeApp themeApp = ThemeApp();
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
@@ -346,14 +346,14 @@ class UtilDialogs{
               width: 100,
               buttonColor: themeApp.greenColor,
               function: (){
-                Navigator.pop(context);
+                Navigator.pop(exitoContext);
               }, text: "Cerrar")
         ],
       ),
     );
   }
 
-  dialog.Dialog _confirmDialog(String text, String title, VoidCallback function, VoidCallback cancelFunction){
+  dialog.Dialog _confirmDialog(BuildContext confirmContext, String text, String title, VoidCallback function, VoidCallback cancelFunction){
     final ThemeApp themeApp = ThemeApp();
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
@@ -390,7 +390,7 @@ class UtilDialogs{
                   PrimaryStyleButton(
                       width: 80,
                       function: (){
-                        Navigator.pop(context);
+                        Navigator.pop(confirmContext);
                         function();
                       }, text: "Aceptar"),
                   PrimaryStyleButton(
@@ -432,6 +432,72 @@ class UtilDialogs{
             child: Text(text),
           ),
         ],
+      ),
+    );
+  }
+
+}
+
+class CircularButton extends StatefulWidget{
+
+  final IconData iconData;
+  final double radio;
+  final Color buttonColor;
+  final Color iconColor;
+  final Color tapButtonColor;
+  final Color tapIconColor;
+  final double horizontalPadding;
+  final double verticalPadding;
+  final int millis;
+  final VoidCallback function;
+
+  const CircularButton({
+    Key? key,
+    required this.iconData,
+    required this.function,
+    this.radio = 25.0,
+    this.millis = 500,
+    this.verticalPadding = 3.0,
+    this.horizontalPadding = 5.0,
+    this.buttonColor = const Color(0xFF235FD9),
+    this.iconColor = const Color(0xFFFFFFFF),
+    this.tapIconColor = const Color(0xFFFFFFFF),
+    this.tapButtonColor = const Color(0xFF4B4B4B),
+  }):super(key: key);
+
+  @override
+  CircularButtonState createState()=> CircularButtonState();
+
+}
+
+class CircularButtonState extends State<CircularButton>{
+
+  late bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context){
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding, vertical: widget.verticalPadding),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: widget.function,
+          onTapDown: (_)=>setState(()=>_isPressed=true),
+          onTapUp: (_)=>setState(()=>_isPressed=false),
+
+          child: AnimatedContainer(
+            alignment: Alignment.center,
+            padding: EdgeInsets.all(widget.radio * 0.1),
+            width: widget.radio,
+            height: widget.radio,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(360),
+              color: !_isPressed? widget.buttonColor: widget.tapButtonColor,
+            ),
+            duration: Duration(milliseconds: widget.millis),
+            child: Icon(widget.iconData, color: !_isPressed? widget.iconColor : widget.tapIconColor, size: widget.radio * 0.55,),
+          ),
+        ),
       ),
     );
   }

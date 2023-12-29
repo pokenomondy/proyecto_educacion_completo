@@ -31,17 +31,17 @@ class CentroConfiguracionDashState extends State<CentroConfiguracionDash> {
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Configuración'),
-              body: ConfiguracionDatos(),
+              body: const ConfiguracionDatos(),
             ),
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Agregar variables'),
-              body: AgregarVariables(),
+              body: const AgregarVariables(),
             ),
             PaneItem(
               icon:  const Icon(FluentIcons.home),
               title: const Text('Editar Clientes'),
-              body: EditarClientes(),
+              body: const EditarClientes(),
             ),
             PaneItem(
               icon:  const Icon(FluentIcons.home),

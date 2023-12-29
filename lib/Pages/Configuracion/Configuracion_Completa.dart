@@ -115,18 +115,21 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                           //Plugins con fechas de validez del programa
                           Padding(
                             padding: const EdgeInsets.only(top: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CartaPlugin(function: (){
-                                  print("Sistema basico");
-                                }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada!.basicoFecha), fecha: configuracioncargada!.basicoFecha, ),
-                                CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.SolicitudesDriveApiFecha), fecha: configuracioncargada!.SolicitudesDriveApiFecha),
-                                CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.PagosDriveApiFecha), fecha: configuracioncargada!.PagosDriveApiFecha),
-                                //Tutores
-                                CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CartaPlugin(function: (){
+                                    print("Sistema basico");
+                                  }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada!.basicoFecha), fecha: configuracioncargada!.basicoFecha, ),
+                                  CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.SolicitudesDriveApiFecha), fecha: configuracioncargada!.SolicitudesDriveApiFecha),
+                                  CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.PagosDriveApiFecha), fecha: configuracioncargada!.PagosDriveApiFecha),
+                                  //Tutores
+                                  CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
 
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           Column(

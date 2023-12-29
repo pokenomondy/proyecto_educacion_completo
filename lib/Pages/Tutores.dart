@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
@@ -258,7 +259,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(tutor.nombrewhatsapp, style: themeApp.styleText(16, true, tutor.activo ? themeApp.greenColor : themeApp.redColor),),
+                                        Expanded(child: Text(tutor.nombrewhatsapp, style: themeApp.styleText(16, true, tutor.activo ? themeApp.greenColor : themeApp.redColor),)),
                                         GestureDetector(
                                           onTap: () {
                                             final textToCopy = tutor.numerowhatsapp.toString();
@@ -291,47 +292,26 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
-
-                                        GestureDetector(
-                                          onTap: (){
+                                        CircularButton(
+                                          radio: 28,
+                                          iconData: material.Icons.add,
+                                          function: (){
                                             final tutorProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
                                             material.Navigator.push(context, material.MaterialPageRoute(
                                               builder: (context)  => Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
                                             ));
                                             tutorProvider.seleccionarTutor(tutor);
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            width: 25,
-                                            height: 25,
-                                            alignment: Alignment.center,
-                                            margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                                            decoration: BoxDecoration(
-                                                color: themeApp.primaryColor,
-                                                borderRadius: BorderRadius.circular(80)
-                                            ),
-                                            child: Icon(material.Icons.add, color: themeApp.whitecolor,),
-                                          ),
+                                          }
                                         ),
 
-                                        GestureDetector(
-                                          onTap: (){
+                                        CircularButton(
+                                          radio: 28,
+                                          buttonColor: themeApp.redColor,
+                                          iconData: material.Icons.clear,
+                                          function: (){
 
-                                          },
-                                          child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 500),
-                                            width: 25,
-                                            height: 25,
-                                            alignment: Alignment.center,
-                                            margin: const EdgeInsets.symmetric(horizontal: 3.0),
-                                            decoration: BoxDecoration(
-                                                color: themeApp.redColor,
-                                                borderRadius: BorderRadius.circular(80)
-                                            ),
-                                            child: Icon(material.Icons.cancel, color: themeApp.whitecolor,),
-                                          ),
+                                          }
                                         ),
-
                                       ],
                                     ),
                                   ),
@@ -361,8 +341,8 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: styleTextSub,),
-          Text(text, style: styleTextColor,),
+          Expanded(child: Text(title, style: styleTextSub, textAlign: TextAlign.start,)),
+          Expanded(child: Text(text, style: styleTextColor, textAlign: TextAlign.end,)),
         ],
       ),
     );
@@ -1036,8 +1016,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
         if(_cargadotutoresfiltradosmateria==true)
           Column(
             children: [
-              SizedBox(
-                height: 300,
+              material.SizedBox(
+                height: 400,
                 child: ListView.builder(
                     itemCount: tutoresFiltrados.length,
                     itemBuilder: (context,index){
@@ -1057,8 +1037,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(tutore.nombrewhatsapp, style: themeApp.styleText(18, true, themeApp.primaryColor),),
-                                      Text(tutore.numerowhatsapp.toString(), style: themeApp.styleText(18, false, themeApp.grayColor),),
+                                      Expanded(child: Text(tutore.nombrewhatsapp, style: themeApp.styleText(18, true, themeApp.primaryColor), textAlign: TextAlign.start,)),
+                                      Expanded(child: Text(tutore.numerowhatsapp.toString(), style: themeApp.styleText(18, false, themeApp.grayColor), textAlign: TextAlign.end,)),
                                     ],
                                   ),
                                 ),
@@ -1081,42 +1061,19 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                               mainAxisAlignment: MainAxisAlignment.start,
                                               children: [
 
-                                                material.Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: GestureDetector(
-                                                    onTap: (){
-
-                                                    },
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 500),
-                                                      width: 25,
-                                                      height: 25,
-                                                      decoration: BoxDecoration(
-                                                        color: themeApp.primaryColor,
-                                                        borderRadius: BorderRadius.circular(80),
-                                                      ),
-                                                      child: Icon(material.Icons.add, color: themeApp.whitecolor,),
-                                                    ),
-                                                  ),
+                                                CircularButton(
+                                                  iconData: material.Icons.add,
+                                                  function: (){
+                                                    
+                                                  },
                                                 ),
 
-                                                material.Padding(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                                  child: GestureDetector(
-                                                    onTap: (){
-
-                                                    },
-                                                    child: AnimatedContainer(
-                                                      duration: const Duration(milliseconds: 500),
-                                                      width: 25,
-                                                      height: 25,
-                                                      decoration: BoxDecoration(
-                                                        color: themeApp.redColor,
-                                                        borderRadius: BorderRadius.circular(80),
-                                                      ),
-                                                      child: Icon(material.Icons.cancel, color: themeApp.whitecolor,),
-                                                    ),
-                                                  ),
+                                                CircularButton(
+                                                  buttonColor: themeApp.redColor,
+                                                  iconData: material.Icons.clear, 
+                                                  function: (){
+                                                    
+                                                  }
                                                 ),
 
                                               ],
@@ -1178,11 +1135,9 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                     }
                 ),
               ),
-              FilledButton(
-                child: const Text('Copiar numeros de wsp'),
-                onPressed: () {
-                  copiarNumerosWhatsApp();
-                },
+              PrimaryStyleButton(
+                  function: () => copiarNumerosWhatsApp(),
+                  text: "Copiar numeros de WhatsApp"
               ),
             ],
           ),
@@ -1197,8 +1152,8 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: themeApp.styleText(15, true, themeApp.grayColor),),
-          Text(text, style: themeApp.styleText(14, false, themeApp.grayColor),),
+          Expanded(child: Text(title, style: themeApp.styleText(15, true, themeApp.grayColor), textAlign: TextAlign.start,)),
+          Expanded(child: Text(text, style: themeApp.styleText(14, false, themeApp.grayColor), textAlign: TextAlign.end,)),
         ],
       ),
     );
@@ -1225,7 +1180,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
       center: material.Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(calificacion.toString().length < 2 ? "$calificacion.0" : "$calificacion", style: themeApp.styleText(tamanio * 0.3, true, themeApp.primaryColor),),
+          Text(calificacion.toString().length < 2 ? "$calificacion.0" : calificacion.toStringAsFixed(1), style: themeApp.styleText(tamanio * 0.3, true, themeApp.primaryColor),),
           Text("/5.0", style: themeApp.styleText(tamanio * 0.2, true, themeApp.primaryColor),)
         ],
       ),
