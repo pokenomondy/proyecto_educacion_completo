@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'Config.dart';
 
 class ThemeApp{
   Color primaryColor = const Color(0xFF235FD9);
@@ -161,30 +160,33 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
-      child: GestureDetector(
-        onTapDown: (_) {
-          setState(() {
-            buttonColor = widget.tapColor;
-          });
-        },
-        onTapUp: (_) {
-          setState(() {
-            buttonColor = widget.invert ? ThemeApp().whitecolor : widget.buttonColor;
-          });
-        },
-        onTap: widget.function,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: widthCalculate,
-          height: heigthCalculate,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: buttonColor,
-          ),
-          child: Center(
-            child: Text(
-              widget.text,
-              style: ThemeApp().styleText(widget.tamanio, true, !widget.invert? ThemeApp().whitecolor: widget.buttonColor ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTapDown: (_) {
+            setState(() {
+              buttonColor = widget.tapColor;
+            });
+          },
+          onTapUp: (_) {
+            setState(() {
+              buttonColor = widget.invert ? ThemeApp().whitecolor : widget.buttonColor;
+            });
+          },
+          onTap: widget.function,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: widthCalculate,
+            height: heigthCalculate,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: buttonColor,
+            ),
+            child: Center(
+              child: Text(
+                widget.text,
+                style: ThemeApp().styleText(widget.tamanio, true, !widget.invert? ThemeApp().whitecolor: widget.buttonColor ),
+              ),
             ),
           ),
         ),
@@ -220,7 +222,7 @@ class CartaPluginState extends State<CartaPlugin>{
     TextStyle subtitulos = theme.styleText(12, false, theme.whitecolor);
     return Container(
       width: 150,
-      height: 120,
+      height: 150,
       margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
@@ -232,6 +234,7 @@ class CartaPluginState extends State<CartaPlugin>{
           Text(
               widget.titulo,
             style: theme.styleText(15, true, theme.whitecolor),
+            textAlign: TextAlign.center,
           ),
           Text(
               widget.activacion? "Activo": "Inactivo",
@@ -244,13 +247,14 @@ class CartaPluginState extends State<CartaPlugin>{
           Text(
               DateFormat('dd/MM/yyyy hh:mma').format(widget.fecha),
               style: subtitulos,
+              textAlign: TextAlign.center,
           ),
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                PrimaryStyleButton(tamanio: 12, function: widget.function, text: widget.activacion? "Activar" : "Desactivar", invert: true,)
+                PrimaryStyleButton(tamanio: 12, function: widget.function, text: !widget.activacion? "Mas informacion" : "Desactivar", invert: true,)
               ],
             ),
           )

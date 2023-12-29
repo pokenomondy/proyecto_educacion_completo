@@ -2,11 +2,11 @@ import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' as material;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,6 +15,7 @@ import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/FuncionesMaterial.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
+import '../../Config/elements.dart';
 
 class DetallesServicio extends StatefulWidget {
 
@@ -90,26 +91,27 @@ class PrimaryColumnState extends State<PrimaryColumn> {
           Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
           idcotizacionn = solicitudSeleccionado.idcotizacion;
 
-          return ItemsCard(
-            alignementColumn: MainAxisAlignment.start,
-            shadow: false,
-            width: widget.currentwith * 0.98,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-              ),
-              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
-              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
-              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
-              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
-              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
-              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
-              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
-              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
-              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
-              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
-            ],
+          return Expanded(
+            child: ItemsCard(
+              alignementColumn: MainAxisAlignment.start,
+              shadow: false,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                  child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+                ),
+                textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
+                textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+                textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+                textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+                textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+                textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+                textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+                textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
+                textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
+                textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+              ],
+            ),
           );
         }
     );
@@ -364,7 +366,6 @@ class SecundaryColumnState extends State<SecundaryColumn> {
 
   @override
   Widget build(BuildContext context) {
-    final currentheight = MediaQuery.of(context).size.height;
     return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
       builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
         ConfiguracionPlugins? config = configuracionProviderselect.config;
@@ -377,49 +378,52 @@ class SecundaryColumnState extends State<SecundaryColumn> {
             actualizarArchivos(solicitud.idcotizacion,config.idcarpetaSolicitudes);
           }
 
-        return ItemsCard(
-          shadow: false,
-          cardColor: themeApp.primaryColor,
-          width: widget.currentwith * 0.98,
-          height: currentheight,
-
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:[
-                if(configuracionSolicitudes)
-                  FilledButton(
-                      style: Disenos().boton_estilo(),
-                      child: Text('seleccionar archivos'), onPressed: (){
-                    selectFile();
-                  }),
-              ],
-            ),
-            //Archivos nombre que se van a subir
-            if(selectedFiles  != null)
-              Column(
-                children: selectedFiles!.map((file) {
-                  return Container(
-                    color: Colors.blue,
-                    child: Text(file.name),
-                  );
-                }).toList(),
+        return Expanded(
+          child: ItemsCard(
+            shadow: false,
+            cardColor: themeApp.primaryColor,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+                child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
               ),
-            FilledButton(
-                child: Text('Subir mas archivos'),
-                onPressed: (){
-                  subirarchivos(config.idcarpetaSolicitudes,solicitud.idcotizacion.toString());
-                }
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-              child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
-            ),
-            Expanded(
-              child: _TarjetaArchivos(archivosList: archivoList),
-            ),
+              PrimaryStyleButton(
+                buttonColor: themeApp.grayColor,
+                tapColor: themeApp.blackColor,
+                invert: true,
+                function: (){
+                selectFile();
+              }, text: "Seleccionar archivos"),
 
-          ],
+              //Archivos nombre que se van a subir
+              if(selectedFiles  != null)
+                Column(
+                  children: selectedFiles!.map((file) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                      color: themeApp.primaryColor,
+                      child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
+                    );
+                  }).toList(),
+                ),
+
+              PrimaryStyleButton(
+                invert: true,
+                function: (){
+                subirarchivos(config.idcarpetaSolicitudes,solicitud.idcotizacion.toString());
+              }, text: "Subir mas archivos"),
+
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+                child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
+              ),
+
+              Expanded(
+                child: _TarjetaArchivos(archivosList: archivoList),
+              ),
+
+            ],
+          ),
         );
       },
     );
@@ -474,84 +478,45 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
 
   @override
   Widget build(BuildContext context) {
-    final currentheight = MediaQuery.of(context).size.height;
-    const double multiplier = 0.7;
+    TextStyle styleText([Color? color]) => themeApp.styleText(14, false, color?? themeApp.whitecolor);
+
+    const int numContenedores = 4;
+
+    Expanded containWidgets(List<Widget> children) => Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: children,
+        ),
+      ),
+    );
+
+    List<Widget> contenedores = List.generate(numContenedores, (index){
+      return containWidgets([
+        for (int i = 0; i < widget.archivosList!.length; i++)
+          if ((i + 1) % numContenedores == (index + 1) % numContenedores)
+            _TarjetaArchivo(archivo: widget.archivosList![i]),
+      ]);
+    });
+
     return ItemsCard(
       shadow: false,
       cardColor: themeApp.primaryColor,
-      height: currentheight * multiplier,
       children: [
-        Text("hay ${widget.archivosList?.length.toString()} archivos"),
-        SizedBox(
-            height: currentheight * multiplier,
-            child: ListView.builder(
-                itemCount: widget.archivosList?.length,
-                itemBuilder: (context,index) {
-                  ArchivoResultado? archivo = widget.archivosList?[index];
+        Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                    child: Card(
-                      child:Column(
-                        children: [
-                          //nombre del archivo
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(archivo!.nombrearchivo),
-                            ],
-                          ),
-                          //id de archivo
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(archivo.id),
-                            ],
-                          ),
-                          //Url del archivo
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              GestureDetector(
-                                  child: Text(archivo.linkVistaArchivo),
-                              onTap: (){
-                                _abrirEnlace(archivo.linkVistaArchivo);
-                              },),
-                            ],
-                          ),
-                          //acciones
-                          Row(
-                            children: [
-                              //ver archivo -- LOGRADO
-
-                              //Descargar archvio -- LOGRADO
-
-                              //eliminar archivo --
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  GestureDetector(
-                                    child: Text('Eliminar archivo'),
-                                    onTap: (){
-                                      DriveApiUsage().eliminarArchivo(archivo.id,context);
-                                    },),
-                                ],
-                              ),
-
-                              //cambiar nombre -- TOCA VER
-
-                              //informacón de archivo -- LOGRADO
-
-                              //Actividad de archivo -- TOCA VER
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  );
-                }
-            )
+        Expanded(
+          child: SingleChildScrollView(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: contenedores,
+            ),
+          ),
         ),
+
+
       ],
     );
   }
@@ -565,3 +530,97 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
   }
 }
 
+class _TarjetaArchivo extends StatelessWidget{
+
+  final ArchivoResultado archivo;
+
+  const _TarjetaArchivo({
+    Key?key,
+    required this.archivo,
+  }):super(key: key);
+
+  @override
+  Widget build(BuildContext context){
+    const double imageTamanio = 40;
+    const double radioButton = 22;
+    final ThemeApp themeApp = ThemeApp();
+
+    void vistaArchivo() => /*Cuadrar Vista de archivo*/ print("Funcionando");
+
+    TextStyle styleText([double? tamanio]) => themeApp.styleText(tamanio?? 14, false, themeApp.blackColor);
+    material.SizedBox textResponsive(String text, TextStyle styleText) => material.SizedBox(
+      width: double.infinity,
+      child: Text(text, style: styleText, textAlign: TextAlign.center,),
+    );
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 5.0),
+      backgroundColor: themeApp.whitecolor,
+      borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0),
+          child: material.SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onDoubleTap: vistaArchivo,
+                      child: Image.network(
+                        archivo.iconLink,
+                        width: imageTamanio,
+                        height: imageTamanio,
+                        fit: BoxFit.contain,
+                        filterQuality: FilterQuality.high,
+                      ),
+                    ),
+                  ),
+                ),
+
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    child: textResponsive(archivo.nombrearchivo, styleText())
+                  ),
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: Text("${archivo.size} mb", style: styleText(9), textAlign: TextAlign.start,)),
+                    Expanded(child: Text(archivo.horaCracion, style: styleText(9), textAlign: TextAlign.end,)),
+                  ],
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    CircularButton(
+                      radio: radioButton,
+                      iconData: material.Icons.download,
+                      function: (){
+
+                      }
+                    ),
+                    CircularButton(
+                      radio: radioButton,
+                      buttonColor: themeApp.redColor,
+                      iconData: material.Icons.clear,
+                      function: (){
+
+                      }
+                    ),
+                  ],
+                )
+
+              ],
+            ),
+          ),
+        )
+    );
+  }
+
+}

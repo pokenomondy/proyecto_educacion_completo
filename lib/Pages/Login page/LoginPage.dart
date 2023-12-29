@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/strings.dart';
-import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,6 +13,7 @@ import '../../Config/theme.dart';
 import '../../Utils/Firebase/CollectionReferences.dart';
 import '../../Utils/Firebase/DeleteLocalData.dart';
 import '../../Utils/Firebase/Load_Data.dart';
+import '../../Config/strings.dart';
 
   class LoginPage extends StatefulWidget {
     const LoginPage({super.key});
@@ -87,9 +87,13 @@ import '../../Utils/Firebase/Load_Data.dart';
               Padding(
                 padding: const EdgeInsets.only(top: 25),
                 child: Text(
-                  'Inicio de Sesion',
-                  style: theme.styleText(18, true, theme.grayColor),
+                  "Nombre empresa",
+                  style: theme.styleText(15, false, theme.grayColor),
                 ),
+              ),
+              Text(
+                'Inicio de Sesion',
+                style: theme.styleText(18, true, theme.grayColor),
               ),
               RoundedTextField(
                 textAlign: TextAlign.start,
