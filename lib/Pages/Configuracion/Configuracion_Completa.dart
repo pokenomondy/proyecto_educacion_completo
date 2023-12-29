@@ -157,7 +157,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                                 ),
                               ),
                               PrimaryStyleButton(function: (){
-                                Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
+                                //Uploads().uploadconfigmensaje(msgsolicitud,"SOLICITUD");
                               }, text: "Subir mensaje solicitud"),
                               Text("Mensajes de Solicitudes = ${configuracioncargada!.CONFIRMACION_CLIENTE}"),
                               Container(
@@ -177,7 +177,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                                 ),
                               ),
                               PrimaryStyleButton(function: (){
-                                Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
+                                //Uploads().uploadconfigmensaje(msgsconfirmacioncliente,"CONFIRMACION_CLIENTE");
                               }, text: "Subir mensaje confirmacion"),
                             ],
                           ),

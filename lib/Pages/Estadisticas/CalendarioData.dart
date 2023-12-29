@@ -1,14 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
-import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView,Colors;
 import 'package:flutter/material.dart' as dialog;
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
-
 import '../../Providers/Providers.dart';
 import '../../Utils/Calendario/CalendarioEstilo.dart';
 
@@ -117,7 +113,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                           final appointment = Appointment(
                             startTime: CalendarioStyle().tiempotarjetastart(servicio),
                             endTime: CalendarioStyle().tiempotarjetaend(servicio),
-                            subject: "${servicio.identificadorcodigo} ${servicio.pagos.length} ${servicio.materia} - ${servicio.idcontable}",
+                            subject: "${servicio.identificadorcodigo}  ${servicio.materia} - ${servicio.idcontable}",
                             notes: servicio.materia,
                             color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
                           );

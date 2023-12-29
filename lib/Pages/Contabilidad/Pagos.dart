@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:googleapis/classroom/v1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
+import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Load_Data.dart';
@@ -46,15 +47,35 @@ class ContablePagosState extends State<ContablePagos> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/2)-30;
+    //Completo
+    final widthCompleto = MediaQuery.of(context).size.width;
+    //tamaño para computador y tablet
+    final tamanowidthdobleComputador = (widthCompleto/2)-30;
+    //tamaño para celular
+    final tamanowidthdobleCelular = (widthCompleto/2);
+    //currentheight completo
+    final heightCompleto = MediaQuery.of(context).size.height-100;
+
     return Container(
-      child: Row(
+      child: Column(
         children: [
-          _ContainerPagos(currentwidth: tamanowidth,dataloaded: dataloaded,servicioagendadList: servicioagendadList,key: registrarpago),
-          ContainerPagosDashboard(currentwidth: tamanowidth,dataloaded: dataloaded,)
+          if(widthCompleto >= 1200)
+            getVista(tamanowidthdobleComputador,heightCompleto),
+          if(widthCompleto < 1200 && widthCompleto > 620)
+            getVista(tamanowidthdobleComputador,heightCompleto),
+          if(widthCompleto <= 620)
+            getVista(tamanowidthdobleCelular,heightCompleto),
         ],
       ),
+    );
+  }
+
+  Widget getVista(double currentwidth, double currentheight){
+    return Row(
+      children: [
+        _ContainerPagos(currentwidth: currentwidth,dataloaded: dataloaded,servicioagendadList: servicioagendadList,key: registrarpago,currentheight: currentheight,),
+        ContainerPagosDashboard(currentwidth: currentwidth,dataloaded: dataloaded,currentheight: currentheight,)
+      ],
     );
   }
 }
@@ -63,13 +84,13 @@ class _ContainerPagos extends StatefulWidget{
   final double currentwidth;
   final bool dataloaded;
   final List<ServicioAgendado> servicioagendadList;
-
-
+  final double currentheight;
 
   const _ContainerPagos({Key?key,
     required this.currentwidth,
     required this.dataloaded,
     required this.servicioagendadList,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -101,6 +122,10 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     int sumaPagosReembolsoTutores = 0;
     bool disabledbutton = false;
     Map<String, dynamic> uploadconfiguracion = {};
+
+    //apoyo para configuración
+    bool configuracionSolicitudes = false;
+    String idcarpetaPagosDrive = "";
 
 
     void actualizarpagosMain(List<ServicioAgendado> servicioagendadoList,String codigo) async{
@@ -225,9 +250,11 @@ class _ContainerPagosState extends State<_ContainerPagos> {
         cargandopagos = true;
       });
       await Uploads().addPago(selectedservicio!.idcontable, selectedservicio!, selectedtipopago, valordepago, referenciapago, fecharegistropago, selectedmetodopago,context);
-      print("Registrar nuevo pago");
       // Actualiza la lista de pagos por servicio
-      await DriveApiUsage().subirPago('1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N', selectedFiles,referenciapago);
+      if(configuracionSolicitudes){
+        await DriveApiUsage().subirPago(idcarpetaPagosDrive, selectedFiles,referenciapago);
+      }else{
+      }
       //Borrar todas las variables anteriores
       setState(() {
         selectedFiles=null;
@@ -290,6 +317,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       return Container(
         color: Colors.red,
         width: widget.currentwidth,
+        height: widget.currentheight,
         child:Padding(
           padding: const EdgeInsets.all(15.0),
           child: Column(
@@ -437,9 +465,23 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                       ],
                     ),
                     //Seleccionar archivo de pago, aun no hay archivos
-                    FilledButton(child: Text('Seleccionar archivos'), onPressed: (){
-                      selectFile();
-                    }),
+                    Consumer<ConfiguracionAplicacion>(
+                      builder: (context, condifuracionProvider, child) {
+                        ConfiguracionPlugins? config = condifuracionProvider.config;
+                        configuracionSolicitudes = Utiles().obtenerBool(config!.PagosDriveApiFecha);
+                        idcarpetaPagosDrive = config.idcarpetaPagos;
+
+                        return Column(
+                          children: [
+                            if(configuracionSolicitudes)
+                            FilledButton(child: Text('Seleccionar archivos'), onPressed: (){
+                              selectFile();
+                            }),
+                          ],
+                        );
+                      }
+                    ),
+                    //vista de archivos
                     if(selectedFiles  != null)
                       Column(
                         children: selectedFiles!.map((file) {
@@ -468,11 +510,13 @@ class _ContainerPagosState extends State<_ContainerPagos> {
 class ContainerPagosDashboard extends StatefulWidget{
   final double currentwidth;
   final bool dataloaded;
+  final double currentheight;
 
   const ContainerPagosDashboard({
     Key?key,
     required this.currentwidth,
     required this.dataloaded,
+    required this.currentheight,
   }) :super(key: key);
 
   @override
@@ -492,6 +536,7 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
         return Container(
           color: Colors.green,
           width: widget.currentwidth,
+          height: widget.currentheight,
           child: Column(
             children: [
               Text('Aquí tenemos historial'),
@@ -499,7 +544,7 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
                 Column(
                   children: [
                     Container(
-                      height: 800,
+                      height: widget.currentheight-20,
                       child: ListView.builder(
                         itemCount: pagosDelServicioSeleccionado.length,
                         itemBuilder: (context, index) {

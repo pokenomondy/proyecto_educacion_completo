@@ -29,9 +29,14 @@ class EstadisticaMain extends StatefulWidget{
 class _EstadisticaMainState extends State<EstadisticaMain> {
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
+    //tamaño completo de width
+    final widthcompleto = MediaQuery.of(context).size.width;
+    //tamaño completo altura
     final currenheight = MediaQuery.of(context).size.height;
-    final tamanowidth = currentwidth - 80;
+    //Celular tamaño
+    final tamanowidthComputador = widthcompleto - 80;
+    final tamanowidthCelular = widthcompleto - 30;
+
     final tamanoheight = currenheight - 160;
 
     return NavigationView(
@@ -39,16 +44,16 @@ class _EstadisticaMainState extends State<EstadisticaMain> {
         padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 12),
         child: Row(
           children: [
-            if(currentwidth >= 1200)
+            if(widthcompleto >= 1200)
               Row(
                 children: [
-                  PrimaryColumn(currentwidth: tamanowidth,currentheight: tamanoheight,showcelular: false,),
+                  PrimaryColumn(currentwidth: tamanowidthComputador,currentheight: tamanoheight,showcelular: false,),
                 ],
               ),
-            if(currentwidth < 1200 && currentwidth > 620)
-              PrimaryColumn(currentwidth: tamanowidth,currentheight: tamanoheight,showcelular: true,),
-            if(currentwidth <= 620)
-              PrimaryColumn(currentwidth: tamanowidth,currentheight: tamanoheight,showcelular: true,),
+            if(widthcompleto < 1200 && widthcompleto > 620)
+              PrimaryColumn(currentwidth: tamanowidthComputador,currentheight: tamanoheight,showcelular: true,),
+            if(widthcompleto <= 620)
+              PrimaryColumn(currentwidth: tamanowidthCelular,currentheight: tamanoheight,showcelular: true,),
           ],
         ),
       ),
@@ -482,7 +487,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
             width: containerWidth,
             child: selectfecha()
         ),
-        //Ventas y numero de solicitudes y ganancias obtenidas
+        //Ventas y numero de solicitudes
         Row(
           children: [
             // # ventas
@@ -497,21 +502,26 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
               descripText("Solicitudes", themeApp.whitecolor),
             ]),
 
+          ],
+        ),
+        //Ganancias obtenidas y dinero de ventas
+        Row(
+          children: [
             // Ganancias brutas obtenidas
             campoInformacion([
               descripText(NumberFormat("#,###", "es_ES").format(gananciasobtenidas), themeApp.whitecolor),
               descripText("Ganancias obtenidas", themeApp.whitecolor),
             ]),
-          ],
-        ),
-        //Dinero de ventas, costo de ventas y % rentabilidad
-        Row(
-          children: [
             // Dinero de ventas
             campoInformacion([
               descripText(NumberFormat("#,###", "es_ES").format(ventasobtenidas), themeApp.whitecolor),
               descripText("Dinero de ventas", themeApp.whitecolor),
             ]),
+          ],
+        ),
+        //costo de ventas y % rentabilidad
+        Row(
+          children: [
 
             // Costo de ventas
             campoInformacion([
@@ -525,6 +535,12 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
               descripText("% Ganancias", themeApp.whitecolor),
             ]),
 
+          ],
+        ),
+        //% de solicitudes
+        Row(
+          children: [
+            //% de solicitudes agendadas
             campoInformacion([
               descripText(percetnsolicitudes.toStringAsFixed(2), themeApp.whitecolor),
               descripText("% solicitudes agendadas", themeApp.whitecolor),

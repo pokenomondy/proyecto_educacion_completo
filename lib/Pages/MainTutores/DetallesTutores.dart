@@ -30,13 +30,51 @@ class DetallesTutoresState extends State<DetallesTutores> {
 
   @override
   Widget build(BuildContext context) {
-    final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = currentwidth/3 -30;
-    return Row(
+    //Completo
+    final widthCompleto = MediaQuery.of(context).size.width;
+    //tamaño para computador y tablet
+    final tamanowidthTripleComputador = (widthCompleto/3)-30;
+    //currentheight completo
+    final heightCompleto = MediaQuery.of(context).size.height-100;
+
+    return Column(
       children: [
-        PrimaryColumnTutores(currentwith: tamanowidth),
-        SecundaryColumnTutores(currentwith: tamanowidth,),
-        TercerColumnTutores(currentwith: tamanowidth,)
+        if(widthCompleto >= 1200)
+          Row(
+            children: [
+              PrimaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight:heightCompleto ,),
+              SecundaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight: heightCompleto,),
+              TercerColumnTutores(currentwith: tamanowidthTripleComputador,currenheight: heightCompleto,)
+            ],
+          ),
+        if(widthCompleto < 1200 && widthCompleto > 620)
+          Container(
+            height: heightCompleto,
+            child: material.SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
+                  SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
+                  TercerColumnTutores(currentwith: widthCompleto,currenheight: -1,)
+                ],
+              ),
+            ),
+          ),
+        if(widthCompleto <= 620)
+          Container(
+            height: heightCompleto,
+            child: material.SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
+                  SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
+                  TercerColumnTutores(currentwith: widthCompleto,currenheight: -1,)
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -44,9 +82,11 @@ class DetallesTutoresState extends State<DetallesTutores> {
 
 class PrimaryColumnTutores extends StatefulWidget {
   final double currentwith;
+  final double currenheight;
 
   const PrimaryColumnTutores({Key?key,
     required this.currentwith,
+    required this.currenheight
   }) :super(key: key);
 
   @override
@@ -143,6 +183,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
           }
 
           return ItemsCard(
+            height: widget.currenheight,
             alignementColumn: MainAxisAlignment.start,
             shadow: false,
             width: widget.currentwith,
@@ -436,9 +477,11 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
 
 class SecundaryColumnTutores extends StatefulWidget {
   final double currentwith;
+  final double currenheight;
 
   const SecundaryColumnTutores({Key?key,
     required this.currentwith,
+    required this.currenheight
   }) :super(key: key);
 
   @override
@@ -466,6 +509,7 @@ class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
         _isPressed = [for(int i=0; i<tutor.materias.length ; i++) false];
 
         return Container(
+          height: widget.currenheight == -1 ? tutor.materias.length*65 : widget.currenheight!,
           width: widget.currentwith,
           padding: const EdgeInsets.symmetric(vertical: 10.0),
           decoration: BoxDecoration(
@@ -549,9 +593,11 @@ class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
 
 class TercerColumnTutores extends StatefulWidget {
   final double currentwith;
+  final double currenheight;
 
   const TercerColumnTutores({Key?key,
     required this.currentwith,
+    required this.currenheight
   }) :super(key: key);
 
   @override
@@ -570,6 +616,7 @@ class TercerColumnTutoresState extends State<TercerColumnTutores> {
         Tutores tutor = tutorProvider.tutorSeleccionado;
 
         return SizedBox(
+          height: widget.currenheight == -1 ? tutor.cuentas.length*220 : widget.currenheight!,
           width: widget.currentwith,
           child: ListView.builder(
             itemCount: tutor.cuentas.length,

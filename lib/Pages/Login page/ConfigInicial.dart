@@ -3,9 +3,8 @@ import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as dialog;
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../Config/elements.dart';
-
 
 
 class ConfigInicialPrimerAcceso extends StatefulWidget {
@@ -146,11 +145,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
                         width: 100,
                         tamanio: 14,
                         function: (){
-                          String Primarycolor = colorToHex(colorPrimaryColor);
-                          String Secundarycolor = colorToHex(colorSecundarycolor);
-                          //Uploads().uploadconfiginicial(Primarycolor, Secundarycolor, nombre_empresa.text);
-                          _redireccionaDashboarc();
-
+                          uploadConfiguracion();
                         }, text: "Enviar"
                     ),
                   ],
@@ -162,6 +157,19 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
         ],
       ),
     );
+  }
+
+  Future uploadConfiguracion() async{
+    String Primarycolor = colorToHex(colorPrimaryColor);
+    String Secundarycolor = colorToHex(colorSecundarycolor);
+    if(nombre_empresa==""){
+
+    }else{
+      await Uploads().addconfiginicial(Primarycolor,Secundarycolor,nombre_empresa.text,"","",confirmacion_empresa.text,solicitud_empresa.text);
+      await Future.delayed(Duration(seconds: 3));
+      _redireccionaDashboarc();
+    }
+
   }
 
   dialog.Dialog tutorial(){
@@ -282,8 +290,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
   }
 
   void _redireccionaDashboarc() async{
-      //Si no esta vacio, mande a dashbarod
-      Navigator.pushReplacementNamed(context, '/home/dashboard');
+      context.go('/home');
       print("nos vamos a dashboard");
   }
 }
