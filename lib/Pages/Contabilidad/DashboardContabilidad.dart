@@ -18,14 +18,12 @@ import '../../Utils/FuncionesMaterial.dart';
 import 'Pagos.dart';
 
 class ContaDash extends StatefulWidget {
-
+  const ContaDash({super.key});
   @override
   ContaDashState createState() => ContaDashState();
-
 }
 
 class ContaDashState extends State<ContaDash> {
-
   @override
   Widget build(BuildContext context) {
     //tamaño completo de width
@@ -39,24 +37,22 @@ class ContaDashState extends State<ContaDash> {
     //doble para celular
     final tamanowidthdoubleCelular = (widthcompleto/2);
 
-    return Container(
-      child: Row(
-        children: [
-          if(widthcompleto >= 1200)
-            Row(
-              children: [
-                PrimaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
-                TercerColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
-                SecundaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
-              ],
-            ),
-          if(widthcompleto < 1200 && widthcompleto > 620)
-            getResponsve(tamanowidthdouble,widthcompleto-80,currentheight-180),
-          if(widthcompleto <= 620)
-            getResponsve(tamanowidthdoubleCelular,widthcompleto,currentheight-180),
+    return Row(
+      children: [
+        if(widthcompleto >= 1200)
+          Row(
+            children: [
+              PrimaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+              TercerColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+              SecundaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+            ],
+          ),
+        if(widthcompleto < 1200 && widthcompleto > 620)
+          getResponsve(tamanowidthdouble,widthcompleto-80,currentheight-180),
+        if(widthcompleto <= 620)
+          getResponsve(tamanowidthdoubleCelular,widthcompleto,currentheight-180),
 
-        ],
-      ),
+      ],
     );
   }
 

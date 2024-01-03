@@ -34,7 +34,10 @@ class TutoresVista extends StatefulWidget {
 }
 
 class TutoresVistaVistaState extends State<TutoresVista> {
-  final GlobalKey<SecundaryColumnTutoresState> materiasdeTutoresVista = GlobalKey<SecundaryColumnTutoresState>();
+
+  //Linea de codigo con error
+  //final GlobalKey<SecundaryColumnTutoresState> materiasdeTutoresVista = GlobalKey<SecundaryColumnTutoresState>();
+
   Config configuracion = Config();
   List<Tutores> tutoresList = [];
   bool cargadodata = false;

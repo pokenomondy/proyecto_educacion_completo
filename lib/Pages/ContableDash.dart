@@ -1,14 +1,12 @@
 import 'package:dashboard_admin_flutter/Pages/Contabilidad/DashboardContabilidad.dart';
 import 'package:dashboard_admin_flutter/Pages/Contabilidad/Pagos.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-
-import 'Contabilidad/ListaPagos.dart';
+import 'package:flutter/material.dart' as material;
 
 class ContableDashboard extends StatefulWidget {
-
+  const ContableDashboard({super.key});
   @override
   ContableDashboardState createState() => ContableDashboardState();
-
 }
 
 class ContableDashboardState extends State<ContableDashboard> {
@@ -25,9 +23,9 @@ class ContableDashboardState extends State<ContableDashboard> {
           displayMode: PaneDisplayMode.top,
           items: <NavigationPaneItem>[
             PaneItem(
-              icon:  const Icon(FluentIcons.home),
+              icon:  const Icon(material.Icons.monetization_on_outlined),
               title: const Text('Registrar pagos'),
-              body: ContablePagos(),
+              body: const ContablePagos(),
             ),
             /*
             PaneItem(
@@ -38,9 +36,9 @@ class ContableDashboardState extends State<ContableDashboard> {
             
              */
             PaneItem(
-              icon:  const Icon(FluentIcons.home),
+              icon:  const Icon(material.Icons.dashboard),
               title: const Text('Dash contabilidad'),
-              body: ContaDash(),
+              body: const ContaDash(),
             ),
           ]
       ),

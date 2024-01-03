@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
@@ -6,22 +5,18 @@ import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
-import 'package:googleapis/classroom/v1.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../Config/theme.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
-import '../../Utils/Firebase/Load_Data.dart';
-import '../../Utils/Firebase/StreamBuilders.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart' as material;
 
 class ContablePagos extends StatefulWidget {
-
+  const ContablePagos({super.key});
   @override
   ContablePagosState createState() => ContablePagosState();
-
 }
 
 class ContablePagosState extends State<ContablePagos> {
@@ -56,17 +51,15 @@ class ContablePagosState extends State<ContablePagos> {
     //currentheight completo
     final heightCompleto = MediaQuery.of(context).size.height-100;
 
-    return Container(
-      child: Column(
-        children: [
-          if(widthCompleto >= 1200)
-            getVista(tamanowidthdobleComputador,heightCompleto),
-          if(widthCompleto < 1200 && widthCompleto > 620)
-            getVista(tamanowidthdobleComputador,heightCompleto),
-          if(widthCompleto <= 620)
-            getVista(tamanowidthdobleCelular,heightCompleto),
-        ],
-      ),
+    return Column(
+      children: [
+        if(widthCompleto >= 1200)
+          getVista(tamanowidthdobleComputador,heightCompleto),
+        if(widthCompleto < 1200 && widthCompleto > 620)
+          getVista(tamanowidthdobleComputador,heightCompleto),
+        if(widthCompleto <= 620)
+          getVista(tamanowidthdobleCelular,heightCompleto),
+      ],
     );
   }
 
@@ -95,7 +88,6 @@ class _ContainerPagos extends StatefulWidget{
 
   @override
   _ContainerPagosState createState() => _ContainerPagosState();
-
 }
 
 class _ContainerPagosState extends State<_ContainerPagos> {
@@ -114,6 +106,8 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     bool cargandopagos = false;
     final TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
     bool interfazpagos = false;
+
+    final ThemeApp themeApp = ThemeApp();
 
     //Pagos
     int sumaPagosClientes = 0;
@@ -180,7 +174,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
               children: [
                 cuadroPagos(serviciosAgendadosList),
                 if(cargandopagos==true)
-                  Positioned.fill(
+                  const Positioned.fill(
                     child: AbsorbPointer(
                       absorbing: true, // Evita todas las interacciones del usuario
                       child: Center(
@@ -273,20 +267,20 @@ class _ContainerPagosState extends State<_ContainerPagos> {
         if(debecliente!=0){
           return Text("El cliente debe ${selectedservicio!.preciocobrado-sumaPagosClientes+sumaPagosReembolsoCliente}");
         }else{
-          return Text("TODO PAGO");
+          return const Text("TODO PAGO");
         }
       }else if(selectedtipopago =="TUTOR"){
         if(debetutor!=0){
           return Text("El tutor debe ${selectedservicio!.preciotutor-sumaPagosTutores+sumaPagosReembolsoTutores}");
         }else{
-          return Text("TODO PAGO");
+          return const Text("TODO PAGO");
         }
       }else if(selectedtipopago =="CANCELADO"){
         if(sumaPagosClientes > 0 || sumaPagosTutores > 0){
           setState(() {
             disabledbutton = true;
           });
-          return Text('No se puede cancelar,hay pagos');
+          return const Text('No se puede cancelar,hay pagos');
         }else{
           return Text("SE PUEDE CANCELAR ${selectedservicio!.idcontable}");
         }
@@ -295,7 +289,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
           setState(() {
             disabledbutton = true;
           });
-          return Text('No se puede reembolsar saldo,el saldo es 0');
+          return const Text('No se puede reembolsar saldo,el saldo es 0');
         }else{
           return Text('Se puede reembolsar ${sumaPagosClientes-sumaPagosReembolsoCliente}');
         }
@@ -304,205 +298,215 @@ class _ContainerPagosState extends State<_ContainerPagos> {
           setState(() {
             disabledbutton = true;
           });
-          return Text('No se puede reembolsar saldo,el saldo es 0');
+          return const Text('No se puede reembolsar saldo,el saldo es 0');
         }else{
           return Text('SE PUEDEN REEMBOLSAR ${sumaPagosTutores-sumaPagosReembolsoTutores}');
         }
       }else{
-        return Text('Seleccione el tipo de pago a revisar');
+        return const Text('Seleccione el tipo de pago a revisar');
       }
     }
 
-    Widget cuadroPagos(List<ServicioAgendado> serviciosAgendadosList){
-      return Container(
-        color: Colors.red,
+    ItemsCard cuadroPagos(List<ServicioAgendado> serviciosAgendadosList){
+
+      Text subText(String text, double tamanio, [bool? isBold]) => Text(text, style: themeApp.styleText(tamanio, isBold??false, themeApp.blackColor),);
+      const double tamanioText = 14;
+
+      return ItemsCard(
         width: widget.currentwidth,
         height: widget.currentheight,
-        child:Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            children: [
-              Column(
-                children: [
-                  Text('Pagos de clientes = $sumaPagosClientes'),
-                  Text('Pagos de tutores = $sumaPagosTutores'),
-                ],
-              ),
-              //Codigo de servicio
-              if(widget.dataloaded == true)
-                Container(
-                  height: 30,
-                  width: 200,
-                  child: AutoSuggestBox<ServicioAgendado>(
-                    items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
-                          (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
-                        value: servicioagendado,
-                        label: servicioagendado.codigo,
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused #${servicioagendado.codigo} - ');
-                          }
-                        },
-                      ),
-                    )
-                        .toList(),
-                    decoration: Disenos().decoracionbuscador(),
-                    onSelected: (item) {
-                      setState(() {
-                        interfazpagos = true;
-                        selectedservicio = item.value;
-                      });
-                    },
-                    onChanged: (text, reason) {
-                      if (text.isEmpty ) {
-                        setState(() {
-                          selectedservicio = null; // Limpiar la selección cuando se borra el texto
-                          interfazpagos = false;
-                        });
+        alignementColumn: MainAxisAlignment.start,
+        horizontalPadding: 20.0,
+        verticalPadding: 12.0,
+        shadow: false,
+        children: [
+
+          Text("Registrar pagos", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3.0, horizontal: 10.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                subText('Pagos de clientes = $sumaPagosClientes', tamanioText),
+                subText('Pagos de tutores = $sumaPagosTutores', tamanioText),
+              ],
+            ),
+          ),
+
+          //Codigo de servicio
+          if(widget.dataloaded == true)
+            SizedBox(
+              height: 30,
+              width: 200,
+              child: AutoSuggestBox<ServicioAgendado>(
+                items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
+                      (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
+                    value: servicioagendado,
+                    label: servicioagendado.codigo,
+                    onFocusChange: (focused) {
+                      if (focused) {
+                        debugPrint('Focused #${servicioagendado.codigo} - ');
                       }
                     },
                   ),
+                )
+                    .toList(),
+                decoration: Disenos().decoracionbuscador(),
+                onSelected: (item) {
+                  setState(() {
+                    interfazpagos = true;
+                    selectedservicio = item.value;
+                  });
+                },
+                onChanged: (text, reason) {
+                  if (text.isEmpty ) {
+                    setState(() {
+                      selectedservicio = null; // Limpiar la selección cuando se borra el texto
+                      interfazpagos = false;
+                    });
+                  }
+                },
+              ),
+            ),
+          if(interfazpagos)
+            Column(
+              children: [
+                // tipo de pago ?,
+                AutoSuggestBox<String>(
+                  items: tipodepagos.map((tipopago) {
+                    return AutoSuggestBoxItem<String>(
+                        value: tipopago,
+                        label: tipopago,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused $tipopago');
+                          }
+                        }
+                    );
+                  }).toList(),
+                  onSelected: (item) {
+                    setState(() {
+                      selectedtipopago = item.value!;
+                      disabledbutton = false;
+                    }
+                    );
+
+                  },
+                  decoration: Disenos().decoracionbuscador(),
+                  placeholder: 'Selecciona tu tipo pago',
                 ),
-              if(interfazpagos)
-                Column(
+                //Valor de pago
+                TextBox(
+                  controller: _controllerpagos,
+                  keyboardType: TextInputType.number,
+                  placeholder: 'Valor de pago',
+                  onChanged: (value) {
+                    // Utilizar una expresión regular para permitir solo números
+                    if (RegExp(r'^[0-9]*$').hasMatch(value)) {
+                      setState(() {
+                        // Convertir el valor a entero
+                        valordepago = int.tryParse(value) ?? 0;
+                      });
+                    } else {
+                      // Si se ingresa un valor no numérico, limpiar el campo
+                      setState(() {
+                        _controllerpagos.text = valordepago.toString();
+                      });
+                    }
+                  },
+                  maxLines: null,
+                ),
+                //Cliente - nombre cliente
+                if(selectedservicio!=null)
+                  Column(
+                    children: [
+                      textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
+                    ],
+                  ),
+                //metodo de pago
+                AutoSuggestBox<String>(
+                  items: metodopagos.map((metodopago) {
+                    return AutoSuggestBoxItem<String>(
+                        value: metodopago,
+                        label: metodopago,
+                        onFocusChange: (focused) {
+                          if (focused) {
+                            debugPrint('Focused $metodopago');
+                          }
+                        }
+                    );
+                  }).toList(),
+                  onSelected: (item) {
+                    setState(() => selectedmetodopago = item.value!);
+                  },
+                  decoration: Disenos().decoracionbuscador(),
+                  placeholder: 'Selecciona tu metodo de pago',
+                ),
+                //Referencia
+                TextBox(
+                  placeholder: 'Referencia',
+                  onChanged: (value){
+                    setState(() {
+                      referenciapago = value;
+                    });
+                  },
+                  maxLines: null,
+                ),
+                //fecha de pago
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // tipo de pago ?,
-                    AutoSuggestBox<String>(
-                      items: tipodepagos.map((tipopago) {
-                        return AutoSuggestBoxItem<String>(
-                            value: tipopago,
-                            label: tipopago,
-                            onFocusChange: (focused) {
-                              if (focused) {
-                                debugPrint('Focused $tipopago');
-                              }
-                            }
+                    DatePicker(
+                      header: 'Seleccionar fecha de registro de pago',
+                      selected: fecharegistropago,
+                      showYear: false,
+                      onChanged: (time){
+                        setState((){
+                          fecharegistropago = time.toUtc();
+                        },
                         );
-                      }).toList(),
-                      onSelected: (item) {
-                        setState(() {
-                          selectedtipopago = item.value!;
-                          disabledbutton = false;
-                        }
-                        );
-
                       },
-                      decoration: Disenos().decoracionbuscador(),
-                      placeholder: 'Selecciona tu tipo pago',
                     ),
-                    //Valor de pago
-                    TextBox(
-                      controller: _controllerpagos,
-                      keyboardType: TextInputType.number,
-                      placeholder: 'Valor de pago',
-                      onChanged: (value) {
-                        // Utilizar una expresión regular para permitir solo números
-                        if (RegExp(r'^[0-9]*$').hasMatch(value)) {
-                          setState(() {
-                            // Convertir el valor a entero
-                            valordepago = int.tryParse(value) ?? 0;
-                          });
-                        } else {
-                          // Si se ingresa un valor no numérico, limpiar el campo
-                          setState(() {
-                            _controllerpagos.text = valordepago.toString();
-                          });
-                        }
-                      },
-                      maxLines: null,
-                    ),
-                    //Cliente - nombre cliente
-                    if(selectedservicio!=null)
-                      Column(
-                        children: [
-                          textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
-                        ],
-                      ),
-                    //metodo de pago
-                    AutoSuggestBox<String>(
-                      items: metodopagos.map((metodopago) {
-                        return AutoSuggestBoxItem<String>(
-                            value: metodopago,
-                            label: metodopago,
-                            onFocusChange: (focused) {
-                              if (focused) {
-                                debugPrint('Focused $metodopago');
-                              }
-                            }
-                        );
-                      }).toList(),
-                      onSelected: (item) {
-                        setState(() => selectedmetodopago = item.value!);
-                      },
-                      decoration: Disenos().decoracionbuscador(),
-                      placeholder: 'Selecciona tu metodo de pago',
-                    ),
-                    //Referencia
-                    TextBox(
-                      placeholder: 'Referencia',
-                      onChanged: (value){
-                        setState(() {
-                          referenciapago = value;
-                        });
-                      },
-                      maxLines: null,
-                    ),
-                    //fecha de pago
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        DatePicker(
-                          header: 'Seleccionar fecha de registro de pago',
-                          selected: fecharegistropago,
-                          showYear: false,
-                          onChanged: (time){
-                            setState((){
-                              fecharegistropago = time.toUtc();
-                            },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                    //Seleccionar archivo de pago, aun no hay archivos
-                    Consumer<ConfiguracionAplicacion>(
-                      builder: (context, condifuracionProvider, child) {
-                        ConfiguracionPlugins? config = condifuracionProvider.config;
-                        configuracionSolicitudes = Utiles().obtenerBool(config!.PagosDriveApiFecha);
-                        idcarpetaPagosDrive = config.idcarpetaPagos;
-
-                        return Column(
-                          children: [
-                            if(configuracionSolicitudes)
-                            FilledButton(child: Text('Seleccionar archivos'), onPressed: (){
-                              selectFile();
-                            }),
-                          ],
-                        );
-                      }
-                    ),
-                    //vista de archivos
-                    if(selectedFiles  != null)
-                      Column(
-                        children: selectedFiles!.map((file) {
-                          return Container(
-                            color: Colors.blue,
-                            child: Text(file.name),
-                          );
-                        }).toList(),
-                      ),
-                    //Registrar pago
-                    FilledButton(
-                        child: Text('Registrar pago'),
-                        onPressed: disabledbutton ? null : ()async{
-                          comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
-
-                        }),
                   ],
                 ),
-            ],
-          ),
-        ),
+                //Seleccionar archivo de pago, aun no hay archivos
+                Consumer<ConfiguracionAplicacion>(
+                  builder: (context, condifuracionProvider, child) {
+                    ConfiguracionPlugins? config = condifuracionProvider.config;
+                    configuracionSolicitudes = Utiles().obtenerBool(config!.PagosDriveApiFecha);
+                    idcarpetaPagosDrive = config.idcarpetaPagos;
+
+                    return Column(
+                      children: [
+                        if(configuracionSolicitudes)
+                        FilledButton(child: const Text('Seleccionar archivos'), onPressed: (){
+                          selectFile();
+                        }),
+                      ],
+                    );
+                  }
+                ),
+                //vista de archivos
+                if(selectedFiles  != null)
+                  Column(
+                    children: selectedFiles!.map((file) {
+                      return Container(
+                        color: Colors.blue,
+                        child: Text(file.name),
+                      );
+                    }).toList(),
+                  ),
+                //Registrar pago
+                FilledButton(
+                    onPressed: disabledbutton ? null : ()async{
+                      comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
+
+                    },
+                    child: const Text('Registrar pago')),
+              ],
+            ),
+        ],
       );
     }
   }
@@ -526,6 +530,8 @@ class ContainerPagosDashboard extends StatefulWidget{
 
 class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
 
+  final ThemeApp themeApp = ThemeApp();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ContabilidadProvider>(
@@ -533,43 +539,44 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
         // Obtener la lista de pagos del provider
         List<RegistrarPago> pagosDelServicioSeleccionado = pagosProvider.pagosDelServicioSeleccionado;
 
-        return Container(
-          color: Colors.green,
+        return ItemsCard(
+          shadow: false,
+          cardColor: themeApp.primaryColor,
           width: widget.currentwidth,
           height: widget.currentheight,
-          child: Column(
-            children: [
-              Text('Aquí tenemos historial'),
-              if (widget.dataloaded == true)
-                Column(
-                  children: [
-                    Container(
-                      height: widget.currentheight-20,
-                      child: ListView.builder(
-                        itemCount: pagosDelServicioSeleccionado.length,
-                        itemBuilder: (context, index) {
-                          RegistrarPago registrarpago = pagosDelServicioSeleccionado[index];
+          horizontalPadding: 15.0,
+          verticalPadding: 12.0,
+          children: [
+            const Text('Aquí tenemos historial'),
+            if (widget.dataloaded == true)
+              Column(
+                children: [
+                  SizedBox(
+                    height: widget.currentheight-20,
+                    child: ListView.builder(
+                      itemCount: pagosDelServicioSeleccionado.length,
+                      itemBuilder: (context, index) {
+                        RegistrarPago registrarpago = pagosDelServicioSeleccionado[index];
 
-                          return Container(
-                            height: 100,
-                            child: Card(
-                              child: Column(
-                                children: [
-                                  Text(registrarpago.id),
-                                  Text(registrarpago.valor.toString()),
-                                  Text(registrarpago.tipopago),
-                                  Text("${registrarpago.fechapago.month}-${registrarpago.fechapago.day}")
-                                ],
-                              ),
+                        return SizedBox(
+                          height: 100,
+                          child: Card(
+                            child: Column(
+                              children: [
+                                Text(registrarpago.id),
+                                Text(registrarpago.valor.toString()),
+                                Text(registrarpago.tipopago),
+                                Text("${registrarpago.fechapago.month}-${registrarpago.fechapago.day}")
+                              ],
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
-            ],
-          ),
+                  ),
+                ],
+              ),
+          ],
         );
       },
     );
