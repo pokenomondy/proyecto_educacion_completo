@@ -1,11 +1,7 @@
-import 'package:dashboard_admin_flutter/Pages/Estadisticas/Contabilida.dart';
 import 'package:dashboard_admin_flutter/Pages/Estadisticas/EstadisticaMain.dart';
-import 'package:dashboard_admin_flutter/Pages/Estadisticas/Ventas.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
-import '../Objetos/Solicitud.dart';
-import '../Utils/Firebase/Load_Data.dart';
 import 'Estadisticas/CalendarioData.dart';
+import 'package:flutter/material.dart' as material;
 
 class Estadistica extends StatefulWidget {
   @override
@@ -34,14 +30,14 @@ class _EstadisticaState extends State<Estadistica> {
 
            */
             PaneItem(
-              icon:  const Icon(FluentIcons.home),
-              title: const Text('CALENDARIO'),
-              body: CalendarioData(),
+              icon:  const Icon(material.Icons.schedule_rounded),
+              title: const Text('Calendario'),
+              body: const CalendarioData(),
             ),
             PaneItem(
-              icon:  const Icon(FluentIcons.home),
+              icon:  const Icon(material.Icons.insert_chart_outlined_rounded),
               title: const Text('Estadisticas'),
-              body: EstadisticaMain(),
+              body: const EstadisticaMain(),
             ),
             /*
             PaneItem(
