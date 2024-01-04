@@ -155,7 +155,7 @@ class PrimaryStyleButtonState extends State<PrimaryStyleButton> {
 
   @override
   Widget build(BuildContext context) {
-    double widthCalculate = widget.width == -1 ? widget.text.length * 9: widget.width;
+    double widthCalculate = widget.width == -1 ? widget.text.length * 10: widget.width;
     double heigthCalculate = (widget.tamanio * 30) / 15;
 
     return Padding(

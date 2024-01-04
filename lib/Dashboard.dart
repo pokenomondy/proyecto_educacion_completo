@@ -131,7 +131,7 @@ class DashboardState extends State<Dashboard> {
               return <NavigationPaneItem>[
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
-                    body: widget.showTutoresDetalles ? /*DetallesTutores()*/ const SolicitudesNew(): const TutoresVista(),
+                    body: widget.showTutoresDetalles ? const DetallesTutores(): const TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor))),
               ];
             }else{
@@ -139,16 +139,16 @@ class DashboardState extends State<Dashboard> {
                 PaneItem(
                   icon: const Icon(FluentIcons.home),
                   title:  configuracionrol.panelnavegacion("Solicitudes",_currentPage == 0),
-                  body: widget.showSolicitudesNew ?  /*DetallesServicio()*/ const SolicitudesNew(): const SolicitudesNew(),
+                  body: widget.showSolicitudesNew ? const DetallesServicio(): const SolicitudesNew(),
                   selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)),
                   key: const ValueKey('/home'),
                 ),
                 PaneItem(icon: const Icon(Icons.person_sharp),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
-                    body: widget.showTutoresDetalles ?  /*DetallesTutores()*/ const SolicitudesNew(): const TutoresVista(),
+                    body: widget.showTutoresDetalles ?  const DetallesTutores(): const TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.PrimaryColor)) ),
                 PaneItem(icon: const Icon(Icons.insert_chart_outlined_rounded),
-                    title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
+                    title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: const Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
                 PaneItem(icon: const Icon(Icons.attach_money_rounded),
                     title: configuracionrol.panelnavegacion("Contable",_currentPage==3), body: const ContableDashboard(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
                 PaneItem(icon: const Icon(Icons.settings),

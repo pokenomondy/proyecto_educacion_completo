@@ -4,11 +4,12 @@ import 'Estadisticas/CalendarioData.dart';
 import 'package:flutter/material.dart' as material;
 
 class Estadistica extends StatefulWidget {
+  const Estadistica({super.key});
   @override
-  _EstadisticaState createState() => _EstadisticaState();
+  EstadisticaState createState() => EstadisticaState();
 }
 
-class _EstadisticaState extends State<Estadistica> {
+class EstadisticaState extends State<Estadistica> {
   int _selectedpage = 0;
 
   @override

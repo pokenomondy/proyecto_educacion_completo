@@ -131,7 +131,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                           return appointment;
                         }).toList();
 
-                        return Container(
+                        return SizedBox(
                           height: currentheight-50,
                           child: SfCalendar(
                             controller: _calendarController,
@@ -141,8 +141,8 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                             initialDisplayDate: DateTime.now(),
                             initialSelectedDate: DateTime.now(),
                             showNavigationArrow: true,
-                            monthViewSettings: MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
-                            scheduleViewSettings: ScheduleViewSettings(
+                            monthViewSettings: const MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
+                            scheduleViewSettings: const ScheduleViewSettings(
                                 appointmentItemHeight: 70,
                                 monthHeaderSettings: MonthHeaderSettings(
                                     monthFormat: 'MMMM, yyyy',
@@ -150,9 +150,11 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                                     textAlign: TextAlign.left,
                                     backgroundColor: material.Colors.green,
                                     monthTextStyle: TextStyle(
-                                        color: material.Colors.red,
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w400))
+                                      color: material.Colors.red,
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.w400,
+                                      fontFamily: "Poppins"
+                                    ))
                             ),
                             onTap: (CalendarTapDetails details) {
                               CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
@@ -163,7 +165,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                       }
                   ),
                 if(datosDescargados == true)
-                  Text('Descargados'),
+                  const Text('Descargados'),
               ],
             )
         ],

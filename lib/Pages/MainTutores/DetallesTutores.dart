@@ -1,7 +1,6 @@
 import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Config/strings.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
@@ -14,7 +13,6 @@ import '../../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import '../../Utils/Firebase/Uploads.dart';
-import '../../Utils/Utiles/FuncionesUtiles.dart';
 import '../Tutores.dart';
 
 class DetallesTutores extends StatefulWidget {
@@ -35,12 +33,13 @@ class DetallesTutoresState extends State<DetallesTutores> {
     //tamaño para computador y tablet
     final tamanowidthTripleComputador = (widthCompleto/3)-30;
     //currentheight completo
-    final heightCompleto = MediaQuery.of(context).size.height-100;
+    final heightCompleto = MediaQuery.of(context).size.height-80;
 
     return Column(
       children: [
         if(widthCompleto >= 1200)
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PrimaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight:heightCompleto ,),
               SecundaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight: heightCompleto,),
@@ -48,11 +47,12 @@ class DetallesTutoresState extends State<DetallesTutores> {
             ],
           ),
         if(widthCompleto < 1200 && widthCompleto > 620)
-          Container(
+          SizedBox(
             height: heightCompleto,
             child: material.SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
                   SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
@@ -62,11 +62,12 @@ class DetallesTutoresState extends State<DetallesTutores> {
             ),
           ),
         if(widthCompleto <= 620)
-          Container(
+          SizedBox(
             height: heightCompleto,
             child: material.SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
                   SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
@@ -130,7 +131,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
   @override
   void initState() {
     loaddata();
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         volveraconsultar = true;
       });
@@ -201,7 +202,7 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
               textoymodificable("Carrera",tutorseleccionado.carrera ,3, false),
               textoymodificable("Correo gmail",tutorseleccionado.correogmail, 4, true),
               textoymodificable("Universidad",tutorseleccionado.univerisdad ,5, false),
-              textoymodificable("Activo?",tutorseleccionado.activo.toString() ,6, false),
+              textoymodificable("Estado",tutorseleccionado.activo ? "Activo" : "Inactivo",6, false),
 
               //Agregar nueva matería
               if(cargadotablamaterias)
@@ -241,11 +242,13 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                         },
                         text: "Subir materia"
                     ),
+
                     //CUENTAS BANCARÍAS
                     Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
                           child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
                         ),
                         ComboBox<String>(
@@ -310,10 +313,9 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
             children: [
               Container(
                   width: widget.currentwith-60,
-                  padding: const EdgeInsets.only(
-                      bottom: 15, right: 10, top: 5),
+                  padding: const EdgeInsets.only(bottom: 5.5, right: 10.0, top: 5.5),
                   margin: const EdgeInsets.only(left: 10),
-                  child: Text("$text : ${valor}", style: styleText,)),
+                  child: Text("$text : $valor", style: styleText,)),
               if(!active)
                 GestureDetector(
                   onTap: (){
@@ -326,103 +328,111 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
             ],
           ),
         if (editarcasilla[index])
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              if(index == 1)
-                SizedBox(
-                  width: widget.currentwith-100,
-                  child: TextBox(
-                    placeholder: valor,
-                    onChanged: (value){
-                      setState(() {
-                        cambio = value;
-                      });
-                    },
-                    maxLines: null,
+          Flexible(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if(index == 1)
+                  Flexible(
+                    child: TextBox(
+                      placeholder: valor,
+                      onChanged: (value){
+                        setState(() {
+                          cambio = value;
+                        });
+                      },
+                      maxLines: null,
+                    ),
                   ),
-                ),
-              if(index == 2)
-                SizedBox(
-                  width: widget.currentwith-100,
-                  child: TextBox(
-                    placeholder: valor,
-                    onChanged: (value){
-                      setState(() {
-                        cambionum = int.parse(value);
-                        cambio = value;
-                      });
-                    },
-                    maxLines: null,
+                if(index == 2)
+                  Flexible(
+                    child: TextBox(
+                      placeholder: valor,
+                      onChanged: (value){
+                        setState(() {
+                          cambionum = int.parse(value);
+                          cambio = value;
+                        });
+                      },
+                      maxLines: null,
+                    ),
                   ),
-                ),
-              if(index == 3)
-                SizedBox(
-                  height: 30,
-                  width: widget.currentwith-100,
-                  child: AutoSuggestBox<Carrera>(
-                    items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
-                          (carrera) => AutoSuggestBoxItem<Carrera>(
-                        value: carrera,
-                        label: carrera.nombrecarrera,
+                if(index == 3)
+                  Flexible(
+                    child: SizedBox(
+                      height: 30,
+                      child: AutoSuggestBox<Carrera>(
+                        items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
+                              (carrera) => AutoSuggestBoxItem<Carrera>(
+                            value: carrera,
+                            label: carrera.nombrecarrera,
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
+                          setState(() {
+                            selectedCarreraobject = item.value; // Actualizar el valor seleccionado
+                            cambio = item.value!.nombrecarrera;
+                          });
+                        },
                       ),
-                    )
-                        .toList(),
-                    onSelected: (item) {
-                      setState(() {
-                        selectedCarreraobject = item.value; // Actualizar el valor seleccionado
-                        cambio = item.value!.nombrecarrera;
-                      });
-                    },
+                    ),
                   ),
-                ),
-              if(index == 5)
-                SizedBox(
-                  height: 30,
-                  width: widget.currentwith-100,
-                  child: AutoSuggestBox<Universidad>(
-                    items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
-                          (universidad) => AutoSuggestBoxItem<Universidad>(
-                        value: universidad,
-                        label: universidad.nombreuniversidad,
+                if(index == 5)
+                  Flexible(
+                    child: SizedBox(
+                      height: 30,
+                      child: AutoSuggestBox<Universidad>(
+                        items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
+                              (universidad) => AutoSuggestBoxItem<Universidad>(
+                            value: universidad,
+                            label: universidad.nombreuniversidad,
+                          ),
+                        )
+                            .toList(),
+                        onSelected: (item) {
+                          setState(() {
+                            selectedUniversidadobject = item.value;
+                            cambio = item.value!.nombreuniversidad;
+                          });
+                        },
                       ),
-                    )
-                        .toList(),
-                    onSelected: (item) {
-                      setState(() {
-                        selectedUniversidadobject = item.value;
-                        cambio = item.value!.nombreuniversidad;
-                      });
-                    },
+                    ),
                   ),
-                ),
-              if(index==6)
-                ToggleSwitch(
-                  checked: activo,
-                  onChanged: (bool value) {
-                    setState(() {
-                      cambio = value.toString();
-                      activo = value;
-                    });
-                  },),
+                if(index==6)
+                  ToggleSwitch(
+                    checked: activo,
+                    onChanged: (bool value) {
+                      setState(() {
+                        cambio = value.toString();
+                        activo = value;
+                      });
+                    },),
 
-              //actualizar variable
-              GestureDetector(
-                onTap: () async{
-                  verificarUploadTutor(index,cambio);
-                },
-                child: const Icon(FluentIcons.check_list),
-              ),
-              //cancelar
-              GestureDetector(
-                onTap: (){
-                  setState(() {
-                    editarcasilla[index] = !editarcasilla[index];
-                  });
-                },
-                child: const Icon(FluentIcons.cancel),
-              )
-            ],
+                //actualizar variable
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+
+                    CircularButton(
+                        iconData: FluentIcons.check_list,
+                        function: () async{
+                      verificarUploadTutor(index,cambio);
+                    }),
+
+                    CircularButton(
+                        buttonColor: themeApp.redColor,
+                        iconData: FluentIcons.cancel,
+                        function: (){
+                          setState(() {
+                            editarcasilla[index] = !editarcasilla[index];
+                          });
+                        }),
+                  ],
+                )
+
+              ],
+            ),
           )
       ],
     );
@@ -492,7 +502,6 @@ class SecundaryColumnTutores extends StatefulWidget {
 class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
 
   final ThemeApp themeApp = ThemeApp();
-  late List<bool> _isPressed = [];
 
   void updateData() {
     setState(() {
@@ -505,8 +514,6 @@ class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
     return Consumer<VistaTutoresProvider>(
       builder: (context, tutorProvider, child) {
         Tutores tutor = tutorProvider.tutorSeleccionado;
-
-        _isPressed = [for(int i=0; i<tutor.materias.length ; i++) false];
 
         return Container(
           height: widget.currenheight == -1 ? tutor.materias.length*65 : widget.currenheight!,
@@ -543,38 +550,14 @@ class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
                               ],
                             ),
 
-                            GestureDetector(
+                            CircularButton(
+                              buttonColor: themeApp.redColor,
+                              iconData: material.Icons.cancel,
+                              function: (){
 
-                              onTap: (){
-                                UtilDialogs dialogs = UtilDialogs(context: context);
-                                _isPressed[subindex] = true;
-                                dialogs.error(_isPressed.toString(), "Error");
-                              },
+                                //Añadir funcion
 
-                              onTapDown: (_){
-                                setState(() {
-                                  _isPressed[subindex] = true;
-                                });
-                              },
-
-                              onTapUp: (_){
-                                setState(() {
-                                  _isPressed[subindex] = false;
-                                });
-                              },
-
-                              child: AnimatedContainer(
-                                width: 30,
-                                height: 30,
-                                duration: const Duration(milliseconds: 500),
-                                padding: const EdgeInsets.all(5.0),
-                                decoration: BoxDecoration(
-                                    color: !_isPressed[subindex]? themeApp.redColor : themeApp.grayColor,
-                                    borderRadius: BorderRadius.circular(80)
-                                ),
-                                child: Icon(material.Icons.cancel, color: !_isPressed[subindex]? themeApp.whitecolor : themeApp.redColor,),
-                              ),
-                            )
+                            }),
 
                           ],
                         ),
