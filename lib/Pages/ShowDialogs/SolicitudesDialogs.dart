@@ -1,6 +1,11 @@
+import 'package:dashboard_admin_flutter/Config/strings.dart';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
+import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
+import 'package:dashboard_admin_flutter/Providers/Providers.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:provider/provider.dart';
 import '../../Config/Config.dart';
+import '../../Config/elements.dart';
 import '../../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';
@@ -13,14 +18,8 @@ import 'package:flutter/material.dart' as dialog;
 //DIALOGOS AGREGAR NUEVO PROSPECTO CLIENTE
 
 class SolicitudesDialog extends StatefulWidget {
-  final List<Carrera> carreraList;
-  final List<Universidad> universidadList;
-  final Function() onUpdateListaClientes; // Agrega esta variable
 
   const SolicitudesDialog({Key?key,
-    required this.carreraList,
-    required this.universidadList,
-    required this.onUpdateListaClientes,
   }) :super(key: key);
 
   @override
@@ -35,6 +34,7 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
   Universidad? selectedUniversidadobject;
   List<String> EstadoList = ['FACEBOOK','WHATSAPP','REFERIDO AMIGO','INSTAGRAM','CAMPAÑA INSTAGRAM',];
   String? selectedProcedencia;
+  List<Clientes> clienteList = [];
 
   @override
   Widget build(BuildContext context) {
@@ -60,155 +60,164 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Agregar Prospecto'),
-              content: Column(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      //NOMBRE WSP CLIENTE
-                      Text('PROSPECTO CLIENTE'),
-                      //Nombre Completo
-                      Container(
-                        width: 200,
-                        child: TextBox(
-                          placeholder: 'Nombre Completo',
-                          onChanged: (value){
-                            setState(() {
-                              nombreCompleto = value;
-                            });
-                          },
-                          maxLines: null,
-                        ),
-                      ),
-                      //Num de cliente
-                      Container(
-                        width: 200,
-                        child: TextBox(
-                          placeholder: 'Num de cliente',
-                          onChanged: (value){
-                            setState(() {
-                              numwasaCliente = int.parse(value);
-                            });
-                          },
-                          maxLines: null,
-                        ),
-                      ),
-                      //Carrera
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Carrera'),
-                          Container(
-                            height: 30,
-                            width: 200,
-                            child: AutoSuggestBox<Carrera>(
-                              items: widget.carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                                    (carrera) => AutoSuggestBoxItem<Carrera>(
-                                  value: carrera,
-                                  label: carrera.nombrecarrera,
-                                  onFocusChange: (focused) {
-                                    if (focused) {
-                                      debugPrint('Focused #${carrera.nombrecarrera} - ');
-                                    }
-                                  },
-                                ),
-                              )
-                                  .toList(),
-                              onSelected: (item) {
-                                setState(() {
-                                  print("seleccionado ${item.label}");
-                                  selectedCarreraobject = item.value; // Actualizar el valor seleccionado
-                                });
-                              },
-                            ),
-                          ),
-                          AgregarCarreraDialog(carreraList: widget.carreraList, universidadList: widget.universidadList,CarreUniver: "CARRERA",onUpdateListaClientes: widget.onUpdateListaClientes,),
-                        ],
-                      ),
-                      //Universidad
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Universidad'),
-                          Container(
-                            height: 30,
-                            width: 200,
-                            child: AutoSuggestBox<Universidad>(
-                              items: widget.universidadList.map<AutoSuggestBoxItem<Universidad>>(
-                                    (universidad) => AutoSuggestBoxItem<Universidad>(
-                                  value: universidad,
-                                  label: universidad.nombreuniversidad,
-                                  onFocusChange: (focused) {
-                                    if (focused) {
-                                      debugPrint('Focused #${universidad.nombreuniversidad} - ');
-                                    }
-                                  },
-                                ),
-                              )
-                                  .toList(),
-                              onSelected: (item) {
-                                setState(() {
-                                  print("seleccionado ${item.label}");
-                                  selectedUniversidadobject = item.value; // Actualizar el valor seleccionado
-                                });
-                              },
-                            ),
-                          ),
-                          AgregarCarreraDialog(carreraList: widget.carreraList, universidadList: widget.universidadList,CarreUniver: "UNIVERSIDAD",onUpdateListaClientes: widget.onUpdateListaClientes,),
-                        ],
-                      ),
-                      //Lista de procedencia del cliente
-                      Container(
-                        child: AutoSuggestBox<String>(
-                          items: EstadoList.map((servicio) {
-                            return AutoSuggestBoxItem<String>(
-                                value: servicio,
-                                label: servicio,
-                                onFocusChange: (focused) {
-                                  if (focused) {
-                                    debugPrint('Focused $servicio');
-                                  }
-                                }
-                            );
-                          }).toList(),
-                          onSelected: (item) {
-                            setState(() {
-                              selectedProcedencia = item.value;
-                            });
-                          },
-                          decoration: Disenos().decoracionbuscador(),
-                          placeholder: 'Procedencia',
-                          onChanged: (text, reason) {
-                            if (text.isEmpty ) {
-                              setState(() {
-                                selectedProcedencia = null; // Limpiar la selección cuando se borra el texto
-                              });
-                            }
-                          },
-                        ),
-                      ),
+        return Consumer3<CarrerasProvider, UniversidadVistaProvider,ClientesVistaProvider>(
+          builder: (context, carreraProviderselect, universidadProviderselect,clienteProviderselect ,child) {
+            List<Carrera> carreraList = carreraProviderselect.todosLasCarreras;
+            List<Universidad> universidadList = universidadProviderselect.todasLasUniversidades;
+            clienteList = clienteProviderselect.todosLosClientes;
 
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return ContentDialog(
+                  title: const Text('Agregar Prospecto'),
+                  content: Column(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          //NOMBRE WSP CLIENTE
+                          Text('PROSPECTO CLIENTE'),
+                          //Nombre Completo
+                          Container(
+                            width: 200,
+                            child: TextBox(
+                              placeholder: 'Nombre Completo',
+                              onChanged: (value){
+                                setState(() {
+                                  nombreCompleto = value;
+                                });
+                              },
+                              maxLines: null,
+                            ),
+                          ),
+                          //Num de cliente
+                          Container(
+                            width: 200,
+                            child: TextBox(
+                              placeholder: 'Num de cliente',
+                              onChanged: (value){
+                                setState(() {
+                                  numwasaCliente = int.parse(value);
+                                });
+                              },
+                              maxLines: null,
+                            ),
+                          ),
+                          //Carrera
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Carrera'),
+                              Container(
+                                height: 30,
+                                width: 200,
+                                child: AutoSuggestBox<Carrera>(
+                                  items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                                        (carrera) => AutoSuggestBoxItem<Carrera>(
+                                      value: carrera,
+                                      label: carrera.nombrecarrera,
+                                      onFocusChange: (focused) {
+                                        if (focused) {
+                                          debugPrint('Focused #${carrera.nombrecarrera} - ');
+                                        }
+                                      },
+                                    ),
+                                  )
+                                      .toList(),
+                                  onSelected: (item) {
+                                    setState(() {
+                                      print("seleccionado ${item.label}");
+                                      selectedCarreraobject = item.value; // Actualizar el valor seleccionado
+                                    });
+                                  },
+                                ),
+                              ),
+                              AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "CARRERA"),
+                            ],
+                          ),
+                          //Universidad
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Universidad'),
+                              Container(
+                                height: 30,
+                                width: 200,
+                                child: AutoSuggestBox<Universidad>(
+                                  items: universidadList.map<AutoSuggestBoxItem<Universidad>>(
+                                        (universidad) => AutoSuggestBoxItem<Universidad>(
+                                      value: universidad,
+                                      label: universidad.nombreuniversidad,
+                                      onFocusChange: (focused) {
+                                        if (focused) {
+                                          debugPrint('Focused #${universidad.nombreuniversidad} - ');
+                                        }
+                                      },
+                                    ),
+                                  )
+                                      .toList(),
+                                  onSelected: (item) {
+                                    setState(() {
+                                      print("seleccionado ${item.label}");
+                                      selectedUniversidadobject = item.value; // Actualizar el valor seleccionado
+                                    });
+                                  },
+                                ),
+                              ),
+                              AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "UNIVERSIDAD"),
+                            ],
+                          ),
+                          //Lista de procedencia del cliente
+                          Container(
+                            child: AutoSuggestBox<String>(
+                              items: EstadoList.map((servicio) {
+                                return AutoSuggestBoxItem<String>(
+                                    value: servicio,
+                                    label: servicio,
+                                    onFocusChange: (focused) {
+                                      if (focused) {
+                                        debugPrint('Focused $servicio');
+                                      }
+                                    }
+                                );
+                              }).toList(),
+                              onSelected: (item) {
+                                setState(() {
+                                  selectedProcedencia = item.value;
+                                });
+                              },
+                              decoration: Disenos().decoracionbuscador(),
+                              placeholder: 'Procedencia',
+                              onChanged: (text, reason) {
+                                if (text.isEmpty ) {
+                                  setState(() {
+                                    selectedProcedencia = null; // Limpiar la selección cuando se borra el texto
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-              actions: [
-                Button(
-                  child: const Text('Agregar Cliente'),
-                  onPressed: () async{
-                    validar_antes_de_subir_cliente(context);
-                  },
-                ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                ),
-              ],
+                  actions: [
+                    Button(
+                      child: const Text('Agregar Cliente'),
+                      onPressed: () async{
+                        validar_antes_de_subir_cliente(context);
+                      },
+                    ),
+                    FilledButton(
+                      child: const Text('Cancel'),
+                      onPressed: () => Navigator.pop(context, 'User canceled dialog'),
+                    ),
+                  ],
+                );
+              },
             );
+
           },
         );
       },
@@ -218,17 +227,18 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
   Future<void> validar_antes_de_subir_cliente(BuildContext context) async {
     String universidad = selectedUniversidadobject?.nombreuniversidad ?? "NO REGISTRADO";
     String carrera = selectedCarreraobject?.nombrecarrera ?? "NO REGISTRADO";
+    String procedencia = selectedProcedencia ?? "";
 
-    await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto,selectedProcedencia!);
-    widget.onUpdateListaClientes();
-    Future.delayed(Duration(milliseconds: 500), () {
-      print("actualizando tablas");
-      setState(() {
-        selectedUniversidadobject = null;
-        selectedCarreraobject = null;
-        Navigator.pop(context);
-      });
-    });
+    UtilDialogs dialogs = UtilDialogs(context : context);
+
+    if(nombreCompleto == "" || numwasaCliente == "" || carrera == "" || universidad == "" || procedencia == ""){
+      dialogs.error(Strings().errroDebeLLenarTodo,Strings().errorglobalText);
+    }else if(clienteList.any((cliente) => cliente.numero.toString() == numwasaCliente.toString())){
+      dialogs.error(Strings().errorClienteIgual,Strings().errorglobalText);
+    }else{
+      await Uploads().addCliente(carrera, universidad, nombrewasacliente, numwasaCliente,nombreCompleto,procedencia);
+      Navigator.pop(context);
+    }
   }
 }
 
@@ -238,13 +248,11 @@ class AgregarCarreraDialog extends StatefulWidget {
   final List<Carrera> carreraList;
   final List<Universidad> universidadList;
   final String CarreUniver;
-  final Function() onUpdateListaClientes; // Agrega esta variable
 
   const AgregarCarreraDialog({Key?key,
     required this.carreraList,
     required this.universidadList,
     required this.CarreUniver,
-    required this.onUpdateListaClientes
   }) :super(key: key);
 
   @override
@@ -356,12 +364,7 @@ class _AgregarCarreraDialogState extends State<AgregarCarreraDialog> {
     }else{
       await Uploads().addCarrera(agregarcarrera);
     }
-    widget.onUpdateListaClientes();
-    Future.delayed(Duration(milliseconds: 500), () {
-      print("a actualizar tablas");
-      Navigator.pop(context, 'User deleted file');
-      Navigator.pop(context, 'User deleted file');
-    });
+    Navigator.pop(context, 'User deleted file');
   }
 }
 

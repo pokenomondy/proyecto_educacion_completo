@@ -165,6 +165,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
     if(nombre_empresa==""){
 
     }else{
+      print("subiendo configuración");
       await Uploads().addconfiginicial(Primarycolor,Secundarycolor,nombre_empresa.text,"","",confirmacion_empresa.text,solicitud_empresa.text);
       await Future.delayed(Duration(seconds: 3));
       _redireccionaDashboarc();
@@ -290,7 +291,7 @@ class ConfigInicialPrimerAccesoState extends State<ConfigInicialPrimerAcceso> {
   }
 
   void _redireccionaDashboarc() async{
-      context.go('/home');
+      context.go('/');
       print("nos vamos a dashboard");
   }
 }

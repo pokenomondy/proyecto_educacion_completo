@@ -420,51 +420,58 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                       ),
                     ),
                     //Cliente
-                    Container(
-                      margin: EdgeInsets.only(top: margen_solicitud),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Disenos().textonuevasolicitudblanco("Cliente"),
-                          //Aqui voy a poder agregar clientes, vamos a ver.
-                          SizedBox(
-                            height: 30,
-                            width: widget.currentwidth-200,
-                            child: AutoSuggestBox<Clientes>(
-                              items: widget.clienteList.map<AutoSuggestBoxItem<Clientes>>(
-                                    (cliente) => AutoSuggestBoxItem<Clientes>(
-                                  value: cliente,
-                                  label: Utiles().truncateLabel(cliente.numero.toString() ),
-                                  onFocusChange: (focused) {
-                                    if (focused) {
-                                      debugPrint('Focused #${cliente.numero} - ');
+                    Consumer<ClientesVistaProvider>(
+                      builder: (context, clienteProviderSelect, child) {
+                        List<Clientes> clienteList = clienteProviderSelect.todosLosClientes;
+
+                        return Container(
+                          margin: EdgeInsets.only(top: margen_solicitud),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Disenos().textonuevasolicitudblanco("Cliente"),
+                              //Aqui voy a poder agregar clientes, vamos a ver.
+                              SizedBox(
+                                height: 30,
+                                width: widget.currentwidth-200,
+                                child: AutoSuggestBox<Clientes>(
+                                  items: clienteList.map<AutoSuggestBoxItem<Clientes>>(
+                                        (cliente) => AutoSuggestBoxItem<Clientes>(
+                                      value: cliente,
+                                      label: Utiles().truncateLabel(cliente.numero.toString() ),
+                                      onFocusChange: (focused) {
+                                        if (focused) {
+                                          debugPrint('Focused #${cliente.numero} - ');
+                                        }
+                                      },
+                                    ),
+                                  )
+                                      .toList(),
+                                  decoration: Disenos().decoracionbuscador(),
+                                  onSelected: (item) {
+                                    setState(() {
+                                      print("seleccionado ${item.label} con numero ${item.value?.numero.toString()}");
+                                      selectedCliente = item.value;
+                                      //Ahora sacamos , carrera y universidad
+
+                                    });
+                                  },
+                                  onChanged: (text, reason) {
+                                    if (text.isEmpty ) {
+                                      setState(() {
+                                        selectedCliente = null; // Limpiar la selección cuando se borra el texto
+                                      });
                                     }
                                   },
                                 ),
-                              )
-                                  .toList(),
-                              decoration: Disenos().decoracionbuscador(),
-                              onSelected: (item) {
-                                setState(() {
-                                  print("seleccionado ${item.label} con numero ${item.value?.numero.toString()}");
-                                  selectedCliente = item.value;
-                                  //Ahora sacamos , carrera y universidad
+                              ),
+                              SolicitudesDialog(),
 
-                                });
-                              },
-                              onChanged: (text, reason) {
-                                if (text.isEmpty ) {
-                                  setState(() {
-                                    selectedCliente = null; // Limpiar la selección cuando se borra el texto
-                                  });
-                                }
-                              },
-                            ),
+                            ],
                           ),
-                          SolicitudesDialog(carreraList: widget.carreraList,universidadList: widget.universidadList,onUpdateListaClientes: widget.onUpdateListaClientes,),
+                        );
 
-                        ],
-                      ),
+                      }
                     ),
                     //Nombre de cliente
                     Container(
@@ -894,6 +901,9 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
 
   int numCotizacionAgenda = 0;
 
+  //stream
+  Clientes? selectedCliente;
+
   @override
   void initState() {
     super.initState();
@@ -1146,7 +1156,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     Clipboard.setData(ClipboardData(text: solicitud));
     print("se copio");
   }
-
   void cotizarPorOtroTutorDialog(BuildContext context, int idCotizacion, DateTime fechaSistema) => showDialog(
       context: context,
       builder: (BuildContext context) => _cotizarPorOtroTutorDialog(context, idCotizacion, fechaSistema)
@@ -1383,7 +1392,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                   ),
                                   onTap: () async {
                                     codigocontabilidad(solicitud);
-                                    //agendartrabajo(context,solicitud,cotizacion);
+                                    
                                     agendarTrabajo(context,solicitud,cotizacion);
                                   },
                                 )
@@ -1521,15 +1530,32 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                   child: identificadorcodigo(solicitud.servicio, styleText),
                 ),
 
-                material.Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: prospectocliente(solicitud, styleText),
+                //Información del cliente a agendar
+
+                Consumer<ClientesVistaProvider>(
+                  builder: (context, clienteProviderselect, child) {
+                    selectedCliente = clienteProviderselect.clienteSeleccionado;
+
+                    return Column(
+                      children: [
+
+                        //
+                        material.Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
+                          child: prospectocliente(solicitud, styleText),
+                        ),
+
+                        material.Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
+                          child: Text(stringnombrecliente, style: styleText,),
+                        ),
+
+                      ],
+                    );
+                  }
                 ),
 
-                material.Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: Text(stringnombrecliente, style: styleText,),
-                ),
+
 
                 if(stringpropsectocliente == "PROSPECTO CLIENTE" || stringnombrecliente == "NO REGISTRADO")
                   GestureDetector(
@@ -1551,7 +1577,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
 
                 //Mensaje de confirmación
                 if(stringpropsectocliente != 'PROSPECTO CLIENTE' || stringnombrecliente == "NO REGISTRADO")
-
                   PrimaryStyleButton(
                       function: (){
                         copiarConfirmacion(solicitud,true,cotizacion);
@@ -1641,17 +1666,14 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   }
 
   Text prospectocliente(Solicitud solicitud, TextStyle style){
-// Filtra la lista de clientes para encontrar el cliente correspondiente al número de cliente en la solicitud
     final clienteEncontrado = widget.clienteList.firstWhere(
-          (cliente) => cliente.numero == solicitud.cliente, // Manejo de caso en el que no se encuentra el cliente
+          (cliente) => cliente.numero == solicitud.cliente,
     );
 
-// Verifica si se encontró el cliente y obtén el valor del nombre del cliente
     if (clienteEncontrado != null) {
       stringpropsectocliente = clienteEncontrado.nombreCliente;
       stringnombrecliente = clienteEncontrado.nombrecompletoCliente;
     } else {
-      // Manejo de caso en el que no se encuentra el cliente
       stringpropsectocliente = 'Cliente no encontrado';
       stringnombrecliente = 'CLIENTE SIN NOMBRE';
     }

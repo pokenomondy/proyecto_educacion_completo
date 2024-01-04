@@ -1,15 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
+import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:flutter/services.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
 import '../../Config/Config.dart';
+import '../../Config/theme.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../Firebase/Uploads.dart';
 
 class CalendarioStyle {
+  final ThemeApp themeApp = ThemeApp();
 
 
   dialog.Color colortarjetaTutor(ServicioAgendado servicio){
@@ -155,7 +158,7 @@ class CalendarioStyle {
         context: context,
         builder: (BuildContext context){
           return dialog.AlertDialog(
-            title: Text('Agenda $_subject'),
+            title: Text('Agenda ${servicioseleccionado!.idcontable.toString()}'),
             content: Column(
               children: [
                   tarjetas(servicioseleccionado!,context,rol),
@@ -232,16 +235,48 @@ class CalendarioStyle {
     return Container(
       child: Column(
         children: [
-          calendariovistaTutor(servicioseleccionado),
-          //Entrega cliente
-          FilledButton(child: Text('Entregar trabajo'),
-              onPressed: (){
-                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
-                Navigator.pop(context, 'User deleted file');
-              }),
-          //Esccuhar numero pagos
-          Text(servicioseleccionado.pagos.length.toString()),
-          Text('Opciones beta'),
+          //Código
+          textoYVista('Código',servicioseleccionado!.codigo),
+          //Matería
+          textoYVista('Matería',servicioseleccionado!.materia),
+          //Cliente
+          textoCopy('Cliente',servicioseleccionado!.cliente),
+          //Tutor
+          textoCopy('Tutor',servicioseleccionado!.tutor),
+
+          // PRECIOS
+          //precio cobrado
+          textoYVista('Precío',servicioseleccionado!.preciocobrado.toString()),
+          //precio tutor
+          textoYVista('Precío tutor',servicioseleccionado!.preciotutor.toString()),
+          //Ganancias
+          textoYVista('Ganancías','${(servicioseleccionado!.preciocobrado-servicioseleccionado!.preciotutor)}'),
+          //% precio cobrado
+          textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado!-servicioseleccionado!.preciotutor)/servicioseleccionado!.preciocobrado}'),
+
+          //PAGOS
+          //DEBE CLIENTE
+
+          //DEBE TUTOR
+
+          //ENTREGAS
+          //TUTOR ENTREGO TRABAJO EN XX
+          textoYVista('Entrega Tutor',servicioseleccionado.entregadotutor),
+          textoYVista('Entrega Cliente',servicioseleccionado.entregadocliente),
+          Text('TOCA REGISTRAR FECHAS DE ENTREGAS, EN VES DE TEXTO'),
+
+          //ENTREGAS DE CLIENTE
+          //entregado tutor
+          if(servicioseleccionado!.entregadotutor == "ENTREGADO")
+            FilledButton(child: Text('Entregar trabajo'),
+                onPressed: (){
+                  Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
+                  Navigator.pop(context, 'User deleted file');
+                }),
+          if(servicioseleccionado!.entregadotutor != "ENTREGADO")
+            Text('No se ha entregado por tutor'),
+
+          //No entregar
           FilledButton(child: Text('No Entregar trabajo'),
               onPressed: (){
                 Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
@@ -249,6 +284,55 @@ class CalendarioStyle {
               }),
         ],
       ),
+    );
+  }
+
+  Widget textoYVista(String title, String valor){
+    const double verticalPadding = 3.0;
+
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                  padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
+                  margin: const EdgeInsets.only(left: 15),
+                  child: Text("$title : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget textoCopy(String title, String valor){
+    const double verticalPadding = 3.0;
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                  padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
+                  margin: const EdgeInsets.only(left: 15),
+                  child: Text("$title", style: themeApp.styleText(15, false, themeApp.blackColor),)),
+              FilledButton(
+                onPressed: () {
+                  final textToCopy = valor;
+                  Clipboard.setData(
+                      ClipboardData(text: textToCopy));
+                },
+                child: Text(valor),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

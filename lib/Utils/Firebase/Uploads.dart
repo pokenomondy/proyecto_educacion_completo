@@ -278,16 +278,6 @@ class Uploads{
     CollectionReference cliente = referencias.clientes!;
     Clientes newcliente = Clientes(carrera, universidad, nombreCliente, numero,nombrecompletoCliente,DateTime.now(),procedencia,DateTime.now(),DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await cliente.doc(numero.toString()).set(newcliente.toMap());
-    //Obtenemos los clientes pasados, para agregar el nuevo cliente que agregamos
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('clientes_list') ?? '';
-    List<dynamic> ClienteData = jsonDecode(solicitudesJson);
-    List clientesList = ClienteData.map((ClienteData) =>
-        Clientes.fromJson(ClienteData as Map<String, dynamic>)).toList();
-    //Ahora metamosle el nuevo cliente y guardemoslo
-    clientesList.add(newcliente);
-    String solicitudesJsonother = jsonEncode(clientesList);
-    await prefs.setString('clientes_list', solicitudesJsonother);
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
   //Modificaar cliente
@@ -459,6 +449,8 @@ class Uploads{
       'CONFIRMACION_CLIENTE':  confirmacion,
       'SOLICITUD':  solicitud,
     };
+
+    print("condiguración subida, se esccuha?, parece que no");
 
     await actualizadores.doc("CONFIGURACION").set(uploadConfiguracion);
     await actualizadores.doc("MENSAJES").set(uploadMensajes);

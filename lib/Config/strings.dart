@@ -1,7 +1,7 @@
 
 class Strings{
 
-  String appVersion = "1.0.24 ";
+  String appVersion = "1.0.25 ";
   String nombreApp = "Educacion App";
   //Strings de alertdialogs
   String errorUsarionoencontraTitle = 'Error, usuario no encontrado';
@@ -24,6 +24,7 @@ class Strings{
   String errorTextoNulo = "Debe ingresar un valor para cambiar";
   String errroCuentasBancaria = "Error, debe llenar todos los campos para llenar la cuenta Bancaria";
 
+  String errorClienteIgual = "Error, ese cliente ya existe";
   //Exito global
   String exitoglobaltitulo = "Exito";
   String exitoglobal = "La operación salio exitosa";
