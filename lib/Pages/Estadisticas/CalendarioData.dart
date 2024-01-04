@@ -1,32 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView,Colors;
-import 'package:flutter/material.dart' as dialog;
+import 'package:flutter/material.dart' as material;
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart' ;
 import '../../Providers/Providers.dart';
 import '../../Utils/Calendario/CalendarioEstilo.dart';
 
 class CalendarioData extends StatefulWidget{
+  const CalendarioData({super.key});
 
   @override
-  _CalendarioDataState createState() => _CalendarioDataState();
+  CalendarioDataState createState() => CalendarioDataState();
 
 }
 
-class _CalendarioDataState extends State<CalendarioData> {
-
+class CalendarioDataState extends State<CalendarioData> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    return Column(
-      children: [
-        PrimaryColumn(currentwidth: currentwidth),
-      ],
-    );
+    return PrimaryColumn(currentwidth: currentwidth);
   }
-
 }
 
 class PrimaryColumn extends StatefulWidget{
@@ -36,11 +32,10 @@ class PrimaryColumn extends StatefulWidget{
     required this.currentwidth,
   }) :super(key: key);
   @override
-  _PrimaryColumnState createState() => _PrimaryColumnState();
-
+  PrimaryColumnState createState() => PrimaryColumnState();
 }
 
-class _PrimaryColumnState extends State<PrimaryColumn> {
+class PrimaryColumnState extends State<PrimaryColumn> {
   final currentUser = FirebaseAuth.instance.currentUser;
   String nombretutor = "";
   final List<CalendarView> _vistascalendario = <CalendarView>[
@@ -77,28 +72,43 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   @override
   Widget build(BuildContext context) {
     final currentheight = MediaQuery.of(context).size.height-100;
-    return Container(
+    return SizedBox(
       height: currentheight,
       child: Column(
         children: [
-          Row(
-            children: [
-              FilledButton(child: Text('ENTREGAS'), onPressed: (){
-                setState(() {
-                  motivosPagos = "ENTREGAS";
-                });
-              }),
-              FilledButton(child: Text('PAGOS CLIENTES'), onPressed: (){
-                setState(() {
-                  motivosPagos = "PAGOSCLIENTES";
-                });
-              }),
-              FilledButton(child: Text('PAGOS TUTORES'), onPressed: (){
-                setState(() {
-                  motivosPagos = "PAGOSTUTORES";
-                });
-              }),
-            ],
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PrimaryStyleButton(
+                    function: (){
+                      setState(() {
+                        motivosPagos = "ENTREGAS";
+                      });
+                    },
+                    text: " Entregas "
+                ),
+
+                PrimaryStyleButton(
+                    function: (){
+                      setState(() {
+                        motivosPagos = "PAGOSCLIENTES";
+                      });
+                    },
+                    text: " Pagos Clientes "
+                ),
+
+                PrimaryStyleButton(
+                    function: (){
+                      setState(() {
+                        motivosPagos = "PAGOSTUTORES";
+                      });
+                    },
+                    text: " Pagos Tutores "
+                ),
+              ],
+            ),
           ),
           if(cargarinterfaz == true)
             Column(
@@ -138,9 +148,9 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
                                     monthFormat: 'MMMM, yyyy',
                                     height: 100,
                                     textAlign: TextAlign.left,
-                                    backgroundColor: dialog.Colors.green,
+                                    backgroundColor: material.Colors.green,
                                     monthTextStyle: TextStyle(
-                                        color: dialog.Colors.red,
+                                        color: material.Colors.red,
                                         fontSize: 25,
                                         fontWeight: FontWeight.w400))
                             ),
