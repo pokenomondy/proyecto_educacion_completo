@@ -48,7 +48,6 @@ class CalendarioStyle {
     else{
       return colortarjetaAdminPagos(servicio);
     }
-
   }
 
   dialog.Color colortarjetaAdminEntregas(ServicioAgendado servicio){
@@ -151,26 +150,32 @@ class CalendarioStyle {
       _subject = appointmentdetails.subject;
       _notes = appointmentdetails.notes!;
       servicioseleccionado = appointmentToServicioMap[appointmentdetails];
-    }else{
     }
-    //Dialogo cargado
-    dialog.showDialog(
-        context: context,
-        builder: (BuildContext context){
-          return dialog.AlertDialog(
-            title: Text('Agenda ${servicioseleccionado!.idcontable.toString()}'),
-            content: Column(
-              children: [
-                  tarjetas(servicioseleccionado!,context,rol),
-              ],
-            ),
-          );
-        }
+
+    showDialog(context: context, builder: (BuildContext context) => servicioTarjeta(servicioseleccionado!, context, rol));
+  }
+
+  dialog.Dialog servicioTarjeta(ServicioAgendado servicioseleccionado, BuildContext context, String rol){
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: dialog.Card(
+        color: themeApp.whitecolor.withOpacity(0),
+        shadowColor: themeApp.whitecolor.withOpacity(0),
+        child: ItemsCard(
+          verticalPadding: 20.0,
+          horizontalPadding: 15.0,
+          width: 450,
+          children: [
+            Text("Agenda ${servicioseleccionado.idcontable}", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+            tarjetas(servicioseleccionado,context,rol),
+          ],
+        ),
+      ),
     );
   }
 
   dialog.Widget tarjetas(ServicioAgendado servicioseleccionado, BuildContext context, String rol){
-    if (rol == "TUTOR" && rol  != null){
+    if (rol == "TUTOR"){
       return calendariovistaTutor(servicioseleccionado!);
     }else{
       return calendariovistaAdmin(servicioseleccionado!,context);
@@ -236,23 +241,23 @@ class CalendarioStyle {
       child: Column(
         children: [
           //Código
-          textoYVista('Código',servicioseleccionado!.codigo),
+          textoYVista('Código',servicioseleccionado.codigo),
           //Matería
-          textoYVista('Matería',servicioseleccionado!.materia),
+          textoYVista('Matería',servicioseleccionado.materia),
           //Cliente
-          textoCopy('Cliente',servicioseleccionado!.cliente),
+          textoCopy('Cliente'," ${servicioseleccionado.cliente} "),
           //Tutor
-          textoCopy('Tutor',servicioseleccionado!.tutor),
+          textoCopy('Tutor'," ${servicioseleccionado.tutor} "),
 
           // PRECIOS
           //precio cobrado
-          textoYVista('Precío',servicioseleccionado!.preciocobrado.toString()),
+          textoYVista('Precío',servicioseleccionado.preciocobrado.toString()),
           //precio tutor
-          textoYVista('Precío tutor',servicioseleccionado!.preciotutor.toString()),
+          textoYVista('Precío tutor',servicioseleccionado.preciotutor.toString()),
           //Ganancias
-          textoYVista('Ganancías','${(servicioseleccionado!.preciocobrado-servicioseleccionado!.preciotutor)}'),
+          textoYVista('Ganancías','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)}'),
           //% precio cobrado
-          textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado!-servicioseleccionado!.preciotutor)/servicioseleccionado!.preciocobrado}'),
+          textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)/servicioseleccionado.preciocobrado}'),
 
           //PAGOS
           //DEBE CLIENTE
@@ -263,25 +268,28 @@ class CalendarioStyle {
           //TUTOR ENTREGO TRABAJO EN XX
           textoYVista('Entrega Tutor',servicioseleccionado.entregadotutor),
           textoYVista('Entrega Cliente',servicioseleccionado.entregadocliente),
-          Text('TOCA REGISTRAR FECHAS DE ENTREGAS, EN VES DE TEXTO'),
+          const Text('TOCA REGISTRAR FECHAS DE ENTREGAS, EN VES DE TEXTO'),
 
           //ENTREGAS DE CLIENTE
           //entregado tutor
-          if(servicioseleccionado!.entregadotutor == "ENTREGADO")
-            FilledButton(child: Text('Entregar trabajo'),
-                onPressed: (){
-                  Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
-                  Navigator.pop(context, 'User deleted file');
-                }),
-          if(servicioseleccionado!.entregadotutor != "ENTREGADO")
-            Text('No se ha entregado por tutor'),
+          if(servicioseleccionado.entregadotutor == "ENTREGADO")
+            PrimaryStyleButton(
+                function: (){
+              Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
+              Navigator.pop(context, 'User deleted file');},
+                text: "Entregar trabajo",
+            ),
+          if(servicioseleccionado.entregadotutor != "ENTREGADO")
+            const Text('No se ha entregado por tutor'),
 
           //No entregar
-          FilledButton(child: Text('No Entregar trabajo'),
-              onPressed: (){
-                Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
-                Navigator.pop(context, 'User deleted file');
-              }),
+          PrimaryStyleButton(
+              function: (){
+            Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
+            Navigator.pop(context, 'User deleted file');
+          },
+              text: "No Entregar trabajo",
+          ),
         ],
       ),
     );
@@ -300,7 +308,7 @@ class CalendarioStyle {
               Container(
                   padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
                   margin: const EdgeInsets.only(left: 15),
-                  child: Text("$title : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)),
+                  child: Text("$title : $valor", style: themeApp.styleText(14, false, themeApp.blackColor),)),
             ],
           ),
         ),
@@ -320,15 +328,12 @@ class CalendarioStyle {
               Container(
                   padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
                   margin: const EdgeInsets.only(left: 15),
-                  child: Text("$title", style: themeApp.styleText(15, false, themeApp.blackColor),)),
-              FilledButton(
-                onPressed: () {
-                  final textToCopy = valor;
-                  Clipboard.setData(
-                      ClipboardData(text: textToCopy));
-                },
-                child: Text(valor),
-              ),
+                  child: Text("$title", style: themeApp.styleText(14, false, themeApp.blackColor),)),
+              PrimaryStyleButton(function: () {
+                final textToCopy = valor;
+                Clipboard.setData(
+                    ClipboardData(text: textToCopy));
+              }, text: valor),
             ],
           ),
         ),
