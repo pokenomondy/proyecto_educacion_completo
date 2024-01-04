@@ -5,7 +5,7 @@ class DeleteLocalData{
 
   Future deleteAllLocalData() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? nombre_empresa = prefs.getString("Nombre_Empresa");
+    String? nombre_empresa = prefs.getString("Nombre_Empresa") ?? 'NO_APLICA';
     await prefs.clear();
     await prefs.setString("Nombre_Empresa", nombre_empresa!);
   }

@@ -16,6 +16,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import '../Config/Config.dart';
 import 'package:intl/intl.dart';
+import '../Config/strings.dart';
 import '../Config/theme.dart';
 import '../Dashboard.dart';
 import '../Objetos/Cotizaciones.dart';
@@ -34,7 +35,6 @@ class TutoresVista extends StatefulWidget {
 }
 
 class TutoresVistaVistaState extends State<TutoresVista> {
-  final GlobalKey<SecundaryColumnTutoresState> materiasdeTutoresVista = GlobalKey<SecundaryColumnTutoresState>();
   Config configuracion = Config();
   List<Tutores> tutoresList = [];
   bool cargadodata = false;
@@ -1210,28 +1210,18 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   final TextEditingController numWsp = TextEditingController();
   final TextEditingController correoGmail = TextEditingController();
   final TextEditingController password = TextEditingController();
-  late Carrera? selectedCarrera;
-  late Universidad? selectedUniversidad;
+  Carrera? selectedCarrera;
+  Universidad? selectedUniversidad;
   final db = FirebaseFirestore.instance;
   final FirebaseAuth auth = FirebaseAuth.instance;
-  late List<Carrera> CarrerasList = [];
-  late List<Universidad> UniversidadList = [];
-  late bool _cargadodatos = false;
+  List<Carrera> carreraList = [];
+  List<Universidad> universidadList = [];
   final CollectionReferencias referencias = CollectionReferencias();
   final ThemeApp themeApp = ThemeApp();
 
   @override
   void initState() {
-    loadDataTablasMaterias(); // Cargar los datos al inicializar el widget
     super.initState();
-  }
-
-  Future<void> loadDataTablasMaterias() async {
-    //CarrerasList = await LoadData().obtenercarreras();
-    //UniversidadList = await LoadData().obtenerUniversidades();
-    setState(() {
-      _cargadodatos = true;
-    });
   }
 
   @override
@@ -1267,82 +1257,89 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
             placeholder: "Numero WhatsApp con +57"
         ),
 
-        //Carrera estudiada
-        if(_cargadodatos==true)
-          material.Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Column(
-              children: [
-                //carrera
-                material.Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Carrera', style: styleTextSub,),
-                      SizedBox(
-                        height: 30,
-                        width: 240,
-                        child: AutoSuggestBox<Carrera>(
-                          items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
-                                (carrera) => AutoSuggestBoxItem<Carrera>(
-                              value: carrera,
-                              label: carrera.nombrecarrera,
-                              onFocusChange: (focused) {
-                                if (focused) {
-                                  debugPrint('Focused #${carrera.nombrecarrera} - ');
-                                }
+        //Carrera y universidad estudiadas
+        Consumer2<CarrerasProvider,UniversidadVistaProvider>(
+          builder: (context, carreraProviderselect, universidadProviderselect, child) {
+            carreraList = carreraProviderselect.todosLasCarreras;
+            universidadList = universidadProviderselect.todasLasUniversidades;
+
+              return material.Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Column(
+                  children: [
+                    //carrera
+                    material.Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Carrera', style: styleTextSub,),
+                          SizedBox(
+                            height: 30,
+                            width: 240,
+                            child: AutoSuggestBox<Carrera>(
+                              items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                                    (carrera) => AutoSuggestBoxItem<Carrera>(
+                                  value: carrera,
+                                  label: carrera.nombrecarrera,
+                                  onFocusChange: (focused) {
+                                    if (focused) {
+                                      debugPrint('Focused #${carrera.nombrecarrera} - ');
+                                    }
+                                  },
+                                ),
+                              )
+                                  .toList(),
+                              onSelected: (item) {
+                                setState(() {
+                                  print("seleccionado ${item.label}");
+                                  selectedCarrera = item.value; // Actualizar el valor seleccionado
+                                });
                               },
                             ),
-                          )
-                              .toList(),
-                          onSelected: (item) {
-                            setState(() {
-                              print("seleccionado ${item.label}");
-                              selectedCarrera = item.value; // Actualizar el valor seleccionado
-                            });
-                          },
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                //universidad
-                material.Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Universidad', style: styleTextSub,),
-                      SizedBox(
-                        height: 30,
-                        width: 240,
-                        child: AutoSuggestBox<Universidad>(
-                          items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
-                                (universidad) => AutoSuggestBoxItem<Universidad>(
-                              value: universidad,
-                              label: universidad.nombreuniversidad,
-                              onFocusChange: (focused) {
-                                if (focused) {
-                                  debugPrint('Focused #${universidad.nombreuniversidad} - ');
-                                }
+                    ),
+                    //universidad
+                    material.Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Universidad', style: styleTextSub,),
+                          SizedBox(
+                            height: 30,
+                            width: 240,
+                            child: AutoSuggestBox<Universidad>(
+                              items: universidadList.map<AutoSuggestBoxItem<Universidad>>(
+                                    (universidad) => AutoSuggestBoxItem<Universidad>(
+                                  value: universidad,
+                                  label: universidad.nombreuniversidad,
+                                  onFocusChange: (focused) {
+                                    if (focused) {
+                                      debugPrint('Focused #${universidad.nombreuniversidad} - ');
+                                    }
+                                  },
+                                ),
+                              )
+                                  .toList(),
+                              onSelected: (item) {
+                                setState(() {
+                                  selectedUniversidad = item.value; // Actualizar el valor seleccionado
+                                });
                               },
                             ),
-                          )
-                              .toList(),
-                          onSelected: (item) {
-                            setState(() {
-                              selectedUniversidad = item.value; // Actualizar el valor seleccionado
-                            });
-                          },
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              );
+
+            },
+         ),
 
         //correo gmail
         RoundedTextField(
@@ -1356,16 +1353,25 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
             placeholder: "Contraseña"
         ),
 
-        //id carpeta
+        //Botón
         PrimaryStyleButton(
             width: 120,
             function: ()async{
-              print("crear nuevo usuario");
-              await createUserWithEmailAndPassword();
+              validarAntesDeCrearTutor();
             },
             text: "Agregar")
       ],
     );
+  }
+
+  Future validarAntesDeCrearTutor() async{
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(nombreWsp.text.isEmpty || nombrecompleto.text.isEmpty || numWsp.text.isEmpty || selectedCarrera!.nombrecarrera == "" ||selectedUniversidad!.nombreuniversidad == "" || correoGmail.text.isEmpty || password.text.isEmpty){
+      dialogs.error(Strings().errroDebeLLenarTodo, Strings().errorglobalText);
+    }else{
+      await createUserWithEmailAndPassword();
+      dialogs.exito(Strings().exitoglobal, Strings().exitoglobaltitulo);
+    }
   }
 
   Future<void> createUserWithEmailAndPassword() async {

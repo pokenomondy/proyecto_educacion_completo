@@ -1,67 +1,76 @@
-import 'package:dashboard_admin_flutter/Config/theme.dart';
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
-import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
-import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
-import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:dashboard_admin_flutter/Config/elements.dart';
+import 'package:dashboard_admin_flutter/Config/strings.dart';
+import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../Config/theme.dart';
+import '../../Objetos/CuentasBancaraias.dart';
+import '../../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
+import '../../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
-import '../../Utils/FuncionesMaterial.dart';
+import '../../Utils/Firebase/Uploads.dart';
 import '../../Utils/Utiles/FuncionesUtiles.dart';
-import '../../Config/elements.dart';
+import '../Tutores.dart';
 
-class DetallesServicio extends StatefulWidget {
+class DetallesTutores extends StatefulWidget {
 
-  const DetallesServicio({Key?key,
+  const DetallesTutores({Key?key,
   }) :super(key: key);
 
   @override
-  DetallesServicioState createState() => DetallesServicioState();
+  DetallesTutoresState createState() => DetallesTutoresState();
 }
 
-class DetallesServicioState extends State<DetallesServicio> {
+class DetallesTutoresState extends State<DetallesTutores> {
 
   @override
   Widget build(BuildContext context) {
     //Completo
     final widthCompleto = MediaQuery.of(context).size.width;
     //tamaño para computador y tablet
-    final tamanowidthdobleComputador = (widthCompleto/2)-30;
+    final tamanowidthTripleComputador = (widthCompleto/3)-30;
     //currentheight completo
-    final heightCompleto = MediaQuery.of(context).size.height-80;
+    final heightCompleto = MediaQuery.of(context).size.height-100;
 
     return Column(
       children: [
         if(widthCompleto >= 1200)
           Row(
             children: [
-              PrimaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,),
-              SecundaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,)
+              PrimaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight:heightCompleto ,),
+              SecundaryColumnTutores(currentwith: tamanowidthTripleComputador,currenheight: heightCompleto,),
+              TercerColumnTutores(currentwith: tamanowidthTripleComputador,currenheight: heightCompleto,)
             ],
           ),
-
         if(widthCompleto < 1200 && widthCompleto > 620)
-          Column(
-            children: [
-              PrimaryColumn(currentwith: widthCompleto,currentheight: 0,),
-            ],
-          ),
-
-        if(widthCompleto <= 620)
-          Flexible(
-            child: SingleChildScrollView(
+          Container(
+            height: heightCompleto,
+            child: material.SingleChildScrollView(
+              scrollDirection: Axis.vertical,
               child: Column(
                 children: [
-                  PrimaryColumn(currentwith: widthCompleto, currentheight: -1,),
-                  SecundaryColumn(currentwith: widthCompleto, currentheight: -1),
-
+                  PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
+                  SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
+                  TercerColumnTutores(currentwith: widthCompleto,currenheight: -1,)
+                ],
+              ),
+            ),
+          ),
+        if(widthCompleto <= 620)
+          Container(
+            height: heightCompleto,
+            child: material.SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                children: [
+                  PrimaryColumnTutores(currentwith: widthCompleto,currenheight:-1),
+                  SecundaryColumnTutores(currentwith: widthCompleto,currenheight: -1,),
+                  TercerColumnTutores(currentwith: widthCompleto,currenheight: -1,)
                 ],
               ),
             ),
@@ -69,602 +78,600 @@ class DetallesServicioState extends State<DetallesServicio> {
       ],
     );
   }
-
 }
 
-class PrimaryColumn extends StatefulWidget {
+class PrimaryColumnTutores extends StatefulWidget {
   final double currentwith;
-  final double currentheight;
+  final double currenheight;
 
-  const PrimaryColumn({Key?key,
+  const PrimaryColumnTutores({Key?key,
     required this.currentwith,
-    required this.currentheight,
+    required this.currenheight
   }) :super(key: key);
 
   @override
-  PrimaryColumnState createState() => PrimaryColumnState();
+  PrimaryColumnTutoresState createState() => PrimaryColumnTutoresState();
 
 }
 
-class PrimaryColumnState extends State<PrimaryColumn> {
-  String servicio = "";
+class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
+  final GlobalKey<TutoresVistaVistaState> tutoresVistaState = GlobalKey<TutoresVistaVistaState>();
   List<bool> editarcasilla = List.generate(10, (index) => false);
-  List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
-  Materia? selectedMateria;
-  List<Materia> materiaList = [];
   String datoscambiostext = "";
-  DateTime cambiarfecha = DateTime.now();
+  List<Materia> materiasList = [];
+  Materia? selectedMateria ;
+  bool cargadotablamaterias = false;
+
+  //Cuentas bancarias
+  String? selectedTipoCuenta;
+  List<String> tipoCuentaList = ['NEQUI','PAYPAL','BANCOLOMBIA','DAVIPLATA','BINANCE'];
+
+  final TextEditingController numeroCuentaBancaria = TextEditingController();
+  final TextEditingController cedulaTutor = TextEditingController();
+  final TextEditingController nombreCedulaTutor = TextEditingController();
+
+  List<Carrera> CarrerasList = [];
+  Carrera? selectedCarreraobject;
+
+  List<Universidad> UniversidadList = [];
+  Universidad? selectedUniversidadobject;
   final ThemeApp themeApp = ThemeApp();
-  //id cotización
-  int idcotizacionn = 0;
-  //Cambios
-  String? selectedServicio;
-  String? cambio;
+
+  //Para cambios
+  String cambio = "";
+  int cambionum = 0;
+  //variables consumer
+  String uidtutor = "";
+  bool activo = false;
+  bool volveraconsultar = false;
+  List<Materia> materiaListTutor = [];
+  List<CuentasBancarias> cuentasBancariasTutor = [];
 
   @override
   void initState() {
-    loadtablas();
+    loaddata();
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        volveraconsultar = true;
+      });
+    });
     super.initState();
   }
 
-  Future loadtablas() async{
-    //Cargar materias
-    final materiasProvider =  context.read<MateriasVistaProvider>();
-    materiaList = materiasProvider.todasLasMaterias;
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  Future <void> loaddata()async{
+    materiasList = await stream_builders().cargarMaterias();
+    CarrerasList = await stream_builders().cargarCarreras();
+    UniversidadList = await stream_builders().cargarUniversidades();
+    setState(() {
+      cargadotablamaterias = true;
+    });
+    //materias provider
+    /*
+    final materiasProvider = Provider.of<MateriasProvider>(context, listen: false);
+    // Eliminar todas las materias
+    materiasProvider.clearMaterias();
+    for (Materia materia in widget.tutor.materias) {
+      materiasProvider.addMateria(materia);
+    }
+    //Cuentas provider
+    final cuentasProvider = Provider.of<CuentasProvider>(context, listen: false);
+    //eliminar primero
+    cuentasProvider.clearCuentas();
+    for (CuentasBancarias cuentita in widget.tutor.cuentas) {
+      cuentasProvider.addCuenta(cuentita);
+    }
+
+     */
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SolicitudProvider>(
-        builder: (context, solicitudprovider, child) {
-          Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
-          idcotizacionn = solicitudSeleccionado.idcotizacion;
+    return Consumer<VistaTutoresProvider>(
+        builder: (context, tutorProvider, child) {
+          Tutores tutorseleccionado = tutorProvider.tutorSeleccionado;
+          uidtutor = tutorseleccionado.uid;
+          materiaListTutor = tutorseleccionado.materias;
+          cuentasBancariasTutor = tutorseleccionado.cuentas;
+
+          if(!volveraconsultar){
+            activo = tutorseleccionado.activo;
+          }
 
           return ItemsCard(
+            height: widget.currenheight,
             alignementColumn: MainAxisAlignment.start,
             shadow: false,
-            width: widget.currentwith * 0.98,
-            height: widget.currentheight,
+            width: widget.currentwith,
+            verticalPadding: 20,
+            horizontalPadding: 15,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Text("Añadir Tutor", style: themeApp.styleText(24, true, themeApp.primaryColor)),
               ),
-              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
-              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
-              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
-              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
-              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
-              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
-              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
-              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
-              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
-              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+
+              textoymodificable("Nombre Whatsap", tutorseleccionado.nombrewhatsapp,0 , true),
+              textoymodificable("Nombre Completo", tutorseleccionado.nombrecompleto,1, false),
+              textoymodificable("Numero de Whatsapp",tutorseleccionado.numerowhatsapp.toString() ,2, false),
+              textoymodificable("Carrera",tutorseleccionado.carrera ,3, false),
+              textoymodificable("Correo gmail",tutorseleccionado.correogmail, 4, true),
+              textoymodificable("Universidad",tutorseleccionado.univerisdad ,5, false),
+              textoymodificable("Activo?",tutorseleccionado.activo.toString() ,6, false),
+
+              //Agregar nueva matería
+              if(cargadotablamaterias)
+                Column(
+                  children: [
+                    //MATERIAS
+                    Container(
+                      height: 30,
+                      margin: const EdgeInsets.symmetric(vertical: 10.0),
+                      width: widget.currentwith-50,
+                      child: AutoSuggestBox<Materia>(
+                        items: materiasList.map<AutoSuggestBoxItem<Materia>>(
+                              (materia) => AutoSuggestBoxItem<Materia>(
+                            value: materia,
+                            label: materia.nombremateria,
+                          ),
+                        )
+                            .toList(),
+                        decoration: Disenos().decoracionbuscador(),
+                        onSelected: (item) {
+                          setState(() {
+                            selectedMateria = item.value;
+                          });
+                        },
+                        onChanged: (text, reason) {
+                          if (text.isEmpty ) {
+                            setState(() {
+                              selectedMateria = null;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                    PrimaryStyleButton(
+                        function: () async{
+                          verificarUploadMateria();
+                        },
+                        text: "Subir materia"
+                    ),
+                    //CUENTAS BANCARÍAS
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
+                        ),
+                        ComboBox<String>(
+                          value: selectedTipoCuenta,
+                          items: tipoCuentaList.map<ComboBoxItem<String>>((e) {
+                            return ComboBoxItem<String>(
+                              value: e,
+                              child: Text(e),
+                            );
+                          }).toList(),
+                          onChanged: (text) {
+                            setState(() {
+                              selectedTipoCuenta = text; // Update the local variable
+                            });
+                          },
+                          placeholder: const Text('Tipo de cuenta'),
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: numeroCuentaBancaria,
+                            placeholder: "Numero Cuenta Bancaria"
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: cedulaTutor,
+                            placeholder: "Cedula Cuenta Bancaria"
+                        ),
+                        RoundedTextField(
+                            topMargin: 3,
+                            bottomMargin: 3,
+                            controller: nombreCedulaTutor,
+                            placeholder: "Nombre Cedula"
+                        ),
+                        PrimaryStyleButton(
+                            function: (){
+                              verificarUploadCuentaBancaria();
+                            },
+                            text: "Subir Cuenta"
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
             ],
           );
         }
     );
   }
 
-  Widget textoymodificable(String text,String valor,int index, bool bool){
-    const double verticalPadding = 3.0;
+  Row textoymodificable(String text,String valor,int index, bool active){
+
+    final TextStyle styleText = themeApp.styleText(14, false, themeApp.blackColor);
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (!editarcasilla[index])
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: verticalPadding),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                    width: widget.currentwith-60,
-                    padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
-                    margin: const EdgeInsets.only(left: 15),
-                    child: Text("$text : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)),
-                if(!bool)
-                  GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                      });
-                    },
-                    child: const Icon(FluentIcons.edit),
-                  )
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                  width: widget.currentwith-60,
+                  padding: const EdgeInsets.only(
+                      bottom: 15, right: 10, top: 5),
+                  margin: const EdgeInsets.only(left: 10),
+                  child: Text("$text : ${valor}", style: styleText,)),
+              if(!active)
+                GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                    });
+                  },
+                  child: const Icon(FluentIcons.edit),
+                )
+            ],
           ),
         if (editarcasilla[index])
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
-            child: SizedBox(
-              width: widget.currentwith - 42,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if(index == 7 || index == 8)
-                    SizedBox(
-                      width: widget.currentwith - 120,
-                      child: TextBox(
-                        placeholder: valor,
-                        onChanged: (value){
-                          cambio = value;
-                        },
-                        maxLines: null,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if(index == 1)
+                SizedBox(
+                  width: widget.currentwith-100,
+                  child: TextBox(
+                    placeholder: valor,
+                    onChanged: (value){
+                      setState(() {
+                        cambio = value;
+                      });
+                    },
+                    maxLines: null,
+                  ),
+                ),
+              if(index == 2)
+                SizedBox(
+                  width: widget.currentwith-100,
+                  child: TextBox(
+                    placeholder: valor,
+                    onChanged: (value){
+                      setState(() {
+                        cambionum = int.parse(value);
+                        cambio = value;
+                      });
+                    },
+                    maxLines: null,
+                  ),
+                ),
+              if(index == 3)
+                SizedBox(
+                  height: 30,
+                  width: widget.currentwith-100,
+                  child: AutoSuggestBox<Carrera>(
+                    items: CarrerasList.map<AutoSuggestBoxItem<Carrera>>(
+                          (carrera) => AutoSuggestBoxItem<Carrera>(
+                        value: carrera,
+                        label: carrera.nombrecarrera,
                       ),
-                    ),
-                  if(index == 0 )
-                    SizedBox(
-                      width: widget.currentwith - 120,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: AutoSuggestBox<String>(
-                          items: serviciosList.map((servicio) {
-                            return AutoSuggestBoxItem<String>(
-                                value: servicio,
-                                label: servicio,
-                                onFocusChange: (focused) {
-                                  if (focused) {
-                                    debugPrint('Focused $servicio');
-                                  }
-                                }
-                            );
-                          }).toList(),
-                          onSelected: (item) {
-                            selectedServicio = item.value;
-                            cambio = selectedServicio;
-                          },
-                          decoration: Disenos().decoracionbuscador(),
-                          placeholder: 'Selecciona tu servicio',
-                          onChanged: (text, reason) {
-                            if (text.isEmpty ) {
-                              selectedServicio = null; // Limpiar la selección cuando se borra el texto
-                            }
-                          },
-                        ),
+                    )
+                        .toList(),
+                    onSelected: (item) {
+                      setState(() {
+                        selectedCarreraobject = item.value; // Actualizar el valor seleccionado
+                        cambio = item.value!.nombrecarrera;
+                      });
+                    },
+                  ),
+                ),
+              if(index == 5)
+                SizedBox(
+                  height: 30,
+                  width: widget.currentwith-100,
+                  child: AutoSuggestBox<Universidad>(
+                    items: UniversidadList.map<AutoSuggestBoxItem<Universidad>>(
+                          (universidad) => AutoSuggestBoxItem<Universidad>(
+                        value: universidad,
+                        label: universidad.nombreuniversidad,
                       ),
-                    ),
-                  if(index == 2)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
-                      child: SizedBox(
-                        height: 30,
-                        width: widget.currentwith - 120,
-                        child: AutoSuggestBox<Materia>(
-                          items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                                (materia) => AutoSuggestBoxItem<Materia>(
-                              value: materia,
-                              label: _truncateLabel(materia.nombremateria),
-                              onFocusChange: (focused) {
-                                if (focused) {
-                                  debugPrint('Focused #${materia.nombremateria} - ');
-                                }
-                              },
-                            ),
-                          )
-                              .toList(),
-                          decoration: Disenos().decoracionbuscador(),
-                          onSelected: (item) {
-                            setState(() {
-                              selectedMateria = item.value; // Actualizar el valor seleccionado
-                              cambio = item.value?.nombremateria;
-                            });
-                          },
-                          onChanged: (text, reason) {
-                            if (text.isEmpty ) {
-                              setState(() {
-                                selectedMateria = null; // Limpiar la selección cuando se borra el texto
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  if(index == 3)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: selectfecha(context),
-                    ),
-                  //actualizar variable
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                        child: GestureDetector(
-                          onTap: () async{
-                            print("a cambiar $cambio!");
-                            await Uploads().modifyServiciosolicitud(index, cambio!, cambiarfecha,idcotizacionn);
-                            setState(() {
-                              editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                            });
-                          },
-                          child: const Icon(FluentIcons.check_list),
-                        ),
-                      ),
-                      //cancelar
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                        child: GestureDetector(
-                          onTap: (){
-                            setState(() {
-                              editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                            });
-                          },
-                          child: const Icon(FluentIcons.cancel),
-                        ),
-                      )
-                    ],
-                  )
-                ],
+                    )
+                        .toList(),
+                    onSelected: (item) {
+                      setState(() {
+                        selectedUniversidadobject = item.value;
+                        cambio = item.value!.nombreuniversidad;
+                      });
+                    },
+                  ),
+                ),
+              if(index==6)
+                ToggleSwitch(
+                  checked: activo,
+                  onChanged: (bool value) {
+                    setState(() {
+                      cambio = value.toString();
+                      activo = value;
+                    });
+                  },),
+
+              //actualizar variable
+              GestureDetector(
+                onTap: () async{
+                  verificarUploadTutor(index,cambio);
+                },
+                child: const Icon(FluentIcons.check_list),
               ),
-            ),
-          ),
+              //cancelar
+              GestureDetector(
+                onTap: (){
+                  setState(() {
+                    editarcasilla[index] = !editarcasilla[index];
+                  });
+                },
+                child: const Icon(FluentIcons.cancel),
+              )
+            ],
+          )
       ],
     );
   }
 
-  String _truncateLabel(String label) {
-    const int maxLength = 30; // Define la longitud máxima permitida para la etiqueta
-    if (label.length > maxLength) {
-      return '${label.substring(0, maxLength - 3)}...'; // Agrega puntos suspensivos
+  Future verificarUploadTutor(int index, String cambiotextlocal) async{
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(cambiotextlocal == ""){
+      //mensaje de error
+      dialogs.error(Strings().errorTextoNulo,Strings().errorglobalText);
+    }else{
+      await Uploads().modifyinfotutor(index, cambio!, uidtutor,cambionum,context);
+      //mensaje de exito
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+      setState(() {
+        editarcasilla[index] = !editarcasilla[index];
+        cambionum = 0;
+        cambio = "";
+      });
     }
-    return label;
   }
 
-  Column selectfecha(BuildContext context){
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () async{
-            final date = await FuncionesMaterial().pickDate(context,cambiarfecha);
-            if(date == null) return;
-
-            final newDateTime = DateTime(
-              date.year,
-              date.month,
-              date.day,
-              cambiarfecha.hour,
-              cambiarfecha.minute,
-            );
-
-            setState( () =>
-            cambiarfecha = newDateTime
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 5.0),
-            child: Disenos().fecha_y_entrega('${cambiarfecha.day}/${cambiarfecha.month}/${cambiarfecha.year}',widget.currentwith - 60),
-          ),
-        ),
-        GestureDetector(
-          onTap: () async {
-            final time = await FuncionesMaterial().pickTime(context,cambiarfecha);
-            if (time == null) return;
-
-            final newDateTime = DateTime(
-              cambiarfecha.year,
-              cambiarfecha.month,
-              cambiarfecha.day,
-              time.hour,
-              time.minute,
-            );
-            setState(() =>
-            cambiarfecha = newDateTime
-            );
-            final formattedTime = DateFormat('hh:mm a').format(cambiarfecha);
-            print(formattedTime);
-          },
-          child: Disenos().fecha_y_entrega(DateFormat('hh:mm  a').format(cambiarfecha), widget.currentwith - 60),
-        ),
-      ],
-    );
+  void verificarUploadMateria(){
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(selectedMateria== null){
+      dialogs.error(Strings().errorseleccionemateria,Strings().errorglobalText);
+    }else if( materiaListTutor.any((materia) => materia.nombremateria == selectedMateria!.nombremateria)){
+      dialogs.error(Strings().errorMateriaRegistrada,Strings().errorglobalText);
+    }else{
+      Uploads().addMateriaTutor(uidtutor, selectedMateria!.nombremateria);
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+    }
   }
 
+  void verificarUploadCuentaBancaria(){
+    UtilDialogs dialogs = UtilDialogs(context : context);
+    if(selectedTipoCuenta == null || numeroCuentaBancaria == "" || cedulaTutor == "" || nombreCedulaTutor == ""){
+      dialogs.error(Strings().errroCuentasBancaria,Strings().errorglobalText);
+    }else{
+      Uploads().addCuentaBancaria(uidtutor, selectedTipoCuenta!, numeroCuentaBancaria.text, cedulaTutor.text, nombreCedulaTutor.text);
+      dialogs.exito(Strings().exitoglobal ,Strings().exitoglobaltitulo);
+      setState(() {
+        numeroCuentaBancaria.dispose();
+        cedulaTutor.dispose();
+        nombreCedulaTutor.dispose();
+        selectedTipoCuenta = null;
+        //Toca reiniciar todas las variables y meter waiting cargando
+      });
+    }
+  }
 }
 
-class SecundaryColumn extends StatefulWidget {
+class SecundaryColumnTutores extends StatefulWidget {
   final double currentwith;
-  final double currentheight;
+  final double currenheight;
 
-  const SecundaryColumn({Key?key,
+  const SecundaryColumnTutores({Key?key,
     required this.currentwith,
-    required this.currentheight,
-
+    required this.currenheight
   }) :super(key: key);
 
   @override
-  SecundaryColumnState createState() => SecundaryColumnState();
+  SecundaryColumnTutoresState createState() => SecundaryColumnTutoresState();
 
 }
 
-class SecundaryColumnState extends State<SecundaryColumn> {
-  List<ArchivoResultado> archivosresultados = [];
+class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
+
   final ThemeApp themeApp = ThemeApp();
-  //comprobar si tenemos licencia
-  bool configuracionSolicitudes = false;
-  //Documento
-  List<PlatformFile>? selectedFiles ;
-  String archivoNombre = "";
-  String _archivoExtension = "";
-  //
-  bool cargarArchivos = false;
-  ConfiguracionPlugins? config;
-  Solicitud? solicitud;
-  List<ArchivoResultado>? archivoList;
+  late List<bool> _isPressed = [];
 
-
-  void actualizarArchivos(int idcotizacion,String carpetaid) async{
-    DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
-    cargarArchivos = true;
+  void updateData() {
+    setState(() {
+      print("actualizando tutor y materias, o eso se cree");
+    });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
-      builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
-        config = configuracionProviderselect.config;
-        solicitud = solicitudProviderselect.solicitudSeleccionado;
-        archivoList = archivoDriveProvider.todosLosArchivos;
-        configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+    return Consumer<VistaTutoresProvider>(
+      builder: (context, tutorProvider, child) {
+        Tutores tutor = tutorProvider.tutorSeleccionado;
 
-        if(!cargarArchivos){
-          print("cargando archivos");
-          actualizarArchivos(solicitud!.idcotizacion,config!.idcarpetaSolicitudes);
-        }
+        _isPressed = [for(int i=0; i<tutor.materias.length ; i++) false];
 
-        return ItemsCard(
-          alignementColumn: MainAxisAlignment.start,
-          shadow: false,
+        return Container(
+          height: widget.currenheight == -1 ? tutor.materias.length*65 : widget.currenheight!,
           width: widget.currentwith,
-          height: widget.currentheight,
-          cardColor: themeApp.primaryColor,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-              child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
-            ),
-            PrimaryStyleButton(
-                buttonColor: themeApp.grayColor,
-                tapColor: themeApp.blackColor,
-                invert: true,
-                function: (){
-                  selectFile();
-                }, text: "Seleccionar archivos"),
+          padding: const EdgeInsets.symmetric(vertical: 10.0),
+          decoration: BoxDecoration(
+            color: themeApp.primaryColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: ListView.builder(
+            itemCount: tutor.materias.length,
+            itemBuilder: (context, subindex) {
+              Materia materia = tutor.materias[subindex];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: themeApp.whitecolor,
+                        borderRadius: BorderRadius.circular(80),
+                      ),
+                      height: 50,
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Text("Materia: ", style: themeApp.styleText(15, true, themeApp.grayColor),),
+                                Text(materia.nombremateria, style: themeApp.styleText(14, false, themeApp.grayColor),),
+                              ],
+                            ),
 
-            //Archivos nombre que se van a subir
-            if(selectedFiles  != null)
-              Column(
-                children: selectedFiles!.map((file) {
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                    color: themeApp.primaryColor,
-                    child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
-                  );
-                }).toList(),
-              ),
+                            GestureDetector(
 
-            PrimaryStyleButton(
-                invert: true,
-                function: (){
-                  subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
-                }, text: "Subir mas archivos"),
+                              onTap: (){
+                                UtilDialogs dialogs = UtilDialogs(context: context);
+                                _isPressed[subindex] = true;
+                                dialogs.error(_isPressed.toString(), "Error");
+                              },
 
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-              child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
-            ),
+                              onTapDown: (_){
+                                setState(() {
+                                  _isPressed[subindex] = true;
+                                });
+                              },
 
-            _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == -1 ? 1 : 4,),
+                              onTapUp: (_){
+                                setState(() {
+                                  _isPressed[subindex] = false;
+                                });
+                              },
 
-          ],
+                              child: AnimatedContainer(
+                                width: 30,
+                                height: 30,
+                                duration: const Duration(milliseconds: 500),
+                                padding: const EdgeInsets.all(5.0),
+                                decoration: BoxDecoration(
+                                    color: !_isPressed[subindex]? themeApp.redColor : themeApp.grayColor,
+                                    borderRadius: BorderRadius.circular(80)
+                                ),
+                                child: Icon(material.Icons.cancel, color: !_isPressed[subindex]? themeApp.whitecolor : themeApp.redColor,),
+                              ),
+                            )
+
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class TercerColumnTutores extends StatefulWidget {
+  final double currentwith;
+  final double currenheight;
+
+  const TercerColumnTutores({Key?key,
+    required this.currentwith,
+    required this.currenheight
+  }) :super(key: key);
+
+  @override
+  TercerColumnTutoresState createState() => TercerColumnTutoresState();
+
+}
+
+class TercerColumnTutoresState extends State<TercerColumnTutores> {
+
+  final ThemeApp themeApp = ThemeApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<VistaTutoresProvider>(
+      builder: (context, tutorProvider, child) {
+        Tutores tutor = tutorProvider.tutorSeleccionado;
+
+        return SizedBox(
+          height: widget.currenheight == -1 ? tutor.cuentas.length*220 : widget.currenheight!,
+          width: widget.currentwith,
+          child: ListView.builder(
+            itemCount: tutor.cuentas.length,
+            itemBuilder: (context, subindex) {
+              CuentasBancarias cuenta = tutor.cuentas[subindex];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                child: Card(
+                  backgroundColor: themeApp.grayColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  child: ItemsCard(
+                    cardColor: themeApp.grayColor.withOpacity(0),
+                    alignementColumn: MainAxisAlignment.start,
+                    verticalPadding: 10.0,
+                    horizontalPadding: 8.0,
+                    shadow: false,
+                    children: [
+                      Text("Cuenta ${[for(int letra=0; letra<cuenta.tipoCuenta.length; letra++) if(letra == 0) cuenta.tipoCuenta[letra].toUpperCase() else cuenta.tipoCuenta[letra].toLowerCase()].join()}", style: themeApp.styleText(18, true, themeApp.primaryColor),),
+                      Column(
+                        children: [
+                          _textAndTitle(cuenta.nombreCuenta, "Nombre Cuenta:"),
+                          _textAndTitle(cuenta.numeroCedula, "Numero Cedula: "),
+                          _textAndTitle(cuenta.numeroCuenta, "Numero Cuenta: "),
+                          _textAndTitle(cuenta.tipoCuenta, "Tipo Cuenta: "),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         );
       },
     );
   }
 
-  Future subirarchivos(String idcarpetasolicitudesDrive, String idsolicitud) async{
-    final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,idsolicitud,context);
-    print("Número de archivos subidos: ${result.numberfilesUploaded}");
-    print("URL de la carpeta: ${result.folderUrl}");
-    //Ahora avisar numero de archivos subidos y url
+  String _arreglarString(String text){
+    final List<String> _arreglar = [];
+    return "";
   }
 
-  Future selectFile() async{
-    if(kIsWeb){
-      final result = await FilePicker.platform.pickFiles(type: FileType.any, allowMultiple: true);
-
-      if (result != null && result.files.isNotEmpty) {
-        final fileName = result.files.first.name;
-        final fileextension = result.files.first.extension;
-        setState(() {
-          selectedFiles  = result.files;
-          archivoNombre = fileName;
-          _archivoExtension = fileextension!;
-          print(fileName);
-          print(fileextension);
-        });
-        print("extension archivo");
-        print(_archivoExtension);
-        print("Nombre del archivo");
-      }}else{
-      print('Aqui no va a pasar');
-    }
-  }
-
-}
-
-class _TarjetaArchivos extends StatefulWidget{
-  final List<ArchivoResultado>? archivosList;
-  final int numcontenedor;
-
-  const _TarjetaArchivos({Key?key,
-    required this.archivosList,
-    required this.numcontenedor,
-  }) :super(key: key);
-
-  @override
-  _TarjetaArchivosState createState() => _TarjetaArchivosState();
-
-}
-
-class _TarjetaArchivosState extends State<_TarjetaArchivos> {
-
-  final ThemeApp themeApp = ThemeApp();
-
-  @override
-  Widget build(BuildContext context) {
-    TextStyle styleText([Color? color]) => themeApp.styleText(14, false, color?? themeApp.whitecolor);
-
-
-    Expanded containWidgets(List<Widget> children) => Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: children,
-        ),
+  Padding _textAndTitle(String text, String title){
+    final TextStyle styleText = themeApp.styleText(14, false, themeApp.grayColor);
+    final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.grayColor);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: styleTextSub,),
+          Text(text, style: styleText,),
+        ],
       ),
     );
-
-    List<Widget> contenedores = List.generate(widget.numcontenedor, (index){
-      return containWidgets([
-        for (int i = 0; i < widget.archivosList!.length; i++)
-          if ((i + 1) % widget.numcontenedor == (index + 1) % widget.numcontenedor)
-            _TarjetaArchivo(archivo: widget.archivosList![i]),
-      ]);
-    });
-
-    return ItemsCard(
-      alignementColumn: MainAxisAlignment.start,
-      shadow: false,
-      cardColor: themeApp.primaryColor,
-      children: [
-        Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
-
-        material.Card(
-          color: themeApp.whitecolor.withOpacity(0),
-          shadowColor: themeApp.whitecolor.withOpacity(0),
-          child: SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: contenedores,
-            ),
-          ),
-        ),
-
-
-      ],
-    );
   }
-
-}
-
-class _TarjetaArchivo extends StatelessWidget{
-
-  final ArchivoResultado archivo;
-
-  const _TarjetaArchivo({
-    Key?key,
-    required this.archivo,
-  }):super(key: key);
-
-  @override
-  Widget build(BuildContext context){
-    const double imageTamanio = 40;
-    const double radioButton = 22;
-    final ThemeApp themeApp = ThemeApp();
-
-    TextStyle styleText([double? tamanio]) => themeApp.styleText(tamanio?? 14, false, themeApp.blackColor);
-    material.SizedBox textResponsive(String text, TextStyle styleText) => material.SizedBox(
-      width: double.infinity,
-      child: Text(text, style: styleText, textAlign: TextAlign.center,),
-    );
-
-    return Card(
-        margin: const EdgeInsets.symmetric(vertical: 5.0),
-        backgroundColor: themeApp.whitecolor,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 5.0),
-          child: material.SizedBox(
-            width: double.infinity,
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5.0),
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onDoubleTap: (){
-                        _abrirEnlace(archivo.linkVistaArchivo);
-                      },
-                      child: Image.network(
-                        archivo.iconLink,
-                        width: imageTamanio,
-                        height: imageTamanio,
-                        fit: BoxFit.contain,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
-                ),
-
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                      child: textResponsive(archivo.nombrearchivo, styleText()),
-                    onDoubleTap: (){
-                        _abrirEnlace(archivo.linkVistaArchivo);
-                    },
-                  ),
-                ),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(child: Text("${archivo.size} mb", style: styleText(9), textAlign: TextAlign.start,)),
-                    Expanded(child: Text(archivo.horaCracion, style: styleText(9), textAlign: TextAlign.end,)),
-                  ],
-                ),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    CircularButton(
-                        radio: radioButton,
-                        iconData: material.Icons.download,
-                        function: (){
-                          _abrirEnlace(archivo.linkDescargaArchivo);
-                        }
-                    ),
-                    CircularButton(
-                        radio: radioButton,
-                        buttonColor: themeApp.redColor,
-                        iconData: material.Icons.clear,
-                        function: (){
-                          DriveApiUsage().eliminarArchivo(archivo.id,context);
-                        }
-                    ),
-                  ],
-                )
-
-              ],
-            ),
-          ),
-        )
-    );
-  }
-
-  void _abrirEnlace(String enlace) async {
-    if (await canLaunch(enlace)) {
-      await launch(enlace);
-    } else {
-      throw 'No se pudo abrir el enlace $enlace';
-    }
-  }
-
 
 }

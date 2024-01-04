@@ -340,6 +340,10 @@ class ClientesVistaProvider extends ChangeNotifier{
 
   List<Clientes> get todosLosClientes => _todosLosClientes;
 
+  //seleccionar cliente
+  Clientes _clienteSeleccionado = Clientes.empty();
+  Clientes get clienteSeleccionado => _clienteSeleccionado;
+
   void cargarTodosLosClientes(List<Clientes> clientes){
     clearClientes();
     _todosLosClientes.addAll(clientes);
@@ -350,6 +354,13 @@ class ClientesVistaProvider extends ChangeNotifier{
     _todosLosClientes.clear();
     notifyListeners();
   }
+
+  //Servicio seleccionado
+  void seleccionarCliente(Clientes cliente){
+    _clienteSeleccionado = cliente;
+    notifyListeners();
+  }
+
 }
 
 //Universidades Provider

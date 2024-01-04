@@ -41,6 +41,21 @@ class Clientes{
     };
   }
 
+  // Método .empty()
+  factory Clientes.empty() {
+    return Clientes(
+      "", // carrera
+      "", // universidad
+      "", // nombreCliente
+      0,  // numero
+      "", // nombrecompletoCliente
+      DateTime.now(), // fechaActualizacion
+      "", // procedencia
+      DateTime.now(), // fechaContacto
+      0, // ultimaModificacion
+    );
+  }
+
   factory Clientes.fromJson(Map<String, dynamic> json) {
     return Clientes(
       json['Carrera'],
