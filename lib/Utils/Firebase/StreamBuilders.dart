@@ -678,27 +678,27 @@ class stream_builders{
         clienteList.add(newClientes);
         counter++;
       }
-      print("y el valor de cliente cache $clientescache");
-      print("logica para entrar");
-      print(prefs.getBool("cheched_clientes_descargados"));
       if(!clientescache){
+        print("cliente no cahceados");
         String solicitudesJson = jsonEncode(clienteList);
         await prefs.setString('clientes_list_stream', solicitudesJson);
         clienteProviderUso.cargarTodosLosClientes(clienteList);
       }else{
+        print("cliente ya cahceados");
         List<Clientes>? clientescacheado = await cargarclientes();
         for (var cliente in clienteList) {
           int indexExistente = clientescacheado!.indexWhere((s) => s.numero.toString() == cliente.numero.toString());
           if (indexExistente != -1) {
+            print("actualizar cliente");
             clienteProviderUso.modifyCliente(cliente);
           } else {
+            print("cliente nuevo");
             clienteProviderUso.addNewCliente(cliente);
           }
         }
         clientescacheado!.addAll(clienteList);
         String solicitudesJson = jsonEncode(clientescacheado);
         await prefs.setString('clientes_list_stream', solicitudesJson);
-        clienteProviderUso.cargarTodosLosClientes(clientescacheado);
       }
 
       await prefs.setBool('cheched_clientes_descargados', true);
@@ -711,11 +711,9 @@ class stream_builders{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('clientes_list_stream') ?? '';
     if(solicitudesJson.isEmpty){
-      print("retorna vacia la lista");
       List<Clientes> clientesList = [];
       return clientesList;
     }else{
-      print("retorna la lista bien de cliente");
       List<dynamic> clienteData = jsonDecode(solicitudesJson);
       List<Clientes> clienteList = clienteData.map((clienteData) =>
           Clientes.fromJson(clienteData as Map<String, dynamic>)).toList();

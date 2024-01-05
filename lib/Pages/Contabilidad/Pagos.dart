@@ -5,6 +5,7 @@ import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
+import '../../Config/Config.dart';
 import '../../Config/theme.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
@@ -45,11 +46,11 @@ class ContablePagosState extends State<ContablePagos> {
     //Completo
     final widthCompleto = MediaQuery.of(context).size.width;
     //tamaño para computador y tablet
-    final tamanowidthdobleComputador = (widthCompleto/2)-30;
+    final tamanowidthdobleComputador = (widthCompleto/2)-Config.responsivepc/2;
     //tamaño para celular
-    final tamanowidthdobleCelular = (widthCompleto/2);
+    final tamanowidthdobleCelular = (widthCompleto/2) - Config.responsivecelular/2-10;
     //currentheight completo
-    final heightCompleto = MediaQuery.of(context).size.height-100;
+    final heightCompleto = MediaQuery.of(context).size.height-Config.tamnoHeihtConMenu;
 
     return Column(
       children: [
@@ -552,7 +553,7 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
               Column(
                 children: [
                   SizedBox(
-                    height: widget.currentheight-20,
+                    height: widget.currentheight-50,
                     child: ListView.builder(
                       itemCount: pagosDelServicioSeleccionado.length,
                       itemBuilder: (context, index) {

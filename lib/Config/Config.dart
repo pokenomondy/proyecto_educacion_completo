@@ -42,9 +42,11 @@ class Config {
   int celular = 620;
   //pc = > 1200 , tablet <1200 y > 620 , celular < 620
   static const int responsivepc = 80;
-  static const int responsivecelular = 20;
-  static const int responsivetablet = 80;
+  static const int responsivecelular = 5;
+  static const int responsivetablet = 60;
   static const int tamanoHeightnormal = 80;
+  //ahora heiht con menu
+  static const int tamnoHeihtConMenu = 130;
 
 
   //Carpeta de Pagos

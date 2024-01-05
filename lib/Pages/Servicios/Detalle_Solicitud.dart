@@ -161,7 +161,8 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                     width: widget.currentwith-60,
                     padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
                     margin: const EdgeInsets.only(left: 15),
-                    child: Text("$text : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)),
+                    child: Text("$text : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)
+                ),
                 if(!bool)
                   GestureDetector(
                     onTap: (){

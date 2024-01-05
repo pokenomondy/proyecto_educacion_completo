@@ -55,24 +55,24 @@ class TutoresVistaVistaState extends State<TutoresVista> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/3)-60;
+    final tamanowidth = (currentwidth/3)-Config.responsivepc/3;
     return NavigationView(
       content: Row(
         children: [
           if(currentwidth>=configuracion.computador)
             if(cargadodata==true)
               Row(children: [
-                _Creartutores(currentwidth: tamanowidth,tutoresList: tutoresList,),
-                _BusquedaTutor(currentwidth: tamanowidth,),
-                _CrearTutorNuevo(currentwidth: tamanowidth),
+                _Creartutores(currentwidth: tamanowidth-30,tutoresList: tutoresList,),
+                _BusquedaTutor(currentwidth: tamanowidth+60,),
+                _CrearTutorNuevo(currentwidth: tamanowidth-30),
               ],),
           if(currentwidth < 1200 && currentwidth > 620)
             Container(
-                width: currentwidth-80,
+                width: currentwidth-Config.responsivetablet,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
           if(currentwidth <= 620)
             Container(
-                width: currentwidth-20,
+                width: currentwidth-Config.responsivecelular,
                 child: TutoresResponsiveVista(tutoresList: tutoresList,)),
 
         ],
@@ -584,7 +584,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.whitecolor);
 
     return ItemsCard(
-      width: widget.currentwidth+100,
+      width: widget.currentwidth,
       cardColor: themeApp.primaryColor,
       shadow: false,
       alignementColumn: MainAxisAlignment.start,

@@ -1,8 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'Configuracion/AgregarVariables.dart';
 import 'Configuracion/Configuracion_Completa.dart';
-import 'Configuracion/EditarClientes.dart';
-import 'Configuracion/SolicitudesClientes.dart';
+import 'Configuracion/editar_clientes.dart';
+import 'Configuracion/historial_solicitudes.dart';
 
 class CentroConfiguracionDash extends StatefulWidget {
   const CentroConfiguracionDash({super.key});

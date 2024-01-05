@@ -142,6 +142,7 @@ class SolicitudProvider extends ChangeNotifier{
 
   //Todas las solcitudes
   void cargarTodasLasSolicitudes(List<Solicitud> solicitudes){
+    clearSolicitudes();
     _todaslasSolicitudes = solicitudes;
     actualizarEstados();
     notifyListeners();
@@ -217,6 +218,7 @@ class VistaTutoresProvider extends ChangeNotifier {
   String filtro = "";
 
   void cargarTodosTutores(List<Tutores> tutor){
+    clearTutores();
     todosLosTutores = tutor.toList();
     actualizarListas();
     notifyListeners();
@@ -255,6 +257,7 @@ class VistaTutoresProvider extends ChangeNotifier {
   }
 
   void clearTutores() {
+    todosLosTutores.clear();
     tutorseleccionado.clear(); // Clear the list
     notifyListeners();
   }
@@ -348,8 +351,13 @@ class ClientesVistaProvider extends ChangeNotifier {
   void cargarTodosLosClientes(List<Clientes> clientes) {
     clearClientes();
     _todosLosClientes.addAll(clientes);
-    //logica para ctualizar cliente seleccionado
-
+    for (Clientes cliente in clientes) {
+      if (cliente.numero.toString() == _clienteSeleccionado.numero.toString()) {
+        seleccionarCliente(cliente.numero);
+        print("el cliente fue encontrado ${cliente.numero}");
+        break;
+      }
+    }
     notifyListeners();
   }
 
@@ -358,7 +366,7 @@ class ClientesVistaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  //Servicio seleccionado
+  //Cliente seleccionado
   void seleccionarCliente(int clienteNumero) {
     for (Clientes cliente in _todosLosClientes) {
       if (cliente.numero == clienteNumero) {
@@ -380,6 +388,7 @@ class ClientesVistaProvider extends ChangeNotifier {
     int indexExistente = _todosLosClientes.indexWhere((s) => s.numero.toString() == modifyCliente.numero.toString());
     _todosLosClientes[indexExistente] = modifyCliente;
     if (modifyCliente.numero.toString() == clienteSeleccionado.numero.toString()) {
+      print("se modifica el cliente ${modifyCliente.numero.toString()}");
       _clienteSeleccionado = modifyCliente;
     }
     notifyListeners();
