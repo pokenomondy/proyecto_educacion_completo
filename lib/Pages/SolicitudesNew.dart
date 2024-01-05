@@ -116,11 +116,11 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
                 ),
               if(currentwidth < 1200 && currentwidth > 620)
                 Container(
-                    width: currentwidth-Config.responsivetablet,
+                    width: currentwidth-Config.responsivetablet-20,
                     child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,)),
               if(currentwidth <= 620)
                 Container(
-                    width: currentwidth-Config.responsivecelular,
+                    width: currentwidth-Config.responsivecelular-20,
                     child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,))
             ],
           ),

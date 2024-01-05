@@ -5,6 +5,7 @@ import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:provider/provider.dart';
+import '../../Config/Config.dart';
 import '../../Config/theme.dart';
 import '../../Objetos/CuentasBancaraias.dart';
 import '../../Objetos/Objetos Auxiliares/Carreras.dart';
@@ -31,9 +32,9 @@ class DetallesTutoresState extends State<DetallesTutores> {
     //Completo
     final widthCompleto = MediaQuery.of(context).size.width;
     //tamaño para computador y tablet
-    final tamanowidthTripleComputador = (widthCompleto/3)-30;
+    final tamanowidthTripleComputador = (widthCompleto/3)-Config.responsivepc/3;
     //currentheight completo
-    final heightCompleto = MediaQuery.of(context).size.height-80;
+    final heightCompleto = MediaQuery.of(context).size.height-Config.tamanoHeightnormal;
 
     return Column(
       children: [

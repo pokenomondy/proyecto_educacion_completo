@@ -102,6 +102,7 @@ class Uploads{
   //SERVICIOS AGENDADOS
   //añadir servicio agendado
   Future<void> addServicioAgendado(String codigo,String sistema,String materia,String cliente,int preciocobrado,DateTime fechaentrega,String tutor,int preciotutor,String identificadorcodigo,int idsolicitud, int numerocontabilidadagenda,String entregado) async {
+    print("el codigo es $codigo");
     await referencias.initCollections();
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = referencias.contabilidad!;
@@ -444,9 +445,51 @@ class Uploads{
     //mensajes
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
+  //actualizar color
+  Future<void> modifyColors(int index,String color) async{
+    await referencias.initCollections();
+    CollectionReference actualizadores = referencias.configuracion!;
+    String variable = "";
+
+    if(index==0){
+      variable = "Primarycolor";
+    }else if(index==1){
+      variable = "Secundarycolor";
+    }
+
+    Map<String, dynamic> uploadinformacion = {
+      '$variable': color,
+    };
+
+    await actualizadores.doc("CONFIGURACION").update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
+
+  }
+  //actualizar mensajes
+  Future<void> modifyMensajes(int index,String mensaje) async{
+    await referencias.initCollections();
+    CollectionReference actualizadores = referencias.configuracion!;
+    String variable = "";
+
+    if(index==0){
+      variable = "SOLICITUD";
+    }else if(index==1){
+      variable = "CONFIRMACION_CLIENTE";
+    }
+
+    Map<String, dynamic> uploadinformacion = {
+      '$variable': mensaje,
+    };
+
+      await actualizadores.doc("MENSAJES").update(uploadinformacion);
+    await stream_builders().estadisticasEscrituraFirestore(1);
+
+  }
+
+
+
+
   //uploadmsgs
-
-
   Future<void> uploadconfigmensaje(String text, String s) async{
     await referencias.initCollections();
     CollectionReference actualizadores = referencias.configuracion!;
@@ -456,7 +499,7 @@ class Uploads{
     await actualizadores.doc("MENSAJES").update(uploadconfiguracion);
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
-  Future<void> uploadconfigmensajeinicial(String mensajeconfirmacion,String mensajesolicitud) async {
+  Future<void> uploadconfigmensajes(String mensajeconfirmacion,String mensajesolicitud) async {
     await referencias.initCollections();
     CollectionReference actualizadores = referencias.configuracion!;
     Map<String, dynamic> uploadconfiguracion = {
@@ -467,7 +510,10 @@ class Uploads{
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
 
-  //Subir materias de forma local
+
+
+
+
 
   Future<void> addnewmateria(String nombremateria) async{
     await referencias.initCollections();
