@@ -208,8 +208,8 @@ class Uploads{
     Tutores newtutor = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materias, cuentas,true,DateTime.now(),"TUTOR",DateTime.now().millisecondsSinceEpoch ~/ 1000);
     await tutor.doc(uid).set(newtutor.toMap());
     await stream_builders().estadisticasEscrituraFirestore(1);
-
   }
+
   //Modificar infomración de tutor
   Future<void> modifyinfotutor(int index,String texto,String uid, int num, BuildContext context) async{
     await referencias.initCollections();
@@ -312,22 +312,9 @@ class Uploads{
     Map<String, dynamic> datosActualizados = {
       "nombreCliente": nombreCliente,
       "nombrecompletoCliente": nombrecompletoCliente,
+      'ultimaModificacion' : timestamphoy,
     };
     await cliente.doc(numero.toString()).update(datosActualizados);
-    //agregar info actualizada de clientes en local
-    String solicitudesJson = prefs.getString('clientes_list') ?? '';
-    List<dynamic> ClienteData = jsonDecode(solicitudesJson);
-    List clientesList = ClienteData.map((ClienteData) =>
-        Clientes.fromJson(ClienteData as Map<String, dynamic>)).toList();
-
-    // Actualizar la lista de clientes local con el cliente actualizado
-    int indexToUpdate = clientesList.indexWhere((cliente) => cliente.numero == numero);
-    if (indexToUpdate != -1) {
-      clientesList[indexToUpdate].nombreCliente = nombreCliente;
-      clientesList[indexToUpdate].nombrecompletoCliente = nombrecompletoCliente;
-    }
-    String clientesJson = jsonEncode(clientesList);
-    await prefs.setString('clientes_list', clientesJson);
     await stream_builders().estadisticasEscrituraFirestore(1);
 
   }

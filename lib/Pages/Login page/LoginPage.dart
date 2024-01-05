@@ -29,6 +29,7 @@ import '../../Config/strings.dart';
     FirebaseAuth? authdirection;
     CollectionReference? firestoredirection;
     CollectionReferencias referencias =  CollectionReferencias();
+    String? nombre_Empresa;
 
     @override
     void initState(){
@@ -45,6 +46,9 @@ import '../../Config/strings.dart';
 
     Future redireccion() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        nombre_Empresa = prefs.getString("Nombre_Empresa");
+      });
       bool versioncache = prefs.getBool("${Strings().appVersion}_version") ?? false;
       if(!versioncache){
         print("eliminando variables por actualziación");
@@ -87,7 +91,7 @@ import '../../Config/strings.dart';
               Padding(
                 padding: const EdgeInsets.only(top: 25),
                 child: Text(
-                  "Nombre empresa",
+                  "Hola, bienvenido a ${nombre_Empresa}",
                   style: theme.styleText(15, false, theme.grayColor),
                 ),
               ),

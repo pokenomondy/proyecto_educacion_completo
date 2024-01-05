@@ -71,13 +71,15 @@ class DashboardState extends State<Dashboard> {
     _streamControllerMaterias = StreamController<List<Materia>>();
     _streamControllerClientes = StreamController<List<Clientes>>();
     _streamControllerUniversidades = StreamController<List<Universidad>>();
-    _initStream();
+    if(!widget.showSolicitudesNew && !widget.showTutoresDetalles){
+      _initStream();
+      print("ejecutando streambuilders");
+    }
+    _configuracionStream();
   }
 
   _initStream() async {
-    //Configuración stream
-    Stream<ConfiguracionPlugins> stream = await stream_builders().getstreamConfiguracion(context);
-    _streamController.addStream(stream);
+
     //Contabilidad stream
     Stream<List<ServicioAgendado>> streamservicios = await stream_builders().getServiciosAgendados(context);
     _streamControllerServiciosAgendados.addStream(streamservicios);
@@ -101,9 +103,26 @@ class DashboardState extends State<Dashboard> {
     _streamControllerUniversidades.addStream(stream_universidad);
   }
 
+  _configuracionStream() async{
+    //Configuración stream
+    Stream<ConfiguracionPlugins> stream = await stream_builders().getstreamConfiguracion(context);
+    _streamController.addStream(stream);
+  }
+
   @override
   void dispose() {
     super.dispose();
+    if(widget.showSolicitudesNew || widget.showTutoresDetalles){
+      _streamController.close();
+      _streamControllerServiciosAgendados.close();
+      _streamControllerSolicitudes.close();
+      _streamControllerTutores.close();
+      _streamControllerCarreras.close();
+      _streamControllerMaterias.close();
+      _streamControllerClientes.close();
+      _streamControllerUniversidades.close();
+      print("fueron disposeadas bien");
+    }
   }
 
   void cargarprimeravez() async{
@@ -133,6 +152,16 @@ class DashboardState extends State<Dashboard> {
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
                     body: widget.showTutoresDetalles ? const DetallesTutores(): const TutoresVista(),
                     selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor))),
+              ];
+            }else if(widget.showSolicitudesNew){
+              return <NavigationPaneItem>[
+                PaneItem(
+                  icon: const Icon(FluentIcons.home),
+                  title:  configuracionrol.panelnavegacion("Solicitudes",_currentPage == 0),
+                  body: widget.showSolicitudesNew ? const DetallesServicio(): const SolicitudesNew(),
+                  selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)),
+                  key: const ValueKey('/home'),
+                ),
               ];
             }else{
               return <NavigationPaneItem>[
@@ -170,7 +199,7 @@ class DashboardState extends State<Dashboard> {
                   margin:  const EdgeInsets.only(left: 20),
                   child: Row(
                     children: [
-                      if(!widget.showSolicitudesNew)
+                      if(!widget.showSolicitudesNew && !widget.showTutoresDetalles)
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 20.0, left: 5.0,),
@@ -188,11 +217,10 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('conta true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
-                              const Text('Config true'),
                               StreamBuilder<List<Materia>>(
                                 stream: _streamControllerMaterias.stream,
                                 builder: (context, snapshot) {
@@ -202,7 +230,7 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); //
                                   }
                                 },
                               ),
@@ -212,10 +240,10 @@ class DashboardState extends State<Dashboard> {
                                   if (snapshot.connectionState == ConnectionState.waiting) {
                                     return const CircularProgressIndicator();
                                   } else if (snapshot.hasError) {
-                                    return Text('Error: ${snapshot.error}');
+                                    return Text('Error cliente: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Clientes true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
@@ -228,7 +256,7 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Solicitudes true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
@@ -241,7 +269,7 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Tutores true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
@@ -254,7 +282,7 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Carrera true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
@@ -267,10 +295,11 @@ class DashboardState extends State<Dashboard> {
                                     return Text('Error: ${snapshot.error}');
                                   } else {
                                     // No mostrar nada, ya que el stream está vacío
-                                    return const Text('Universidades true'); // O cualquier otro widget que no muestre nada
+                                    return const Text(''); // O cualquier otro widget que no muestre nada
                                   }
                                 },
                               ),
+                              /*
                               Row(
                                 children: [
                                   CircularButton(
@@ -289,10 +318,12 @@ class DashboardState extends State<Dashboard> {
                                   ),
                                 ],
                               ),
+
+                               */
                             ],
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

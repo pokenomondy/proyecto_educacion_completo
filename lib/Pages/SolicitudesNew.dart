@@ -95,8 +95,8 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final currentheight = MediaQuery.of(context).size.height-140;
-    final tamanowidth = (currentwidth/3)-30;
+    final currentheight = MediaQuery.of(context).size.height-Config.tamanoHeightnormal;
+    final tamanowidth = (currentwidth/3)-Config.responsivepc/3;
     if (!configloaded) {
       print("carngado cosas de solicitudes");
       return Text('cargando cosas');
@@ -116,11 +116,11 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
                 ),
               if(currentwidth < 1200 && currentwidth > 620)
                 Container(
-                    width: currentwidth-80,
+                    width: currentwidth-Config.responsivetablet,
                     child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,)),
               if(currentwidth <= 620)
                 Container(
-                    width: currentwidth-20,
+                    width: currentwidth-Config.responsivecelular,
                     child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,))
             ],
           ),
@@ -788,15 +788,10 @@ class _CrearContainer extends StatefulWidget{
 
 class _CrearContainerState extends State<_CrearContainer> {
 
-
-  void forzarupdatedata(){
-    widget.onUpdateListaClientes();
-    print("forzando update de datas;");
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: widget.height,
       decoration: BoxDecoration(
         border: Border.all(
           color: widget.primarycolor,
@@ -887,7 +882,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   List<Cotizacion> cotizacionesstream = [];
   int numerocotizaciones = 0;
   double margen_card = 5;
-  String stringpropsectocliente = "";
   String stringnombrecliente = "";
   String nombrewspclientenuevo = "";
 
@@ -925,7 +919,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: widget.height,
+      height: widget.height-60,
       child: ListView.builder(
           itemCount: widget.solicitudesList?.length,
           itemBuilder: (context, index) {
@@ -1107,7 +1101,9 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                   //Ver cotizaciones
                                   GestureDetector(
                                     onTap: () {
-                                      print("Ver cotizaciones");
+                                      //se debe seleccionar el cliente para agendarle
+                                      final clienteProvider = Provider.of<ClientesVistaProvider>(context, listen: false);
+                                      clienteProvider.seleccionarCliente(solicitud.cliente);
                                       vistaCotizaciones(context, solicitud);
                                     },
                                     child: material.Padding(
@@ -1535,86 +1531,84 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                 Consumer<ClientesVistaProvider>(
                   builder: (context, clienteProviderselect, child) {
                     selectedCliente = clienteProviderselect.clienteSeleccionado;
+                    stringnombrecliente = selectedCliente!.nombrecompletoCliente;
 
                     return Column(
                       children: [
 
-                        //
                         material.Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: prospectocliente(solicitud, styleText),
+                          child: Text(selectedCliente!.nombrecompletoCliente),
                         ),
+
 
                         material.Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: Text(stringnombrecliente, style: styleText,),
+                          child: Text(selectedCliente!.nombreCliente, style: styleText,),
                         ),
+
+                        if(selectedCliente!.nombreCliente == "PROSPECTO CLIENTE")
+                          GestureDetector(
+                            child: Container(
+                                height: 30,
+                                width: 30,
+                                decoration: BoxDecoration(
+                                  color: Config.secundaryColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Icon(FluentIcons.add,
+                                  color: Config().primaryColor,
+                                  weight: 30,)),
+                            onTap: (){
+                              addInfoFaltanteCliente(context,solicitud);
+                            },
+                          ),
+
+                        //Mensaje de confirmación
+                        if(selectedCliente!.nombreCliente != 'PROSPECTO CLIENTE')
+                          PrimaryStyleButton(
+                              function: (){
+                                copiarConfirmacion(solicitud,true,cotizacion);
+                              },
+                              text: "Copiar confirmacion"),
+                        PrimaryStyleButton(
+                            function: (){
+                              copiarConfirmacion(solicitud,false,cotizacion);
+                            },
+                            text: "Copiar confirmacion tutor"),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+
+                            material.Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: PrimaryStyleButton(
+                                  function: (){
+                                    comprobacionagendartrabajo(cotizacion,solicitud,context);
+                                  },
+                                  text: "Subir Servicio"
+                              ),
+                            ),
+
+                            material.Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: PrimaryStyleButton(
+                                  width: 100,
+                                  function: (){
+                                    Navigator.pop(context);
+                                  },
+                                  text: "Cerrar"
+                              ),
+                            ),
+
+                          ],
+                        )
 
                       ],
                     );
                   }
                 ),
-
-
-
-                if(stringpropsectocliente == "PROSPECTO CLIENTE" || stringnombrecliente == "NO REGISTRADO")
-                  GestureDetector(
-                    child: Container(
-                        height: 30,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          color: Config.secundaryColor,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(FluentIcons.add,
-                          color: Config().primaryColor,
-                          weight: 30,)),
-                    onTap: (){
-                      print("agregar nuevo prospecto de cliente");
-                      addInfoFaltanteCliente(context,solicitud);
-                    },
-                  ),
-
-                //Mensaje de confirmación
-                if(stringpropsectocliente != 'PROSPECTO CLIENTE' || stringnombrecliente == "NO REGISTRADO")
-                  PrimaryStyleButton(
-                      function: (){
-                        copiarConfirmacion(solicitud,true,cotizacion);
-                      },
-                      text: "Copiar confirmacion"),
-                PrimaryStyleButton(
-                    function: (){
-                      copiarConfirmacion(solicitud,false,cotizacion);
-                    },
-                    text: "Copiar confirmacion tutor"),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: PrimaryStyleButton(
-                          function: (){
-                            comprobacionagendartrabajo(cotizacion,solicitud,context);
-                          },
-                          text: "Subir Servicio"
-                      ),
-                    ),
-
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: PrimaryStyleButton(
-                          width: 100,
-                          function: (){
-                            Navigator.pop(context);
-                          },
-                          text: "Cerrar"
-                      ),
-                    ),
-
-                  ],
-                )
               ],
             ),
           );
@@ -1663,21 +1657,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       selectedIdentificador = "NO PROGRAMADO";
     }
     return Text(selectedIdentificador, style: style);
-  }
-
-  Text prospectocliente(Solicitud solicitud, TextStyle style){
-    final clienteEncontrado = widget.clienteList.firstWhere(
-          (cliente) => cliente.numero == solicitud.cliente,
-    );
-
-    if (clienteEncontrado != null) {
-      stringpropsectocliente = clienteEncontrado.nombreCliente;
-      stringnombrecliente = clienteEncontrado.nombrecompletoCliente;
-    } else {
-      stringpropsectocliente = 'Cliente no encontrado';
-      stringnombrecliente = 'CLIENTE SIN NOMBRE';
-    }
-    return Text(stringpropsectocliente, style: style);
   }
 
   Container addinfoclienteprospecto(){
@@ -1747,7 +1726,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       //NOMBRE WSP CLIENTE
-                      Text("Nombre wsp cliente ${stringpropsectocliente}"),
                       Text('Nombre cliente ${stringnombrecliente}'),
                       TextBox(
                         placeholder: 'Nombre wsp cliente',
@@ -1791,21 +1769,9 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   }
 
   void validarantesdeactualizarprospecto(Solicitud solicitud, BuildContext context) async {
-    await Uploads().prospectoacliente(
-        editnombrewspcliente, editnombrecliente, solicitud.cliente);
-    //Función
-    print("registrando nuevo usuarido editado, porque no cambia");
-    setState(() {
-      stringnombrecliente = editnombrecliente;
-      stringpropsectocliente = editnombrewspcliente;
-      print("mandar a actualizar?");
-    });
-    Future.delayed(Duration(milliseconds: 2000), () {
-      Utiles().notificacion("REGISTRADO CON EXITO", context, true, "exito");
-      Navigator.pop(context, 'User canceled dialog');
-      Navigator.pop(context, 'User canceled dialog');
-      print("nos devolvemos");
-    });
+    await Uploads().prospectoacliente(editnombrewspcliente, editnombrecliente, solicitud.cliente);
+    Utiles().notificacion("REGISTRADO CON EXITO", context, true, "exito");
+    Navigator.pop(context, 'User canceled dialog');
   }
 
   Future<void> codigocontabilidad(Solicitud solicitud) async {

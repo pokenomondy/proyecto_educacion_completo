@@ -335,32 +335,55 @@ class MateriasVistaProvider extends ChangeNotifier{
 }
 
 //Clientes Provider
-class ClientesVistaProvider extends ChangeNotifier{
+class ClientesVistaProvider extends ChangeNotifier {
   List<Clientes> _todosLosClientes = [];
 
   List<Clientes> get todosLosClientes => _todosLosClientes;
 
   //seleccionar cliente
   Clientes _clienteSeleccionado = Clientes.empty();
+
   Clientes get clienteSeleccionado => _clienteSeleccionado;
 
-  void cargarTodosLosClientes(List<Clientes> clientes){
+  void cargarTodosLosClientes(List<Clientes> clientes) {
     clearClientes();
     _todosLosClientes.addAll(clientes);
+    //logica para ctualizar cliente seleccionado
+
     notifyListeners();
   }
 
-  void clearClientes(){
+  void clearClientes() {
     _todosLosClientes.clear();
     notifyListeners();
   }
 
   //Servicio seleccionado
-  void seleccionarCliente(Clientes cliente){
-    _clienteSeleccionado = cliente;
+  void seleccionarCliente(int clienteNumero) {
+    for (Clientes cliente in _todosLosClientes) {
+      if (cliente.numero == clienteNumero) {
+        _clienteSeleccionado = cliente;
+        notifyListeners();
+        return;
+      }
+    }
+  }
+
+  //añadir nuevo cliente
+  void addNewCliente(Clientes cliente){
+    _todosLosClientes.add(cliente);
     notifyListeners();
   }
 
+  //Modificar un cliente
+  void modifyCliente(Clientes modifyCliente){
+    int indexExistente = _todosLosClientes.indexWhere((s) => s.numero.toString() == modifyCliente.numero.toString());
+    _todosLosClientes[indexExistente] = modifyCliente;
+    if (modifyCliente.numero.toString() == clienteSeleccionado.numero.toString()) {
+      _clienteSeleccionado = modifyCliente;
+    }
+    notifyListeners();
+  }
 }
 
 //Universidades Provider

@@ -38,13 +38,14 @@ class Config {
 
   //Responsives
   int computador = 1200;
-  int tablet = 620; //a esta se le deben restar 80
-  int celular = 620; //al celular se le debe restar 20
-  //Vistas vistas vistas
-  //ejemplos de como se ha manejado el responsive
-  //final currentwidth = MediaQuery.of(context).size.width;
-  //final currentheight = MediaQuery.of(context).size.height-140;
-  //final tamanowidth = (currentwidth/3)-30;
+  int tablet = 620;
+  int celular = 620;
+  //pc = > 1200 , tablet <1200 y > 620 , celular < 620
+  static const int responsivepc = 80;
+  static const int responsivecelular = 20;
+  static const int responsivetablet = 80;
+  static const int tamanoHeightnormal = 80;
+
 
   //Carpeta de Pagos
   String carpetapagos = "1HVgOvC-Jg8f5d-KE_m9hffKRZHJYy33N";
