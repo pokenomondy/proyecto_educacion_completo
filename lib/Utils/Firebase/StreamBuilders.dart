@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:js';
 import 'package:intl/intl.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/CuentasBancaraias.dart';
 import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
@@ -150,7 +148,7 @@ class stream_builders{
       counter = counter+3; //son 3 documentos diferentes los que se leen, por eso debe ser asi
       estadisticasLectutaFirestore(counter);
       print("se han contado de configuración $counter");
-      yield newconfig!;
+      yield newconfig;
     }
   }
   Future<ConfiguracionPlugins> cargarconfiguracion() async {
@@ -223,12 +221,15 @@ class stream_builders{
         counter++;
       }
 
+      print("entrando a solicitudes $solicitudescache");
       if(!solicitudescache){
+        print("chceado solicitud primera vez");
         String solicitudesJson = jsonEncode(solicitudList);
         await prefs.setString('solicitudes_list_stream', solicitudesJson);
         await prefs.setBool('cheched_solicitudes_descargadas_stream', true);
         solicitudProvider.cargarTodasLasSolicitudes(solicitudList);
       }else{
+        print("ya existed, toca modificar o agregar");
         List<Solicitud>? solicitudCacheado = await cargarsolicitudes();
         for (var solicitud in solicitudList) {
           int indexExistente = solicitudCacheado!.indexWhere((s) => s.idcotizacion == solicitud.idcotizacion);
@@ -266,7 +267,7 @@ class stream_builders{
     if (solicitudesList!.isEmpty) {
       return 1672534800;
     }else{
-      int ultimaModificacion = solicitudesList!
+      int ultimaModificacion = solicitudesList
           .map((servicio) => servicio.ultimaModificacion)
           .reduce((maxTimestamp, currentTimestamp) =>
       maxTimestamp > currentTimestamp ? maxTimestamp : currentTimestamp);
@@ -283,7 +284,7 @@ class stream_builders{
     Stream<QuerySnapshot> queryContabilidad;
     int fehaUlt= await serviciosAgendadosUltimaFecha();
     print("la ultima fecha es $fehaUlt");
-    if(!agendadocache!){
+    if(!agendadocache){
       queryContabilidad = refcontabilidad.snapshots();
       print("sin chacear");
     }else{
@@ -386,7 +387,7 @@ class stream_builders{
         }
       }
 
-      if(!agendadocache!){
+      if(!agendadocache){
         String solicitudesJson = jsonEncode(serviciosAgendadosList);
         await prefs.setString('servicios_agendados_list_stream', solicitudesJson);
         await prefs.setBool('checked_serviciosAgendados', true);
@@ -495,7 +496,6 @@ class stream_builders{
         }
         Tutores newTutores = Tutores(nombrewhatsapp, nombrecompleto, numerowhatsapp, carrera, correogmail, univerisdad, uid, materiaList, cuentasBancariasList, activo, actualizartutores, rol,ultimaModificacion);
         tutoresList.add(newTutores);
-        print("revisando tutor $uid");
         counter++;
       }
 
@@ -506,18 +506,20 @@ class stream_builders{
         tutoresProviderUso.cargarTodosTutores(tutoresList);
       }
       else{
-        List<Tutores> tutorescacheado = await cargarTutoresList();
+        List<Tutores> tutorescacheado = tutoresProviderUso.todosLosTutores;
         for (var tutor in tutoresList) {
           int indexExistente = tutorescacheado.indexWhere((s) => s.uid == tutor.uid);
+          print("revisando tutor ${tutor.uid}");
           if (indexExistente != -1) {
             tutoresProviderUso.modifyTutor(tutor);
+            print("tutor ya existente");
           }else{
             tutoresProviderUso.addNewTutor(tutor);
+            print("agregando nuevo tutor");
           }
         }
-
         print("guardando en cache");
-        String solicitudesJson = jsonEncode(tutorescacheado);
+        String solicitudesJson = jsonEncode(tutoresProviderUso.todosLosTutores);
         await prefs.setString('tutores_list_stream', solicitudesJson);
       }
       estadisticasLectutaFirestore(counter);
@@ -595,7 +597,7 @@ class stream_builders{
         materiasProvider.cargarTodasLasMaterias(materiaList);
       }else{
         List<Materia> materiacacheadoList = await cargarMaterias();
-        materiacacheadoList = materiacacheadoList!
+        materiacacheadoList = materiacacheadoList
             .where((servicioCachado) =>
         materiaList.indexWhere((s) => s.nombremateria == servicioCachado.nombremateria) == -1)
             .toList();
@@ -643,7 +645,7 @@ class stream_builders{
     final clienteProviderUso = context.read<ClientesVistaProvider>();
     CollectionReference refclientes = referencias.clientes!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool clientescache = prefs.getBool('cheched_clientes_descargadas_stream') ?? false;
+    bool clientescache = prefs.getBool('cheched_clientes_descargados') ?? false;
     Stream<QuerySnapshot> queryCLientes;
     int fehaUlt= await clientesUltimaFecha();
     if(!clientescache){
@@ -655,7 +657,6 @@ class stream_builders{
       clienteProviderUso.cargarTodosLosClientes(clientesList!);
       print("ya cacheados");
     }
-
     await for (QuerySnapshot clienteSnapshot in queryCLientes) {
       List<Clientes> clienteList = [];
       print("Ejecutando Clientes Stream");
@@ -677,23 +678,30 @@ class stream_builders{
         clienteList.add(newClientes);
         counter++;
       }
+      print("y el valor de cliente cache $clientescache");
+      print("logica para entrar");
+      print(prefs.getBool("cheched_clientes_descargados"));
       if(!clientescache){
         String solicitudesJson = jsonEncode(clienteList);
         await prefs.setString('clientes_list_stream', solicitudesJson);
-        await prefs.setBool('cheched_clientes_descargadas_stream', true);
         clienteProviderUso.cargarTodosLosClientes(clienteList);
       }else{
         List<Clientes>? clientescacheado = await cargarclientes();
-        clientescacheado = clientescacheado!
-            .where((servicioCachado) =>
-        clienteList.indexWhere((s) => s.numero == servicioCachado.numero) == -1)
-            .toList();
-        clientescacheado.addAll(clienteList);
+        for (var cliente in clienteList) {
+          int indexExistente = clientescacheado!.indexWhere((s) => s.numero.toString() == cliente.numero.toString());
+          if (indexExistente != -1) {
+            clienteProviderUso.modifyCliente(cliente);
+          } else {
+            clienteProviderUso.addNewCliente(cliente);
+          }
+        }
+        clientescacheado!.addAll(clienteList);
         String solicitudesJson = jsonEncode(clientescacheado);
         await prefs.setString('clientes_list_stream', solicitudesJson);
         clienteProviderUso.cargarTodosLosClientes(clientescacheado);
       }
 
+      await prefs.setBool('cheched_clientes_descargados', true);
       estadisticasLectutaFirestore(counter);
       print("se han contado de clientes $counter");
       yield clienteList;
@@ -703,9 +711,11 @@ class stream_builders{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String solicitudesJson = prefs.getString('clientes_list_stream') ?? '';
     if(solicitudesJson.isEmpty){
+      print("retorna vacia la lista");
       List<Clientes> clientesList = [];
       return clientesList;
     }else{
+      print("retorna la lista bien de cliente");
       List<dynamic> clienteData = jsonDecode(solicitudesJson);
       List<Clientes> clienteList = clienteData.map((clienteData) =>
           Clientes.fromJson(clienteData as Map<String, dynamic>)).toList();
@@ -717,7 +727,7 @@ class stream_builders{
     if (clientesList!.isEmpty) {
       return 1672534800;
     }else{
-      int ultimaModificacion = clientesList!
+      int ultimaModificacion = clientesList
           .map((servicio) => servicio.ultimaModificacion)
           .reduce((maxTimestamp, currentTimestamp) =>
       maxTimestamp > currentTimestamp ? maxTimestamp : currentTimestamp);
@@ -765,7 +775,7 @@ class stream_builders{
         universidadProvider.cargarTodasLasUniversidades(universidadList);
       }else{
         List<Universidad> universidadCacheadoList = await cargarUniversidades();
-        universidadCacheadoList = universidadCacheadoList!
+        universidadCacheadoList = universidadCacheadoList
             .where((servicioCachado) =>
         universidadList.indexWhere((s) => s.nombreuniversidad == servicioCachado.nombreuniversidad) == -1)
             .toList();
@@ -844,7 +854,7 @@ class stream_builders{
         carreraProviderUso.cargarTodasLasCarreras(carreraList);
       }else{
         List<Carrera> carreraCacheadoList = await cargarCarreras();
-        carreraCacheadoList = carreraCacheadoList!
+        carreraCacheadoList = carreraCacheadoList
             .where((servicioCachado) =>
         carreraList.indexWhere((s) => s.nombrecarrera == servicioCachado.nombrecarrera) == -1)
             .toList();
