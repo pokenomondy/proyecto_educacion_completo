@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import '../../Config/Config.dart';
 import '../../Config/theme.dart';
 import '../../Objetos/AgendadoServicio.dart';
-import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
+import '../../Objetos/Configuracion/objeto_configuracion.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import 'package:provider/provider.dart';
@@ -475,7 +475,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                 Consumer<ConfiguracionAplicacion>(
                   builder: (context, condifuracionProvider, child) {
                     ConfiguracionPlugins? config = condifuracionProvider.config;
-                    configuracionSolicitudes = Utiles().obtenerBool(config!.PagosDriveApiFecha);
+                    configuracionSolicitudes = Utiles().obtenerBool(config!.pagosDriveApiFecha);
                     idcarpetaPagosDrive = config.idcarpetaPagos;
 
                     return Column(

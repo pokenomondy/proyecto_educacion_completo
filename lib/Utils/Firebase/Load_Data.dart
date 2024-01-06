@@ -4,8 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Cotizaciones.dart';
-import 'package:dashboard_admin_flutter/Objetos/CuentasBancaraias.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/CuentasBancaraias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
@@ -28,55 +29,25 @@ class LoadData {
   CollectionReferencias referencias =  CollectionReferencias();
 
   //Leer configuración inicial, que es la priemra que hay
-  Future<Map<String, dynamic>> configuracion_inicial() async {
+  Future<ConfiguracionPlugins> configuracion_inicial() async {
     await referencias.initCollections();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool datosDescargados = prefs.getBool('datos_descargados_configinicial') ?? false;
+    DocumentSnapshot documentConfiguracion = await referencias.configuracion!.doc("CONFIGURACION").get();
+    DocumentSnapshot documentPlugins = await referencias.configuracion!.doc("Plugins").get();
 
-    if (!datosDescargados) {
-      try {
-        DocumentSnapshot getconfiguracioninicial = await referencias.configuracion!.doc("CONFIGURACION").get();
-        int counter = 1;
-        if (getconfiguracioninicial.exists) {
-          String primaryColor = getconfiguracioninicial.get('Primarycolor') ?? '';
-          String Secundarycolor = getconfiguracioninicial.get('Secundarycolor') ?? '';
-          String nombre_empresa = getconfiguracioninicial.get('nombre_empresa') ?? '';
-          String idcarpetaPagos = getconfiguracioninicial.get('idcarpetaPagos') ?? '';
-          String idcarpetaSolicitudes = getconfiguracioninicial.get('idcarpetaSolicitudes') ?? '';
+    //documetno configuración
+    String PrimaryColor = documentConfiguracion['Primarycolor'] ?? '';
+    String SecundaryColor = documentConfiguracion['Secundarycolor'] ?? '';
+    String idcarpetaPagos = documentConfiguracion['idcarpetaPagos'] ?? '';
+    String idcarpetaSolicitudes = documentConfiguracion['idcarpetaSolicitudes'] ?? '';
+    String nombre_empresa = documentConfiguracion['nombre_empresa'] ?? '';
 
-          Map<String, dynamic> uploadconfiguracion = {
-            'Primarycolor': primaryColor,
-            'Secundarycolor': Secundarycolor,
-            'nombre_empresa': nombre_empresa,
-            'idcarpetaPagos' : idcarpetaPagos,
-            'idcarpetaSolicitudes' : idcarpetaSolicitudes,
-          };
 
-          String solicitudesJson = jsonEncode(uploadconfiguracion);
-          await prefs.setString('configuracion_inicial_List', solicitudesJson);
-          await prefs.setBool('datos_descargados_configinicial', true);
+    ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, DateTime.now(), DateTime.now(), DateTime.now(), "CONFIRMACION_CLIENTE", "SOLICITUD",0,DateTime.now());
 
-          await  stream_builders().estadisticasLectutaFirestore(counter);
-          return uploadconfiguracion;
-        } else {
-          // El documento no existe, puedes devolver una lista vacía o lo que sea adecuado para tu aplicación.
-          return {};
-        }
-      } catch (e) {
-        print("Error: $e, config inicial 0");
-        return {};
-      }
-    } else {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String solicitudesJson = prefs.getString('configuracion_inicial_List') ?? '';
-      if (solicitudesJson.isNotEmpty) {
-        Map<String, dynamic> configuracion = jsonDecode(solicitudesJson);
-        return configuracion;
-      } else {
-        return {};
-      }
-    }
+    await  stream_builders().estadisticasLectutaFirestore(1);
+    return newconfig;
   }
+
 
   //Tutores en local
   Future getinfotutor(User currentUser) async {

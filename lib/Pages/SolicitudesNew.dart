@@ -26,7 +26,7 @@ import 'package:provider/provider.dart';
 import '../Config/elements.dart';
 import '../Config/strings.dart';
 import '../Dashboard.dart';
-import '../Objetos/Configuracion/Configuracion_Configuracion.dart';
+import '../Objetos/Configuracion/objeto_configuracion.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Universidad.dart';
 import '../Objetos/Tutores_objet.dart';
@@ -535,7 +535,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                     Consumer<ConfiguracionAplicacion>(
                       builder: (context, condifuracionProvider, child) {
                         ConfiguracionPlugins? config = condifuracionProvider.config;
-                        configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+                        configuracionSolicitudes = Utiles().obtenerBool(config!.solicitudesDriveApiFecha);
                         idcarpetasolicitudesDrive = config.idcarpetaSolicitudes;
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1081,7 +1081,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                       ));
                                       //Vamos a seleccionar el servicio
                                       final solicitudProvider = Provider.of<SolicitudProvider>(context, listen: false);
-                                      solicitudProvider.seleccionarSolicitud(solicitud);
+                                      solicitudProvider.seleccionarSolicitud(solicitud.idcotizacion);
                                     },
                                     child: material.Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -1145,7 +1145,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       horaRealizada = '${DateFormat('hh:mma').format(fechaentrega)}';
     }
 
-    String solicitud = configuracionapp.SOLICITUD;
+    String solicitud = configuracionapp.mensajeSolicitudes;
 
     solicitud = solicitud.replaceAll("/servicio/", servicio);
     solicitud = solicitud.replaceAll("/idcotizacion/", idcotizacion.toString());
@@ -1704,7 +1704,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
       fechita = "${DateFormat("dd/MM").format(solicitud.fechaentrega)} ${DateFormat('hh:mma').format(solicitud.fechaentrega)}";
     }
 
-    String confirmacion = configuracionapp.CONFIRMACION_CLIENTE;
+    String confirmacion = configuracionapp.mensajeConfirmacionCliente;
 
     confirmacion = confirmacion.replaceAll("/servicioplural/", servicio);
     confirmacion = confirmacion.replaceAll("/servicio/", solicitud.servicio);

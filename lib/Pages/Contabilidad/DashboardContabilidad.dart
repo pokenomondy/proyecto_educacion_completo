@@ -1,6 +1,6 @@
 import 'dart:html';
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
-import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/HistorialServiciosAgendados.dart';
 import 'package:dashboard_admin_flutter/Providers/Providers.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
@@ -44,7 +44,7 @@ class ContaDashState extends State<ContaDash> {
           Row(
             children: [
               PrimaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
-              TercerColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
+              TercerColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,editDetalles: true,),
               SecundaryColumnContaDash(currentwidth: tamanowidthtriple,currentheight: currentheight,),
             ],
           ),
@@ -63,7 +63,7 @@ class ContaDashState extends State<ContaDash> {
         PrimaryColumnContaDash(currentwidth: widthhentero,currentheight: 80,),
         Row(
           children: [
-            TercerColumnContaDash(currentwidth: doblewidth,currentheight: currentheight,),
+            TercerColumnContaDash(currentwidth: doblewidth,currentheight: currentheight,editDetalles: true,),
             SecundaryColumnContaDash(currentwidth: doblewidth,currentheight: currentheight,),
           ],
         )
@@ -249,10 +249,12 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
 class TercerColumnContaDash extends StatefulWidget {
   final double currentwidth;
   final double currentheight;
+  final bool editDetalles;
 
   const TercerColumnContaDash({Key?key,
     required this.currentwidth,
     required this.currentheight,
+    required this.editDetalles,
   }) :super(key: key);
 
   @override
@@ -337,19 +339,30 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
               height: widget.currentheight,
               child: Column(
                 children: [
-                  textoymodificable('Sistema: ', servicioAgendado.codigo,0,false),
+                  textoymodificable('Código: ', servicioAgendado.codigo,0,false),
                   textoymodificable('Matería: ', servicioAgendado.materia,1,true),
-                  textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,false),
-                  textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,false),
-                  textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
+                  if(widget.editDetalles)
+                    Column(
+                      children: [
+                        textoymodificable('Fecha sistema: ', servicioAgendado.fechasistema.toString(),2,false),
+                        textoymodificable('Numero cliente: ', servicioAgendado.cliente.toString(),3,false),
+                        textoymodificable('Precio cobrado: ', servicioAgendado.preciocobrado.toString(),4,true),
+                        textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
+                        textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,false),
+                      ],
+                    ),
                   textoymodificable('Fecha de entrega: ', servicioAgendado.fechaentrega.toString(),5,true),
-                  textoymodificable('Tutor: ', servicioAgendado.tutor,6,true),
                   textoymodificable('Precio tutor: ', servicioAgendado.preciotutor.toString(),7,true),
-                  textoymodificable('identificador codigo: ', servicioAgendado.identificadorcodigo,8,false),
                   textoymodificable('id solicitud: ', servicioAgendado.idsolicitud.toString(),9,false),
                   textoymodificable('id Contable: ', servicioAgendado.idcontable.toString(),10,false),
-                  Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}'),
-                  Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}')
+                  if(widget.editDetalles)
+                    Column(
+                      children: [
+                        Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}'),
+                        Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}')
+                      ],
+                    )
+
                 ],
               ),
             );
@@ -360,20 +373,6 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
 
   Widget textoymodificable(String text,String valor,int index,bool bool){
 
-    /*
-    if (index == 1) {
-      if(selectedMateria!=null){
-        cambio = selectedMateria?.nombremateria;
-      }else{
-        cambio = valor;
-      }
-    }
-    else if(index == 6){
-      cambio = selectedTutor?.nombrewhatsapp;
-    }
-
-     */
-
     return Row(
       children: [
         if (!editarcasilla[index])
@@ -382,7 +381,7 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
             child: Row(
               children: [
                 Text("$text : $valor"),
-                if(bool)
+                if(bool && widget.editDetalles)
                   GestureDetector(
                     onTap: (){
                       setState(() {

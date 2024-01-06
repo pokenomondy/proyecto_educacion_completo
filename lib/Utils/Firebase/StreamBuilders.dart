@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dashboard_admin_flutter/Objetos/CuentasBancaraias.dart';
-import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/CuentasBancaraias.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/HistorialServiciosAgendados.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Materias.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Objetos/Cotizaciones.dart';
-import '../../Objetos/Configuracion/Configuracion_Configuracion.dart';
+import '../../Objetos/Configuracion/objeto_configuracion.dart';
 import '../../Objetos/RegistrarPago.dart';
 import '../../Objetos/Tutores_objet.dart';
 import '../../Providers/Providers.dart';
@@ -98,6 +98,7 @@ class stream_builders{
 
   //Configuración de Streambuilders, 3 streambuilders, CONFIGURACIÓN
   Stream<ConfiguracionPlugins> getstreamConfiguracion(BuildContext context) async*{
+    await referencias.initCollections();
     CollectionReference refconfiguracion = referencias.configuracion!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Stream<DocumentSnapshot> queryConfiguracion = refconfiguracion.doc("CONFIGURACION").snapshots();
@@ -113,6 +114,7 @@ class stream_builders{
         'mensajes': mensajes,
       },
     );
+
     await for (Map<String, dynamic> snapshots in combinedStream) {
       int counter = 0;
       Map<String, dynamic> dataConfiguracion = snapshots['configuracion'].data() as Map<String, dynamic>;
@@ -128,16 +130,17 @@ class stream_builders{
       String nombre_empresa = dataConfiguracion['nombre_empresa'] ?? '';
 
       //documento plugins
-      DateTime basicoFecha = dataPlugins.containsKey('basicoFecha') ? dataPlugins['basicoFecha'].toDate() : DateTime.now();
-      DateTime PagosDriveApiFecha = dataPlugins.containsKey('PagosDriveApiFecha') ? dataPlugins['PagosDriveApiFecha'].toDate() : DateTime.now();
-      DateTime SolicitudesDriveApiFecha = dataPlugins.containsKey('SolicitudesDriveApiFecha') ? dataPlugins['SolicitudesDriveApiFecha'].toDate() : DateTime.now();
+      DateTime basicoFecha = dataPlugins.containsKey('basicoFecha') ? dataPlugins['basicoFecha'].toDate() : DateTime(2024,1,1);
+      DateTime PagosDriveApiFecha = dataPlugins.containsKey('PagosDriveApiFecha') ? dataPlugins['PagosDriveApiFecha'].toDate() :  DateTime(2024,1,1);
+      DateTime SolicitudesDriveApiFecha = dataPlugins.containsKey('SolicitudesDriveApiFecha') ? dataPlugins['SolicitudesDriveApiFecha'].toDate() :  DateTime(2024,1,1);
+      DateTime tutoresSistemaFecha = dataPlugins.containsKey('tutoresSistemaFecha') ? dataPlugins['tutoresSistemaFecha'].toDate() :  DateTime(2024,1,1);
 
       //Documento mensajes
       String CONFIRMACION_CLIENTE = dataMensajes['CONFIRMACION_CLIENTE'] ?? '';
       String SOLICITUD = dataMensajes['SOLICITUD'] ?? '';
       int ultimaModificacion = dataMensajes.containsKey('ultimaModificacion') ? dataMensajes['ultimaModificacion'] : 1672534800;
 
-      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD,ultimaModificacion);
+      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD,ultimaModificacion,tutoresSistemaFecha);
 
       String configJson = jsonEncode(newconfig);
       await prefs.setString('configuracion_list_stream', configJson);
@@ -167,10 +170,8 @@ class stream_builders{
     bool solicitudescache = prefs.getBool('cheched_solicitudes_descargadas_stream') ?? false;
     Stream<QuerySnapshot> querySolicitud;
     int fehaUlt= await soliticudesUltimaFecha();
-    print("la fecha de sol es $fehaUlt");
     if(!solicitudescache){
       querySolicitud = refsolicitud.snapshots();
-      print("sin chacear SOLICITUDES");
     }else{
       querySolicitud = refsolicitud.where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
       List<Solicitud>? solicitudList = await cargarsolicitudes();
@@ -276,23 +277,33 @@ class stream_builders{
   }
 
   //Streambuilders de servicios agendados
-  Stream<List<ServicioAgendado>> getServiciosAgendados(BuildContext context) async* {
+  Stream<List<ServicioAgendado>> getServiciosAgendados(BuildContext context,String rol,String nombretutor) async* {
     final serviciosAgendadosProvider =  context.read<ContabilidadProvider>();
     CollectionReference refcontabilidad = referencias.contabilidad!;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool? agendadocache = prefs.getBool('checked_serviciosAgendados') ?? false;
     Stream<QuerySnapshot> queryContabilidad;
     int fehaUlt= await serviciosAgendadosUltimaFecha();
-    print("la ultima fecha es $fehaUlt");
-    if(!agendadocache){
-      queryContabilidad = refcontabilidad.snapshots();
-      print("sin chacear");
+    if(rol == "ADMIN"){
+      if(!agendadocache){
+        queryContabilidad = refcontabilidad.snapshots();
+        print("sin chacear");
+      }else{
+        queryContabilidad = refcontabilidad.where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
+        List<ServicioAgendado> serviciosAgendadosList = await cargarserviciosagendados();
+        serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
+        print("ya cacheados");
+      }
     }else{
-      queryContabilidad = refcontabilidad.where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
-      List<ServicioAgendado> serviciosAgendadosList = await cargarserviciosagendados();
-      serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
-      print("ya cacheados");
+      if(!agendadocache){
+        queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor).snapshots();
+      }else{
+        queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor,).where('ultimaModificacion', isGreaterThan: fehaUlt).snapshots();
+        List<ServicioAgendado> serviciosAgendadosList = await cargarserviciosagendados();
+        serviciosAgendadosProvider.cargarTodosLosServicios(serviciosAgendadosList);
+      }
     }
+
     await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
       List<ServicioAgendado> serviciosAgendadosList = [];
 
@@ -896,72 +907,6 @@ class stream_builders{
   //STREAMBUILDER DE - DRIVE API USAGE - USO DE FIREBASE USAGE
 
 
-
-
-  //TOCA ARREGLAR ESTO - SISTEMA DE TUTORES
-  //Obtener contabilidad en stream, Serbivio agendado de tutor
-  Stream<List<ServicioAgendado>> getServicidosAgendadosTutor(String nombretutor) async* {
-    CollectionReference refcontabilidad = referencias.contabilidad!;
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Stream<QuerySnapshot> queryContabilidad = refcontabilidad.where('tutor', isEqualTo: nombretutor).snapshots();
-    await for (QuerySnapshot servicioSnapshot in queryContabilidad) {
-      List<ServicioAgendado> serviciosagendadoList = [];
-      for (var servicio in servicioSnapshot.docs) {
-        try {
-          String codigo = servicio['codigo'];
-          String sistema = servicio['sistema'];
-          String materia = servicio['materia'];
-          DateTime fechasistema = servicio['fechasistema'].toDate();
-          String cliente = servicio['cliente'];
-          int preciocobrado = servicio['preciocobrado'];
-          DateTime fechaentrega = servicio['fechaentrega'].toDate();
-          String tutor = servicio['tutor'];
-          int preciotutor = servicio['preciotutor'];
-          String identificadorcodigo = servicio['identificadorcodigo'];
-          int idsolicitud = servicio['idsolicitud'];
-          int idcontable = servicio['idcontable'];
-          List<RegistrarPago> pagos = [];
-          String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
-          String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
-          int ultimaModificacion = servicio.data().toString().contains('ultimaModificacion') ? servicio.get('ultimaModificacion').toDate() : 1672534800; //Number
-
-          //Guardamos en objeto y ya lo pasamos para tutor
-          ServicioAgendado newservicioagendado = ServicioAgendado(
-              codigo,
-              sistema,
-              materia,
-              fechasistema,
-              cliente,
-              preciocobrado,
-              fechaentrega,
-              tutor,
-              preciotutor,
-              identificadorcodigo,
-              idsolicitud,
-              idcontable,
-              pagos,
-              entregado,
-              entregadocliente,
-              [],
-              ultimaModificacion);
-          serviciosagendadoList.add(newservicioagendado);
-        } catch (e) {
-          print(e);
-        }
-      }
-      String solicitudesJson = jsonEncode(serviciosagendadoList);
-      await prefs.setString('servicios_agendado_tutor', solicitudesJson);
-      yield serviciosagendadoList;
-    }
-  }
-  Future<List<ServicioAgendado>?> cargaragendatutor() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String solicitudesJson = prefs.getString('servicios_agendado_tutor') ?? '';
-    List<dynamic> clienteData = jsonDecode(solicitudesJson);
-    List<ServicioAgendado> clientesList = clienteData.map((clienteData) =>
-        ServicioAgendado.fromJson(clienteData as Map<String, dynamic>)).toList();
-    return clientesList;
-  }
 }
 
 

@@ -2,13 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:flutter/material.dart' as dialog;
 import 'package:fluent_ui/fluent_ui.dart' hide CalendarView;
 import 'package:intl/intl.dart';
 import '../../Config/Config.dart';
 import '../../Config/theme.dart';
+import '../../Dashboard.dart';
 import '../../Objetos/RegistrarPago.dart';
+import '../../Pages/Contabilidad/DashboardContabilidad.dart';
+import '../../Pages/TutorDashPages/MainTutoresDash.dart';
+import '../../Providers/Providers.dart';
 import '../Firebase/Uploads.dart';
 
 class CalendarioStyle {
@@ -290,6 +295,18 @@ class CalendarioStyle {
           },
               text: "No Entregar trabajo",
           ),
+
+          //Ver detalles de servicio
+          GestureDetector(
+            child: Text('detalles'),
+            onTap: (){
+              final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+              contabilidadProvider.seleccionarServicio(servicioseleccionado);
+              dialog.Navigator.push(context, dialog.MaterialPageRoute(
+                builder: (context)  => MainTutoresDash(showDetallesSolicitud: true,),
+              ));
+            },
+          )
         ],
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:dashboard_admin_flutter/Objetos/HistorialServiciosAgendados.dart';
+import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/HistorialServiciosAgendados.dart';
 
 import 'RegistrarPago.dart';
 

@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:googleapis/cloudsearch/v1.dart';
 
-import '../../Objetos/CuentasBancaraias.dart';
+import '../../Objetos/Objetos Auxiliares/CuentasBancaraias.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import 'CollectionReferences.dart';
 
