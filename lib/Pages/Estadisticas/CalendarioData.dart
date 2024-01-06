@@ -36,8 +36,6 @@ class PrimaryColumn extends StatefulWidget{
 }
 
 class PrimaryColumnState extends State<PrimaryColumn> {
-  final currentUser = FirebaseAuth.instance.currentUser;
-  String nombretutor = "";
   final List<CalendarView> _vistascalendario = <CalendarView>[
     CalendarView.month,
     CalendarView.week,
@@ -46,28 +44,19 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   final CalendarController _calendarController = CalendarController();
   List<ServicioAgendado> servicioagendadoList = [];
   List<Appointment>? meetings = [];
-  String? _subject = '', _start = '', _end = '', _notes = '';
-  bool datosDescargados = false;
-  bool cargarinterfaz = false;
+  String? _subject = '',
+      _start = '',
+      _end = '',
+      _notes = '';
   Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
   String motivosPagos = "ENTREGAS";
-  final db = FirebaseFirestore.instance;
-  int numpagos = 0;
-
 
   @override
   void initState() {
-    loadchecks();
     _calendarController.view = CalendarView.month;
     super.initState();
   }
 
-  void loadchecks() async {
-    datosDescargados = false;
-    setState(() {
-      cargarinterfaz = true;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,10 +99,8 @@ class PrimaryColumnState extends State<PrimaryColumn> {
               ],
             ),
           ),
-          if(cargarinterfaz == true)
             Column(
               children: [
-                if(datosDescargados == false)
                   Consumer<ContabilidadProvider>(
                       builder: (context, contabilidadProvider, child) {
                         List<ServicioAgendado> servicioagendadoList = contabilidadProvider.todoslosServiciosAgendados;
@@ -164,8 +151,6 @@ class PrimaryColumnState extends State<PrimaryColumn> {
 
                       }
                   ),
-                if(datosDescargados == true)
-                  const Text('Descargados'),
               ],
             )
         ],

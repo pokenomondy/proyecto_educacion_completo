@@ -3,7 +3,7 @@ import 'dart:js';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import '../Objetos/Configuracion/Configuracion_Configuracion.dart';
+import '../Objetos/Configuracion/objeto_configuracion.dart';
 import '../Utils/Firebase/StreamBuilders.dart';
 import '../Utils/Utiles/FuncionesUtiles.dart';
 
@@ -21,15 +21,14 @@ class ThemeApp{
   late ConfiguracionPlugins? configaplicacion;
 
   ThemeApp(){
-    print("Theme inicializado");
     initTheme();
   }
 
   Future<void> initTheme() async{
     final Utiles utiles = Utiles();
     configaplicacion = await stream_builders().cargarconfiguracion();
-    primaryColor = utiles.hexToColor(configaplicacion!.PrimaryColor);
-    secundaryColor = utiles.hexToColor(configaplicacion!.SecundaryColor);
+    primaryColor = utiles.hexToColor(configaplicacion!.primaryColor);
+    secundaryColor = utiles.hexToColor(configaplicacion!.secundaryColor);
   }
 
   Widget colorRow(Color color, String text){

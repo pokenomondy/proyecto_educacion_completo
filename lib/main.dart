@@ -55,7 +55,6 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (context) => MensajesWhatsapp()),
 
-        //Nuevos notificadores creados
         //Configuración
         ChangeNotifierProvider(create: (context) => ConfiguracionAplicacion()),
         //Contabilidad
@@ -72,10 +71,9 @@ void main() async {
         ChangeNotifierProvider(create: (context) => UniversidadVistaProvider()),
         //Tutores
         ChangeNotifierProvider(create: (context) => VistaTutoresProvider()),
-
         //Vista de archivos
         ChangeNotifierProvider(create: (context) => ArchivoVistaDrive()),
-
+        //Agenda de tutores Providers
 
       ],
       child: MyApp(),
@@ -123,7 +121,7 @@ class MyApp extends StatelessWidget {
             ),
             GoRoute(path: 'homeTutor',
               builder: (BuildContext context, GoRouterState state) {
-                return MainTutoresDash();
+                return MainTutoresDash(showDetallesSolicitud: false,);
               },),
             GoRoute(path: 'EntregaTutor',
               builder: (BuildContext context, GoRouterState state) {

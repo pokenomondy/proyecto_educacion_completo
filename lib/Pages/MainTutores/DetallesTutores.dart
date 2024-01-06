@@ -7,7 +7,7 @@ import 'package:flutter/material.dart' as material;
 import 'package:provider/provider.dart';
 import '../../Config/Config.dart';
 import '../../Config/theme.dart';
-import '../../Objetos/CuentasBancaraias.dart';
+import '../../Objetos/Objetos Auxiliares/CuentasBancaraias.dart';
 import '../../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../../Objetos/Objetos Auxiliares/Materias.dart';
 import '../../Objetos/Objetos Auxiliares/Universidad.dart';

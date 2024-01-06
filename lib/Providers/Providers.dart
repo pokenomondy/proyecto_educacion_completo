@@ -1,9 +1,9 @@
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import '../Objetos/AgendadoServicio.dart';
 import '../Objetos/Clientes.dart';
-import '../Objetos/HistorialServiciosAgendados.dart';
+import '../Objetos/Objetos Auxiliares/HistorialServiciosAgendados.dart';
 import '../Objetos/Objetos Auxiliares/Carreras.dart';
 import '../Objetos/Objetos Auxiliares/Materias.dart';
 import '../Objetos/RegistrarPago.dart';
@@ -192,8 +192,15 @@ class SolicitudProvider extends ChangeNotifier{
   }
 
   //Servicio seleccionado
-  void seleccionarSolicitud(Solicitud solicitud){
-    _solicitudSeleccionado = solicitud;
+  void seleccionarSolicitud(int idcotizacion){
+    for(Solicitud solicitd in _todaslasSolicitudes){
+      if(solicitd.idcotizacion.toString() == idcotizacion.toString()){
+        _solicitudSeleccionado = solicitd;
+        notifyListeners();
+        print("seleccionado la solicitud = ${solicitd.idcotizacion}");
+        return;
+      }
+    }
     notifyListeners();
   }
 
@@ -464,3 +471,4 @@ class ArchivoVistaDrive extends ChangeNotifier{
   }
 
 }
+

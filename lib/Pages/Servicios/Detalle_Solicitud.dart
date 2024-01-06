@@ -1,5 +1,5 @@
 import 'package:dashboard_admin_flutter/Config/theme.dart';
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Objetos/Solicitud.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
@@ -43,15 +43,15 @@ class DetallesServicioState extends State<DetallesServicio> {
         if(widthCompleto >= 1200)
           Row(
             children: [
-              PrimaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,),
-              SecundaryColumn(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,)
+              PrimaryColumnDetallesSolicitud(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,editDetalles: true,),
+              SecundaryColumnDetallesSolicitud(currentwith: tamanowidthdobleComputador,currentheight: heightCompleto,)
             ],
           ),
 
         if(widthCompleto < 1200 && widthCompleto > 620)
           Column(
             children: [
-              PrimaryColumn(currentwith: widthCompleto,currentheight: 0,),
+              PrimaryColumnDetallesSolicitud(currentwith: widthCompleto,currentheight: 0,editDetalles: true,),
             ],
           ),
 
@@ -60,8 +60,8 @@ class DetallesServicioState extends State<DetallesServicio> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  PrimaryColumn(currentwith: widthCompleto, currentheight: -1,),
-                  SecundaryColumn(currentwith: widthCompleto, currentheight: -1),
+                  PrimaryColumnDetallesSolicitud(currentwith: widthCompleto, currentheight: -1,editDetalles: true,),
+                  SecundaryColumnDetallesSolicitud(currentwith: widthCompleto, currentheight: -1),
                 ],
               ),
             ),
@@ -72,21 +72,23 @@ class DetallesServicioState extends State<DetallesServicio> {
 
 }
 
-class PrimaryColumn extends StatefulWidget {
+class PrimaryColumnDetallesSolicitud extends StatefulWidget {
   final double currentwith;
   final double currentheight;
+  final bool editDetalles;
 
-  const PrimaryColumn({Key?key,
+  const PrimaryColumnDetallesSolicitud({Key?key,
     required this.currentwith,
     required this.currentheight,
+    required this.editDetalles,
   }) :super(key: key);
 
   @override
-  PrimaryColumnState createState() => PrimaryColumnState();
+  PrimaryColumnDetallesSolicitudState createState() => PrimaryColumnDetallesSolicitudState();
 
 }
 
-class PrimaryColumnState extends State<PrimaryColumn> {
+class PrimaryColumnDetallesSolicitudState extends State<PrimaryColumnDetallesSolicitud> {
   String servicio = "";
   List<bool> editarcasilla = List.generate(10, (index) => false);
   List<String> serviciosList = ['PARCIAL','TALLER','QUIZ','ASESORIAS'];
@@ -131,12 +133,18 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                 child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
               ),
               textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
-              textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
-              textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
-              textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
-              textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
-              textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
-              textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+              if(widget.editDetalles)
+                Column(
+                  children: [
+                    textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+                    textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+                    textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+                    textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+                    textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+                    textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+
+                  ],
+                ),
               textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
               textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
               textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
@@ -163,7 +171,7 @@ class PrimaryColumnState extends State<PrimaryColumn> {
                     margin: const EdgeInsets.only(left: 15),
                     child: Text("$text : $valor", style: themeApp.styleText(15, false, themeApp.blackColor),)
                 ),
-                if(!bool)
+                if(!bool && widget.editDetalles)
                   GestureDetector(
                     onTap: (){
                       setState(() {
@@ -363,22 +371,22 @@ class PrimaryColumnState extends State<PrimaryColumn> {
 
 }
 
-class SecundaryColumn extends StatefulWidget {
+class SecundaryColumnDetallesSolicitud extends StatefulWidget {
   final double currentwith;
   final double currentheight;
 
-  const SecundaryColumn({Key?key,
+  const SecundaryColumnDetallesSolicitud({Key?key,
     required this.currentwith,
     required this.currentheight,
 
   }) :super(key: key);
 
   @override
-  SecundaryColumnState createState() => SecundaryColumnState();
+  SecundaryColumnDetallesSolicitudState createState() => SecundaryColumnDetallesSolicitudState();
 
 }
 
-class SecundaryColumnState extends State<SecundaryColumn> {
+class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetallesSolicitud> {
   List<ArchivoResultado> archivosresultados = [];
   final ThemeApp themeApp = ThemeApp();
   //comprobar si tenemos licencia
@@ -408,7 +416,7 @@ class SecundaryColumnState extends State<SecundaryColumn> {
         config = configuracionProviderselect.config;
         solicitud = solicitudProviderselect.solicitudSeleccionado;
         archivoList = archivoDriveProvider.todosLosArchivos;
-        configuracionSolicitudes = Utiles().obtenerBool(config!.SolicitudesDriveApiFecha);
+        configuracionSolicitudes = Utiles().obtenerBool(config!.solicitudesDriveApiFecha);
 
         if(!cargarArchivos && configuracionSolicitudes){
           print("cargando archivos");

@@ -1,4 +1,4 @@
-import 'CuentasBancaraias.dart';
+import 'Objetos Auxiliares/CuentasBancaraias.dart';
 import 'Objetos Auxiliares/Materias.dart';
 
 class Tutores{

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashboard_admin_flutter/Config/strings.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -161,24 +162,25 @@ import '../../Config/strings.dart';
     }
 
     void _redireccionaDashboarc(String uid, User currentUser, bool dufyadmon) async{
-      Map<String, dynamic> configuracion_inicial = await LoadData().configuracion_inicial() as Map<String, dynamic>;
+      ConfiguracionPlugins configuracion = await LoadData().configuracion_inicial();
       DocumentSnapshot getutoradmin = await referencias.tutores!.doc(currentUser?.uid).get();
-      print(configuracion_inicial);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
 
       if(getutoradmin.exists){
         String rol = getutoradmin.get('rol') ?? '';
         print("el rol es = ${rol}");
         if(rol=="TUTOR"){
+          String nametutor = getutoradmin.get('nombre Whatsapp');
+          //guardemos el nameTutor primero
+          prefs.setString('NameTutor', nametutor);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             context.go('/homeTutor');
           });
         }else if(rol=="ADMIN"){
-          if(configuracion_inicial.isEmpty){
-            //Si esta vacio, mandar a configuración inicial
+          if(configuracion.primaryColor == ""){
             print("nos vamos a config inicial");
             context.go('/home/configuracion_inicial');
           }else{
-            //Si no esta vacio, mande a dashbarod
             WidgetsBinding.instance.addPostFrameCallback((_) {
               context.go('/home');
             });

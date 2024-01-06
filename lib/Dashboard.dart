@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:dashboard_admin_flutter/Config/Config.dart';
-import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Clientes.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Carreras.dart';
@@ -15,7 +14,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Config/theme.dart';
-import 'Objetos/Configuracion/Configuracion_Configuracion.dart';
+import 'Objetos/Configuracion/objeto_configuracion.dart';
 import 'Objetos/Solicitud.dart';
 import 'Objetos/Tutores_objet.dart';
 import 'Pages/CentroConfig.dart';
@@ -23,7 +22,6 @@ import 'Pages/ContableDash.dart';
 import 'Pages/MainTutores/DetallesTutores.dart';
 import 'Pages/Servicios/Detalle_Solicitud.dart';
 import 'Pages/SolicitudesNew.dart';
-import 'package:intl/intl.dart';
 import 'Utils/Firebase/CollectionReferences.dart';
 
 class Dashboard extends StatefulWidget {
@@ -73,7 +71,6 @@ class DashboardState extends State<Dashboard> {
     _streamControllerUniversidades = StreamController<List<Universidad>>();
     if(!widget.showSolicitudesNew && !widget.showTutoresDetalles){
       _initStream();
-      print("ejecutando streambuilders");
     }
     _configuracionStream();
   }
@@ -81,31 +78,31 @@ class DashboardState extends State<Dashboard> {
   _initStream() async {
 
     //Contabilidad stream
-    Stream<List<ServicioAgendado>> streamservicios = await stream_builders().getServiciosAgendados(context);
+    Stream<List<ServicioAgendado>> streamservicios = stream_builders().getServiciosAgendados(context,"ADMIN","");
     _streamControllerServiciosAgendados.addStream(streamservicios);
     //solicitudes stream
-    Stream<List<Solicitud>> streamsolicitud = await stream_builders().getTodasLasSolicitudes(context);
+    Stream<List<Solicitud>> streamsolicitud = stream_builders().getTodasLasSolicitudes(context);
     _streamControllerSolicitudes.addStream(streamsolicitud);
     //Tutores stream
-    Stream<List<Tutores>> streamTutores = await stream_builders().getTodosLosTutores(context);
+    Stream<List<Tutores>> streamTutores = stream_builders().getTodosLosTutores(context);
     _streamControllerTutores.addStream(streamTutores);
     //Carreras stream
-    Stream<List<Carrera>> streamCarreras = await stream_builders().getTodasLasCarreras(context);
+    Stream<List<Carrera>> streamCarreras = stream_builders().getTodasLasCarreras(context);
     _streamControllerCarreras.addStream(streamCarreras);
     //Materias Stream
-    Stream<List<Materia>> stream_materia = await stream_builders().getTodasLasMaterias(context);
-    _streamControllerMaterias.addStream(stream_materia);
+    Stream<List<Materia>> streamMateria = stream_builders().getTodasLasMaterias(context);
+    _streamControllerMaterias.addStream(streamMateria);
     //Clientes Stream
-    Stream<List<Clientes>> stream_clientes = await stream_builders().getTodosLosClientes(context);
-    _streamControllerClientes.addStream(stream_clientes);
+    Stream<List<Clientes>> streamClientes = stream_builders().getTodosLosClientes(context);
+    _streamControllerClientes.addStream(streamClientes);
     //Universidad Stream
-    Stream<List<Universidad>> stream_universidad = await stream_builders().getTodasLasUniversidades(context);
-    _streamControllerUniversidades.addStream(stream_universidad);
+    Stream<List<Universidad>> streamUniversidad = stream_builders().getTodasLasUniversidades(context);
+    _streamControllerUniversidades.addStream(streamUniversidad);
   }
 
   _configuracionStream() async{
     //Configuración stream
-    Stream<ConfiguracionPlugins> stream = await stream_builders().getstreamConfiguracion(context);
+    Stream<ConfiguracionPlugins> stream = stream_builders().getstreamConfiguracion(context);
     _streamController.addStream(stream);
   }
 
@@ -121,7 +118,6 @@ class DashboardState extends State<Dashboard> {
       _streamControllerMaterias.close();
       _streamControllerClientes.close();
       _streamControllerUniversidades.close();
-      print("fueron disposeadas bien");
     }
   }
 
@@ -151,15 +147,15 @@ class DashboardState extends State<Dashboard> {
                 PaneItem(icon: const Icon(FluentIcons.home),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
                     body: widget.showTutoresDetalles ? const DetallesTutores(): const TutoresVista(),
-                    selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor))),
+                    selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.primaryColor))),
               ];
             }else if(widget.showSolicitudesNew){
               return <NavigationPaneItem>[
                 PaneItem(
                   icon: const Icon(FluentIcons.home),
                   title:  configuracionrol.panelnavegacion("Solicitudes",_currentPage == 0),
-                  body: widget.showSolicitudesNew ? const DetallesServicio(): const SolicitudesNew(),
-                  selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)),
+                  body: const DetallesServicio(),
+                  selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.primaryColor)),
                   key: const ValueKey('/home'),
                 ),
               ];
@@ -168,20 +164,20 @@ class DashboardState extends State<Dashboard> {
                 PaneItem(
                   icon: const Icon(FluentIcons.home),
                   title:  configuracionrol.panelnavegacion("Solicitudes",_currentPage == 0),
-                  body: widget.showSolicitudesNew ? const DetallesServicio(): const SolicitudesNew(),
-                  selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)),
+                  body: const SolicitudesNew(),
+                  selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.primaryColor)),
                   key: const ValueKey('/home'),
                 ),
                 PaneItem(icon: const Icon(Icons.person_sharp),
                     title: configuracionrol.panelnavegacion("Tutores",_currentPage==1),
                     body: widget.showTutoresDetalles ?  const DetallesTutores(): const TutoresVista(),
-                    selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.PrimaryColor)) ),
+                    selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.primaryColor)) ),
                 PaneItem(icon: const Icon(Icons.insert_chart_outlined_rounded),
-                    title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: const Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
+                    title: configuracionrol.panelnavegacion("Estadisticas",_currentPage==2), body: const Estadistica(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.primaryColor)) ),
                 PaneItem(icon: const Icon(Icons.attach_money_rounded),
-                    title: configuracionrol.panelnavegacion("Contable",_currentPage==3), body: const ContableDashboard(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
+                    title: configuracionrol.panelnavegacion("Contable",_currentPage==3), body: const ContableDashboard(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.primaryColor)) ),
                 PaneItem(icon: const Icon(Icons.settings),
-                    title: configuracionrol.panelnavegacion("Centro Datos",_currentPage==4), body: const CentroConfiguracionDash(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion!.PrimaryColor)) ),
+                    title: configuracionrol.panelnavegacion("Centro Datos",_currentPage==4), body: const CentroConfiguracionDash(),selectedTileColor:ButtonState.all(Utiles().hexToColor(configuracion.primaryColor)) ),
               ];
             }
           }
@@ -207,7 +203,7 @@ class DashboardState extends State<Dashboard> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(configuracion.nombre_empresa, style: themeApp.styleText(35, true, themeApp.grayColor),),
+                              Text(configuracion.nombreEmpresa, style: themeApp.styleText(35, true, themeApp.grayColor),),
                               StreamBuilder<List<ServicioAgendado>>(
                                 stream: _streamControllerServiciosAgendados.stream,
                                 builder: (context, snapshot) {

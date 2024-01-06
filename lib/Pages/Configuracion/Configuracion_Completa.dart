@@ -1,6 +1,6 @@
 import 'package:dashboard_admin_flutter/Config/Config.dart';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -91,15 +91,15 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                           //Nombre de la empresa
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text('Nombre de la empresa : ${configuracioncargada!.nombre_empresa}',
+                            child: Text('Nombre de la empresa : ${configuracioncargada!.nombreEmpresa}',
                               style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
                           ),
                           //Primary Color
-                          editColor('Color principal',configuracioncargada!.PrimaryColor,0),
+                          editColor('Color principal',configuracioncargada!.primaryColor,0),
                           //Secundary Color
-                          editColor('Color secundario',configuracioncargada!.SecundaryColor,1),
+                          editColor('Color secundario',configuracioncargada!.secundaryColor,1),
                           //Solicitudes con Drive Api
-                          if(obtenerBool(configuracioncargada.SolicitudesDriveApiFecha)==true)
+                          if(obtenerBool(configuracioncargada.solicitudesDriveApiFecha)==true)
                             Column(
                               children: [
                                 const Padding(
@@ -111,7 +111,7 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                               ],
                             ),
                           //Pagos con Drive Api
-                          if(obtenerBool(configuracioncargada.PagosDriveApiFecha)==true)
+                          if(obtenerBool(configuracioncargada.pagosDriveApiFecha)==true)
                             Column(
                               children: [
                                 const Padding(
@@ -133,10 +133,10 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                                   CartaPlugin(function: (){
                                     print("Sistema basico");
                                   }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada!.basicoFecha), fecha: configuracioncargada!.basicoFecha, ),
-                                  CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.SolicitudesDriveApiFecha), fecha: configuracioncargada!.SolicitudesDriveApiFecha),
-                                  CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.PagosDriveApiFecha), fecha: configuracioncargada!.PagosDriveApiFecha),
+                                  CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.solicitudesDriveApiFecha), fecha: configuracioncargada!.solicitudesDriveApiFecha),
+                                  CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.pagosDriveApiFecha), fecha: configuracioncargada!.pagosDriveApiFecha),
                                   //Tutores
-                                  CartaPlugin(function: (){}, titulo: "Tutores System", activacion: false, fecha: DateTime(2023,1,1)),
+                                  CartaPlugin(function: (){}, titulo: "Tutores System", activacion: obtenerBool(configuracioncargada!.tutoresSistemaFecha), fecha: configuracioncargada!.tutoresSistemaFecha),
 
                                 ],
                               ),
@@ -148,8 +148,8 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
                             child: Text('------ MENSAJES PERSONALIZADOS -----',
                               style: TextStyle(fontWeight: FontWeight.bold),),
                           ),
-                          editMensajes('Mensajes Solicitud',configuracioncargada.SOLICITUD,0,controllersolicitud),
-                          editMensajes('Mensajes de confirmación',configuracioncargada.CONFIRMACION_CLIENTE,1,controllerconfirmacion),
+                          editMensajes('Mensajes Solicitud',configuracioncargada.mensajeSolicitudes,0,controllersolicitud),
+                          editMensajes('Mensajes de confirmación',configuracioncargada.mensajeConfirmacionCliente,1,controllerconfirmacion),
                           //Cerrar sesión
                           PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
                           //Experimentos
