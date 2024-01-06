@@ -131,10 +131,12 @@ class SolicitudProvider extends ChangeNotifier{
   List<Solicitud> _todaslasSolicitudes = [];
   List<Solicitud> _solicitudesDISPONIBLES = [];
   List<Solicitud> _solicitudesESPERANDO = [];
+  List<Solicitud> _solicitudesBUSQUEDA = [];
 
   List<Solicitud> get todaslasSolicitudes => _todaslasSolicitudes;
   List<Solicitud> get solicitudesDISPONIBLES => _solicitudesDISPONIBLES;
   List<Solicitud> get solicitudesESPERANDO => _solicitudesESPERANDO;
+  List<Solicitud> get solicitudesBUSQUEDA => _solicitudesBUSQUEDA;
 
   //Seleccionar solicitud
   Solicitud _solicitudSeleccionado = Solicitud.empty();
@@ -197,6 +199,22 @@ class SolicitudProvider extends ChangeNotifier{
 
   void clearSolicitudseleccionado(){
     _solicitudSeleccionado = Solicitud.empty();
+    notifyListeners();
+  }
+
+  //Filtrar soliictud
+  void busquedaSolicitudes(int numero) {
+    _solicitudesBUSQUEDA.clear();
+    for (var solicitud in _todaslasSolicitudes) {
+      if (solicitud.cliente.toString() == numero.toString()) {
+        _solicitudesBUSQUEDA.add(solicitud);
+      }
+    }
+    notifyListeners();
+  }
+
+  void clearBusqueda(){
+    _solicitudesBUSQUEDA.clear();
     notifyListeners();
   }
 
@@ -391,6 +409,12 @@ class ClientesVistaProvider extends ChangeNotifier {
       print("se modifica el cliente ${modifyCliente.numero.toString()}");
       _clienteSeleccionado = modifyCliente;
     }
+    notifyListeners();
+  }
+
+  //Eliminar lciente seleccionado
+  void deleteClienteSeleccionado(){
+    _clienteSeleccionado = Clientes.empty();
     notifyListeners();
   }
 }

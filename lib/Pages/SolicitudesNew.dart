@@ -814,7 +814,7 @@ class _CrearContainerState extends State<_CrearContainer> {
                     solicitudesList = solicitudProvider.solicitudesESPERANDO;
                   }
 
-                  return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,);
+                  return CuadroSolicitudes(solicitudesList: solicitudesList,height: widget.height,clienteList: widget.clienteList,tutoresList: widget.tutoresList,primarycolor: widget.primarycolor,vistaBusqueda: false,);
 
                 }
             ),
@@ -831,6 +831,7 @@ class CuadroSolicitudes extends StatefulWidget{
   final List<Clientes> clienteList;
   final List<Tutores> tutoresList;
   final Color primarycolor;
+  final bool vistaBusqueda;
 
   const CuadroSolicitudes({Key?key,
     required this.solicitudesList,
@@ -838,6 +839,7 @@ class CuadroSolicitudes extends StatefulWidget{
     required this.clienteList,
     required this.tutoresList,
     required this.primarycolor,
+    required this.vistaBusqueda,
   }) :super(key: key);
 
   @override
@@ -1086,31 +1088,36 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                       child: Icon(material.Icons.info_outline_rounded, color: themeApp.whitecolor,),
                                     ),
                                   ),
-                                  //Cotizar por tutor
-                                  GestureDetector(
-                                    onTap: () {
-                                      print("Cotizar por otro tutor");
-                                      cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
+                                  if(!widget.vistaBusqueda)
+                                    Row(
+                                      children: [
+                                        //Cotizar por tutor
+                                        GestureDetector(
+                                          onTap: () {
+                                            print("Cotizar por otro tutor");
+                                            cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
 
-                                    },
-                                    child: material.Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Icon(material.Icons.accessibility, color: themeApp.whitecolor,),
+                                          },
+                                          child: material.Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                                            child: Icon(material.Icons.accessibility, color: themeApp.whitecolor,),
+                                          ),
+                                        ),
+                                        //Ver cotizaciones
+                                        GestureDetector(
+                                          onTap: () {
+                                            //se debe seleccionar el cliente para agendarle
+                                            final clienteProvider = Provider.of<ClientesVistaProvider>(context, listen: false);
+                                            clienteProvider.seleccionarCliente(solicitud.cliente);
+                                            vistaCotizaciones(context, solicitud);
+                                          },
+                                          child: material.Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 2),
+                                            child: Icon(material.Icons.note_rounded, color: themeApp.whitecolor,),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  //Ver cotizaciones
-                                  GestureDetector(
-                                    onTap: () {
-                                      //se debe seleccionar el cliente para agendarle
-                                      final clienteProvider = Provider.of<ClientesVistaProvider>(context, listen: false);
-                                      clienteProvider.seleccionarCliente(solicitud.cliente);
-                                      vistaCotizaciones(context, solicitud);
-                                    },
-                                    child: material.Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Icon(material.Icons.note_rounded, color: themeApp.whitecolor,),
-                                    ),
-                                  ),
                                   //Cambiar estado de servicio
                                   EstadoServicioDialog(solicitud: solicitud,),
                                 ],
