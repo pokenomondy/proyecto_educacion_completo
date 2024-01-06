@@ -26,7 +26,7 @@ class DetallesTutores extends StatefulWidget {
 }
 
 class DetallesTutoresState extends State<DetallesTutores> {
-
+  
   @override
   Widget build(BuildContext context) {
     //Completo
@@ -128,17 +128,24 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
   bool volveraconsultar = false;
   List<Materia> materiaListTutor = [];
   List<CuentasBancarias> cuentasBancariasTutor = [];
+  late bool construct = false;
 
   @override
-  void initState() {
+  void initState(){
+    super.initState();
     loaddata();
     Future.delayed(const Duration(seconds: 2), () {
       setState(() {
         volveraconsultar = true;
       });
     });
-    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
   }
+
+
 
   @override
   void dispose() {
@@ -173,132 +180,138 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<VistaTutoresProvider>(
-        builder: (context, tutorProvider, child) {
-          Tutores tutorseleccionado = tutorProvider.tutorSeleccionado;
-          uidtutor = tutorseleccionado.uid;
-          materiaListTutor = tutorseleccionado.materias;
-          cuentasBancariasTutor = tutorseleccionado.cuentas;
+    if(construct){
+      return Consumer<VistaTutoresProvider>(
+          builder: (context, tutorProvider, child) {
+            Tutores tutorseleccionado = tutorProvider.tutorSeleccionado;
+            uidtutor = tutorseleccionado.uid;
+            materiaListTutor = tutorseleccionado.materias;
+            cuentasBancariasTutor = tutorseleccionado.cuentas;
 
-          if(!volveraconsultar){
-            activo = tutorseleccionado.activo;
-          }
+            if(!volveraconsultar){
+              activo = tutorseleccionado.activo;
+            }
 
-          return ItemsCard(
-            height: widget.currenheight,
-            alignementColumn: MainAxisAlignment.start,
-            shadow: false,
-            width: widget.currentwith,
-            verticalPadding: 20,
-            horizontalPadding: 15,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Text("Añadir Tutor", style: themeApp.styleText(24, true, themeApp.primaryColor)),
-              ),
+            return ItemsCard(
+              height: widget.currenheight,
+              alignementColumn: MainAxisAlignment.start,
+              shadow: false,
+              width: widget.currentwith,
+              verticalPadding: 20,
+              horizontalPadding: 15,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Text("Añadir Tutor", style: themeApp.styleText(24, true, themeApp.primaryColor)),
+                ),
 
-              textoymodificable("Nombre Whatsap", tutorseleccionado.nombrewhatsapp,0 , true),
-              textoymodificable("Nombre Completo", tutorseleccionado.nombrecompleto,1, false),
-              textoymodificable("Numero de Whatsapp",tutorseleccionado.numerowhatsapp.toString() ,2, false),
-              textoymodificable("Carrera",tutorseleccionado.carrera ,3, false),
-              textoymodificable("Correo gmail",tutorseleccionado.correogmail, 4, true),
-              textoymodificable("Universidad",tutorseleccionado.univerisdad ,5, false),
-              textoymodificable("Estado",tutorseleccionado.activo ? "Activo" : "Inactivo",6, false),
+                textoymodificable("Nombre Whatsap", tutorseleccionado.nombrewhatsapp,0 , true),
+                textoymodificable("Nombre Completo", tutorseleccionado.nombrecompleto,1, false),
+                textoymodificable("Numero de Whatsapp",tutorseleccionado.numerowhatsapp.toString() ,2, false),
+                textoymodificable("Carrera",tutorseleccionado.carrera ,3, false),
+                textoymodificable("Correo gmail",tutorseleccionado.correogmail, 4, true),
+                textoymodificable("Universidad",tutorseleccionado.univerisdad ,5, false),
+                textoymodificable("Estado",tutorseleccionado.activo ? "Activo" : "Inactivo",6, false),
 
-              //Agregar nueva matería
-              if(cargadotablamaterias)
-                Column(
-                  children: [
-                    //MATERIAS
-                    Container(
-                      height: 30,
-                      margin: const EdgeInsets.symmetric(vertical: 10.0),
-                      width: widget.currentwith-50,
-                      child: AutoSuggestBox<Materia>(
-                        items: materiasList.map<AutoSuggestBoxItem<Materia>>(
-                              (materia) => AutoSuggestBoxItem<Materia>(
-                            value: materia,
-                            label: materia.nombremateria,
-                          ),
-                        )
-                            .toList(),
-                        decoration: Disenos().decoracionbuscador(),
-                        onSelected: (item) {
-                          setState(() {
-                            selectedMateria = item.value;
-                          });
-                        },
-                        onChanged: (text, reason) {
-                          if (text.isEmpty ) {
+                //Agregar nueva matería
+                if(cargadotablamaterias)
+                  Column(
+                    children: [
+                      //MATERIAS
+                      Container(
+                        height: 30,
+                        margin: const EdgeInsets.symmetric(vertical: 10.0),
+                        width: widget.currentwith-50,
+                        child: AutoSuggestBox<Materia>(
+                          items: materiasList.map<AutoSuggestBoxItem<Materia>>(
+                                (materia) => AutoSuggestBoxItem<Materia>(
+                              value: materia,
+                              label: materia.nombremateria,
+                            ),
+                          )
+                              .toList(),
+                          decoration: Disenos().decoracionbuscador(),
+                          onSelected: (item) {
                             setState(() {
-                              selectedMateria = null;
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                    PrimaryStyleButton(
-                        function: () async{
-                          verificarUploadMateria();
-                        },
-                        text: "Subir materia"
-                    ),
-
-                    //CUENTAS BANCARÍAS
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
-                        ),
-                        ComboBox<String>(
-                          value: selectedTipoCuenta,
-                          items: tipoCuentaList.map<ComboBoxItem<String>>((e) {
-                            return ComboBoxItem<String>(
-                              value: e,
-                              child: Text(e),
-                            );
-                          }).toList(),
-                          onChanged: (text) {
-                            setState(() {
-                              selectedTipoCuenta = text; // Update the local variable
+                              selectedMateria = item.value;
                             });
                           },
-                          placeholder: const Text('Tipo de cuenta'),
+                          onChanged: (text, reason) {
+                            if (text.isEmpty ) {
+                              setState(() {
+                                selectedMateria = null;
+                              });
+                            }
+                          },
                         ),
-                        RoundedTextField(
-                            topMargin: 3,
-                            bottomMargin: 3,
-                            controller: numeroCuentaBancaria,
-                            placeholder: "Numero Cuenta Bancaria"
-                        ),
-                        RoundedTextField(
-                            topMargin: 3,
-                            bottomMargin: 3,
-                            controller: cedulaTutor,
-                            placeholder: "Cedula Cuenta Bancaria"
-                        ),
-                        RoundedTextField(
-                            topMargin: 3,
-                            bottomMargin: 3,
-                            controller: nombreCedulaTutor,
-                            placeholder: "Nombre Cedula"
-                        ),
-                        PrimaryStyleButton(
-                            function: (){
-                              verificarUploadCuentaBancaria();
+                      ),
+                      PrimaryStyleButton(
+                        buttonColor: themeApp.primaryColor,
+                          function: () async{
+                            verificarUploadMateria();
+                          },
+                          text: "Subir materia"
+                      ),
+
+                      //CUENTAS BANCARÍAS
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5.0),
+                            child: Text('Cuentas Bancarias', style: themeApp.styleText(24, true, themeApp.primaryColor)),
+                          ),
+                          ComboBox<String>(
+                            value: selectedTipoCuenta,
+                            items: tipoCuentaList.map<ComboBoxItem<String>>((e) {
+                              return ComboBoxItem<String>(
+                                value: e,
+                                child: Text(e),
+                              );
+                            }).toList(),
+                            onChanged: (text) {
+                              setState(() {
+                                selectedTipoCuenta = text; // Update the local variable
+                              });
                             },
-                            text: "Subir Cuenta"
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-            ],
-          );
-        }
-    );
+                            placeholder: const Text('Tipo de cuenta'),
+                          ),
+                          RoundedTextField(
+                              topMargin: 3,
+                              bottomMargin: 3,
+                              controller: numeroCuentaBancaria,
+                              placeholder: "Numero Cuenta Bancaria"
+                          ),
+                          RoundedTextField(
+                              topMargin: 3,
+                              bottomMargin: 3,
+                              controller: cedulaTutor,
+                              placeholder: "Cedula Cuenta Bancaria"
+                          ),
+                          RoundedTextField(
+                              topMargin: 3,
+                              bottomMargin: 3,
+                              controller: nombreCedulaTutor,
+                              placeholder: "Nombre Cedula"
+                          ),
+                          PrimaryStyleButton(
+                            buttonColor: themeApp.primaryColor,
+                              function: (){
+                                verificarUploadCuentaBancaria();
+                              },
+                              text: "Subir Cuenta"
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+              ],
+            );
+          }
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator());
+    }
   }
 
   Row textoymodificable(String text,String valor,int index, bool active){
@@ -503,75 +516,91 @@ class SecundaryColumnTutores extends StatefulWidget {
 class SecundaryColumnTutoresState extends State<SecundaryColumnTutores> {
 
   final ThemeApp themeApp = ThemeApp();
-
+  
   void updateData() {
     setState(() {
       print("actualizando tutor y materias, o eso se cree");
     });
   }
 
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<VistaTutoresProvider>(
-      builder: (context, tutorProvider, child) {
-        Tutores tutor = tutorProvider.tutorSeleccionado;
+    if(construct){
+      return Consumer<VistaTutoresProvider>(
+        builder: (context, tutorProvider, child) {
+          Tutores tutor = tutorProvider.tutorSeleccionado;
 
-        return Container(
-          height: widget.currenheight == -1 ? tutor.materias.length*65 : widget.currenheight!,
-          width: widget.currentwith,
-          padding: const EdgeInsets.symmetric(vertical: 10.0),
-          decoration: BoxDecoration(
-            color: themeApp.primaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: ListView.builder(
-            itemCount: tutor.materias.length,
-            itemBuilder: (context, subindex) {
-              Materia materia = tutor.materias[subindex];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: themeApp.whitecolor,
-                        borderRadius: BorderRadius.circular(80),
-                      ),
-                      height: 50,
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text("Materia: ", style: themeApp.styleText(15, true, themeApp.grayColor),),
-                                Text(materia.nombremateria, style: themeApp.styleText(14, false, themeApp.grayColor),),
-                              ],
-                            ),
+          return Container(
+            height: widget.currenheight == -1 ? tutor.materias.length*65 : widget.currenheight!,
+            width: widget.currentwith,
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            decoration: BoxDecoration(
+              color: themeApp.primaryColor,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: ListView.builder(
+              itemCount: tutor.materias.length,
+              itemBuilder: (context, subindex) {
+                Materia materia = tutor.materias[subindex];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: themeApp.whitecolor,
+                          borderRadius: BorderRadius.circular(80),
+                        ),
+                        height: 50,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 20.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Text("Materia: ", style: themeApp.styleText(15, true, themeApp.grayColor),),
+                                  Text(materia.nombremateria, style: themeApp.styleText(14, false, themeApp.grayColor),),
+                                ],
+                              ),
 
-                            CircularButton(
-                              buttonColor: themeApp.redColor,
-                              iconData: material.Icons.cancel,
-                              function: (){
+                              CircularButton(
+                                  buttonColor: themeApp.redColor,
+                                  iconData: material.Icons.cancel,
+                                  function: (){
 
-                                //Añadir funcion
+                                    //Añadir funcion
 
-                            }),
+                                  }),
 
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        },
+      );  
+    }else{
+      return const Center(child: material.CircularProgressIndicator());
+    }
+    
   }
 }
 
@@ -592,50 +621,64 @@ class TercerColumnTutores extends StatefulWidget {
 class TercerColumnTutoresState extends State<TercerColumnTutores> {
 
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<VistaTutoresProvider>(
-      builder: (context, tutorProvider, child) {
-        Tutores tutor = tutorProvider.tutorSeleccionado;
+    if(construct){
+      return Consumer<VistaTutoresProvider>(
+        builder: (context, tutorProvider, child) {
+          Tutores tutor = tutorProvider.tutorSeleccionado;
 
-        return SizedBox(
-          height: widget.currenheight == -1 ? tutor.cuentas.length*220 : widget.currenheight!,
-          width: widget.currentwith,
-          child: ListView.builder(
-            itemCount: tutor.cuentas.length,
-            itemBuilder: (context, subindex) {
-              CuentasBancarias cuenta = tutor.cuentas[subindex];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-                child: Card(
-                  backgroundColor: themeApp.grayColor.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  child: ItemsCard(
-                    cardColor: themeApp.grayColor.withOpacity(0),
-                    alignementColumn: MainAxisAlignment.start,
-                    verticalPadding: 10.0,
-                    horizontalPadding: 8.0,
-                    shadow: false,
-                    children: [
-                      Text("Cuenta ${[for(int letra=0; letra<cuenta.tipoCuenta.length; letra++) if(letra == 0) cuenta.tipoCuenta[letra].toUpperCase() else cuenta.tipoCuenta[letra].toLowerCase()].join()}", style: themeApp.styleText(18, true, themeApp.primaryColor),),
-                      Column(
-                        children: [
-                          _textAndTitle(cuenta.nombreCuenta, "Nombre Cuenta:"),
-                          _textAndTitle(cuenta.numeroCedula, "Numero Cedula: "),
-                          _textAndTitle(cuenta.numeroCuenta, "Numero Cuenta: "),
-                          _textAndTitle(cuenta.tipoCuenta, "Tipo Cuenta: "),
-                        ],
-                      ),
-                    ],
+          return SizedBox(
+            height: widget.currenheight == -1 ? tutor.cuentas.length*220 : widget.currenheight!,
+            width: widget.currentwith,
+            child: ListView.builder(
+              itemCount: tutor.cuentas.length,
+              itemBuilder: (context, subindex) {
+                CuentasBancarias cuenta = tutor.cuentas[subindex];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                  child: Card(
+                    backgroundColor: themeApp.grayColor.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(20),
+                    child: ItemsCard(
+                      cardColor: themeApp.grayColor.withOpacity(0),
+                      alignementColumn: MainAxisAlignment.start,
+                      verticalPadding: 10.0,
+                      horizontalPadding: 8.0,
+                      shadow: false,
+                      children: [
+                        Text("Cuenta ${[for(int letra=0; letra<cuenta.tipoCuenta.length; letra++) if(letra == 0) cuenta.tipoCuenta[letra].toUpperCase() else cuenta.tipoCuenta[letra].toLowerCase()].join()}", style: themeApp.styleText(18, true, themeApp.primaryColor),),
+                        Column(
+                          children: [
+                            _textAndTitle(cuenta.nombreCuenta, "Nombre Cuenta:"),
+                            _textAndTitle(cuenta.numeroCedula, "Numero Cedula: "),
+                            _textAndTitle(cuenta.numeroCuenta, "Numero Cuenta: "),
+                            _textAndTitle(cuenta.tipoCuenta, "Tipo Cuenta: "),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
+                );
+              },
+            ),
+          );
+        },
+      );
+    }else{
+      return const material.Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
   String _arreglarString(String text){

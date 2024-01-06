@@ -144,26 +144,40 @@ class _Creartutores extends StatefulWidget{
 
 class _CreartutoresrState extends State<_Creartutores> {
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final double currentHeigth = MediaQuery.of(context).size.height;
 
-    return SizedBox(
-      width: widget.currentwidth,
-      height: currentHeigth,
-      child: ItemsCard(
-        alignementColumn: MainAxisAlignment.start,
-        shadow: false,
-        children: [
-          material.Padding(
-            padding: const EdgeInsets.only(top: 22.0, bottom: 15.0),
-            child: Text('Tutores', style: themeApp.styleText(24, true, themeApp.primaryColor),),
-          ),
-          _TarjetaTutores(tutoresList: widget.tutoresList),
-        ],
-      ),
-    );
+    if(construct){
+      return SizedBox(
+        width: widget.currentwidth,
+        height: currentHeigth,
+        child: ItemsCard(
+          alignementColumn: MainAxisAlignment.start,
+          shadow: false,
+          children: [
+            material.Padding(
+              padding: const EdgeInsets.only(top: 22.0, bottom: 15.0),
+              child: Text('Tutores', style: themeApp.styleText(24, true, themeApp.primaryColor),),
+            ),
+            _TarjetaTutores(tutoresList: widget.tutoresList),
+          ],
+        ),
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator());
+    }
   }
 }
 
@@ -198,12 +212,16 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   final ThemeApp themeApp = ThemeApp();
   late TextStyle styleText = const TextStyle();
   late TextStyle styleTextSub = const TextStyle();
+  late bool construct = false;
 
   @override
   void initState() {
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     loadtablas(); // Cargar los datos al inicializar el widget
     super.initState();
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
     styleText = themeApp.styleText(14, false, themeApp.grayColor);
     styleTextSub = themeApp.styleText(15, true, themeApp.grayColor);
   }
@@ -222,116 +240,121 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
   Widget build(BuildContext context) {
     final double currentHeight = MediaQuery.of(context).size.height;
 
-    return Consumer<VistaTutoresProvider>(
-        builder: (context, tutorProvider, child) {
-          List<Tutores> tutores = tutorProvider.tutorseleccionado;
-          List<Tutores> tutoresList = tutorProvider.todosLosTutores;
+    if(construct){
+      return Consumer<VistaTutoresProvider>(
+          builder: (context, tutorProvider, child) {
+            List<Tutores> tutores = tutorProvider.tutorseleccionado;
+            List<Tutores> tutoresList = tutorProvider.todosLosTutores;
 
-          return Column(
-            children: [
-              contarTutoresRoles(tutoresList),
+            return Column(
+              children: [
+                contarTutoresRoles(tutoresList),
 
-              SizedBox(
-                  height: currentHeight * 0.6,
-                  child: ListView.builder(
-                      itemCount: tutores.length,
-                      itemBuilder: (context,index) {
-                        Tutores? tutor = tutores[index];
+                SizedBox(
+                    height: currentHeight * 0.6,
+                    child: ListView.builder(
+                        itemCount: tutores.length,
+                        itemBuilder: (context,index) {
+                          Tutores? tutor = tutores[index];
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
-                          child: material.Container(
-                            decoration: BoxDecoration(
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
+                            child: material.Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: (tutor.activo) ? themeApp.greenColor : themeApp.redColor,
+                                    width: 2.0,
+                                  )
+                              ),
+                              child: Card(
+                                backgroundColor: themeApp.blackColor.withOpacity(0),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: (tutor.activo) ? themeApp.greenColor : themeApp.redColor,
-                                  width: 2.0,
-                                )
-                            ),
-                            child: Card(
-                              backgroundColor: themeApp.blackColor.withOpacity(0),
-                              borderRadius: BorderRadius.circular(20),
-                              child:Column(
-                                children: [
-                                  //nombre y numero de wasap
-                                  material.Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(child: Text(tutor.nombrewhatsapp, style: themeApp.styleText(16, true, tutor.activo ? themeApp.greenColor : themeApp.redColor),)),
-                                        GestureDetector(
-                                          onTap: () {
-                                            final textToCopy = tutor.numerowhatsapp.toString();
-                                            Clipboard.setData(ClipboardData(text: textToCopy));
-                                          },
-                                          child:Text(tutor.numerowhatsapp.toString(), style: themeApp.styleText(16, false, themeApp.grayColor),),
+                                child:Column(
+                                  children: [
+                                    //nombre y numero de wasap
+                                    material.Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(child: Text(tutor.nombrewhatsapp, style: themeApp.styleText(16, true, tutor.activo ? themeApp.greenColor : themeApp.redColor),)),
+                                          GestureDetector(
+                                            onTap: () {
+                                              final textToCopy = tutor.numerowhatsapp.toString();
+                                              Clipboard.setData(ClipboardData(text: textToCopy));
+                                            },
+                                            child:Text(tutor.numerowhatsapp.toString(), style: themeApp.styleText(16, false, themeApp.grayColor),),
 
-                                        ),
-                                      ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
 
-                                  //# de materias manejadas
-                                  _textAndTitle("Materias: ", "${tutor.materias.length.toString()} materias registradas"),
+                                    //# de materias manejadas
+                                    _textAndTitle("Materias: ", "${tutor.materias.length.toString()} materias registradas"),
 
-                                  //# de cuentas bancarias registradas
-                                  _textAndTitle("Cuentas: ", "${tutor.cuentas.length.toString()} cuentas registradas"),
+                                    //# de cuentas bancarias registradas
+                                    _textAndTitle("Cuentas: ", "${tutor.cuentas.length.toString()} cuentas registradas"),
 
-                                  //nombre del tutor
-                                  _textAndTitle("Nombre Completo: ", tutor.nombrecompleto),
+                                    //nombre del tutor
+                                    _textAndTitle("Nombre Completo: ", tutor.nombrecompleto),
 
-                                  _textAndTitle("Universidad: ", tutor.univerisdad),
+                                    _textAndTitle("Universidad: ", tutor.univerisdad),
 
-                                  _textAndTitle("Carrera: ", tutor.carrera),
+                                    _textAndTitle("Carrera: ", tutor.carrera),
 
-                                  _textAndTitle("Tutor Activo: ", tutor.activo ? "Tutor Activo" : "Tutor Inactivo", tutor.activo ? themeApp.greenColor : themeApp.redColor),
+                                    _textAndTitle("Tutor Activo: ", tutor.activo ? "Tutor Activo" : "Tutor Inactivo", tutor.activo ? themeApp.greenColor : themeApp.redColor),
 
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        CircularButton(
-                                          radio: 28,
-                                          iconData: material.Icons.add,
-                                          function: (){
-                                            final tutorProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
-                                            material.Navigator.push(context, material.MaterialPageRoute(
-                                              builder: (context)  => Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
-                                            ));
-                                            tutorProvider.seleccionarTutor(tutor);
-                                          }
-                                        ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 3.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          CircularButton(
+                                              buttonColor: themeApp.primaryColor,
+                                              radio: 28,
+                                              iconData: material.Icons.add,
+                                              function: (){
+                                                final tutorProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
+                                                material.Navigator.push(context, material.MaterialPageRoute(
+                                                  builder: (context)  => Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
+                                                ));
+                                                tutorProvider.seleccionarTutor(tutor);
+                                              }
+                                          ),
 
-                                        CircularButton(
-                                          radio: 28,
-                                          buttonColor: themeApp.redColor,
-                                          iconData: material.Icons.clear,
-                                          function: (){
+                                          CircularButton(
+                                              radio: 28,
+                                              buttonColor: themeApp.redColor,
+                                              iconData: material.Icons.clear,
+                                              function: (){
 
-                                          }
-                                        ),
-                                      ],
+                                              }
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
 
-                                  if(dataLoaded==true)
-                                    Text('ult fecha ${DateFormat('dd/MM/yy').format(ultimaFechaCotizacionTutor(tutor.nombrewhatsapp))}', style: themeApp.styleText(11, false, themeApp.grayColor),)
-                                ],
+                                    if(dataLoaded==true)
+                                      Text('ult fecha ${DateFormat('dd/MM/yy').format(ultimaFechaCotizacionTutor(tutor.nombrewhatsapp))}', style: themeApp.styleText(11, false, themeApp.grayColor),)
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }
-                  )
-              ),
+                          );
+                        }
+                    )
+                ),
 
-            ],
-          );
+              ],
+            );
 
-        }
-    );
+          }
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator());
+    }
   }
 
   Padding _textAndTitle(String title, String text, [Color? color]){
@@ -370,6 +393,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             PrimaryStyleButton(
+              buttonColor: themeApp.primaryColor,
                 function: () {
                   tutoresProvider.setFiltro('TutorA');
                 },
@@ -377,6 +401,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
             ),
 
             PrimaryStyleButton(
+                buttonColor: themeApp.primaryColor,
                 function: () {
                   tutoresProvider.setFiltro('TutorInac');
                 },
@@ -384,6 +409,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
             ),
 
             PrimaryStyleButton(
+                buttonColor: themeApp.primaryColor,
                 function: () {
                   tutoresProvider.setFiltro('ADMON');
                 },
@@ -501,12 +527,16 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   List<double> tutorCalificaiconGlobal = [];
   TutorEvaluator? tutorEvaluator;
   final ThemeApp themeApp = ThemeApp();
-
+  late bool construct = false;
 
   @override
-  void initState() {
-    loadDataTablasMaterias(); // Cargar los datos al inicializar el widget
+  void initState(){
     super.initState();
+    loadDataTablasMaterias();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
   }
 
   Future<void> loadDataTablasMaterias() async {
@@ -572,75 +602,72 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
   String _truncateLabel(String label) {
     const int maxLength = 20; // Define la longitud máxima permitida para la etiqueta
     if (label.length > maxLength) {
-      return label.substring(0, maxLength - 3) + '...'; // Agrega puntos suspensivos
+      return '${label.substring(0, maxLength - 3)}...'; // Agrega puntos suspensivos
     }
     return label;
   }
 
   @override
   Widget build(BuildContext context) {
-
-    final TextStyle styleText = themeApp.styleText(14, false, themeApp.whitecolor);
-    final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.whitecolor);
-
-    return ItemsCard(
-      width: widget.currentwidth,
-      cardColor: themeApp.primaryColor,
-      shadow: false,
-      alignementColumn: MainAxisAlignment.start,
-      children: [
-        material.Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-          child: Text('Busqueda', style: themeApp.styleText(24, true, themeApp.whitecolor),),
-        ),
-        if(_materiacargarauto)
+    if(construct){
+      return ItemsCard(
+        width: widget.currentwidth,
+        cardColor: themeApp.primaryColor,
+        shadow: false,
+        alignementColumn: MainAxisAlignment.start,
+        children: [
           material.Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  children: [
+            padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+            child: Text('Busqueda', style: themeApp.styleText(24, true, themeApp.whitecolor),),
+          ),
+          if(_materiacargarauto)
+            material.Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
 
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Text("Materias", style: themeApp.styleText(18, true, themeApp.whitecolor)),
-                    ),
+                      material.Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Text("Materias", style: themeApp.styleText(18, true, themeApp.whitecolor)),
+                      ),
 
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: SizedBox(
-                        height: 30,
-                        width: 200,
-                        child: AutoSuggestBox<Materia>(
-                          items: materiaList.map<AutoSuggestBoxItem<Materia>>(
-                                (materia) => AutoSuggestBoxItem<Materia>(
-                              value: materia,
+                      material.Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: SizedBox(
+                          height: 30,
+                          width: 200,
+                          child: AutoSuggestBox<Materia>(
+                            items: materiaList.map<AutoSuggestBoxItem<Materia>>(
+                                  (materia) => AutoSuggestBoxItem<Materia>(
+                                value: materia,
 
-                              label: _truncateLabel(materia.nombremateria),
-                            ),
-                          )
-                              .toList(),
-                          onSelected: (item) {
-                            setState(() {
-                              selectedMateria = item.value; // Actualizar el valor seleccionado
-                            }
-                            );
-                          },
-                          textInputAction: TextInputAction.done,
-                          onChanged: (text, reason) {
-                            if (text.isEmpty ) {
+                                label: _truncateLabel(materia.nombremateria),
+                              ),
+                            )
+                                .toList(),
+                            onSelected: (item) {
                               setState(() {
-                                print("vacio");
-                                selectedMateria = null; // Limpiar la selección cuando se borra el texto
-                              });
-                            }
-                          },
+                                selectedMateria = item.value; // Actualizar el valor seleccionado
+                              }
+                              );
+                            },
+                            textInputAction: TextInputAction.done,
+                            onChanged: (text, reason) {
+                              if (text.isEmpty ) {
+                                setState(() {
+                                  print("vacio");
+                                  selectedMateria = null; // Limpiar la selección cuando se borra el texto
+                                });
+                              }
+                            },
+                          ),
                         ),
                       ),
-                    ),
 
-                    /*
+                      /*
                     material.Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: SizedBox(
@@ -786,54 +813,54 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                     ),
 
                      */
-                  ],
-                ),
+                    ],
+                  ),
 
-                Column(
-                  children: [
+                  Column(
+                    children: [
 
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: Text("Carreras", style: themeApp.styleText(18, true, themeApp.whitecolor)),
-                    ),
+                      material.Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0),
+                        child: Text("Carreras", style: themeApp.styleText(18, true, themeApp.whitecolor)),
+                      ),
 
-                    material.Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: SizedBox(
-                        height: 30,
-                        width: 200,
-                        child: AutoSuggestBox<Carrera>(
-                          items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                                (carrera) => AutoSuggestBoxItem<Carrera>(
-                              value: carrera,
-                              label: _truncateLabel(carrera.nombrecarrera),
-                              onFocusChange: (focused) {
-                                if (focused) {
-                                  debugPrint('Focused #${carrera.nombrecarrera} - ');
-                                }
-                              },
-                            ),
-                          )
-                              .toList(),
-                          onSelected: (item) {
-                            setState(() {
-                              selectedCarrera = item.value; // Actualizar el valor seleccionado
-                            }
-                            );
-                          },
-                          textInputAction: TextInputAction.done,
-                          onChanged: (text, reason) {
-                            if (text.isEmpty ) {
+                      material.Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: SizedBox(
+                          height: 30,
+                          width: 200,
+                          child: AutoSuggestBox<Carrera>(
+                            items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                                  (carrera) => AutoSuggestBoxItem<Carrera>(
+                                value: carrera,
+                                label: _truncateLabel(carrera.nombrecarrera),
+                                onFocusChange: (focused) {
+                                  if (focused) {
+                                    debugPrint('Focused #${carrera.nombrecarrera} - ');
+                                  }
+                                },
+                              ),
+                            )
+                                .toList(),
+                            onSelected: (item) {
                               setState(() {
-                                print("vacio");
-                                selectedCarrera = null; // Limpiar la selección cuando se borra el texto
-                              });
-                            }
-                          },
+                                selectedCarrera = item.value; // Actualizar el valor seleccionado
+                              }
+                              );
+                            },
+                            textInputAction: TextInputAction.done,
+                            onChanged: (text, reason) {
+                              if (text.isEmpty ) {
+                                setState(() {
+                                  print("vacio");
+                                  selectedCarrera = null; // Limpiar la selección cuando se borra el texto
+                                });
+                              }
+                            },
+                          ),
                         ),
                       ),
-                    ),
-                    /*
+                      /*
                     material.Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
                       child: SizedBox(
@@ -984,113 +1011,115 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                     ),
 
                      */
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
 
-        PrimaryStyleButton(
-            invert: true,
-            width: 120,
-            function: () {
-              String materiaUno = selectedMateria != null ? selectedMateria!.nombremateria : "";
-              String materiaDos = selectedMateriados != null ? selectedMateriados!.nombremateria : "";
-              String materiaTres = selectedMateriatres != null ? selectedMateriatres!.nombremateria : "";
-              String materiaCuatro = selectedMateriacuatro != null ? selectedMateriacuatro!.nombremateria : "";
-              String materiaCinco = selectedMateriacinco != null ? selectedMateriacinco!.nombremateria : "";
-              String carreraUno = selectedCarrera != null ? selectedCarrera!.nombrecarrera : "";
-              String carreraDos = selectedCarrerados != null ? selectedCarrerados!.nombrecarrera : "";
-              String carreraTres = selectedCarreratres != null ? selectedCarreratres!.nombrecarrera : "";
-              String carreraCuatro = selectedCarreracuatro != null ? selectedCarreracuatro!.nombrecarrera : "";
-              String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
+          PrimaryStyleButton(
+            buttonColor: themeApp.primaryColor,
+              invert: true,
+              width: 120,
+              function: () {
+                String materiaUno = selectedMateria != null ? selectedMateria!.nombremateria : "";
+                String materiaDos = selectedMateriados != null ? selectedMateriados!.nombremateria : "";
+                String materiaTres = selectedMateriatres != null ? selectedMateriatres!.nombremateria : "";
+                String materiaCuatro = selectedMateriacuatro != null ? selectedMateriacuatro!.nombremateria : "";
+                String materiaCinco = selectedMateriacinco != null ? selectedMateriacinco!.nombremateria : "";
+                String carreraUno = selectedCarrera != null ? selectedCarrera!.nombrecarrera : "";
+                String carreraDos = selectedCarrerados != null ? selectedCarrerados!.nombrecarrera : "";
+                String carreraTres = selectedCarreratres != null ? selectedCarreratres!.nombrecarrera : "";
+                String carreraCuatro = selectedCarreracuatro != null ? selectedCarreracuatro!.nombrecarrera : "";
+                String carreraCinco = selectedCarrercinco != null ? selectedCarrercinco!.nombrecarrera : "";
 
-              busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
-              print(materiaDos);
-              loadDataTablasMaterias();
+                busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
+                print(materiaDos);
+                loadDataTablasMaterias();
 
-              //cargarlistas
+                //cargarlistas
 
-            },
-            text: "Buscar"),
-        if(_cargadotutoresfiltradosmateria==true)
-          Column(
-            children: [
-              material.SizedBox(
-                height: 400,
-                child: ListView.builder(
-                    itemCount: tutoresFiltrados.length,
-                    itemBuilder: (context,index){
-                      Tutores? tutore = tutoresFiltrados[index];
+              },
+              text: "Buscar"),
+          if(_cargadotutoresfiltradosmateria==true)
+            Column(
+              children: [
+                material.SizedBox(
+                  height: 400,
+                  child: ListView.builder(
+                      itemCount: tutoresFiltrados.length,
+                      itemBuilder: (context,index){
+                        Tutores? tutore = tutoresFiltrados[index];
 
-                      return material.Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
-                        child: Card(
-                            padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
-                            borderRadius: BorderRadius.circular(20),
-                            backgroundColor: themeApp.whitecolor,
-                            child: Column(
-                              children: [
+                        return material.Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                          child: Card(
+                              padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 30.0),
+                              borderRadius: BorderRadius.circular(20),
+                              backgroundColor: themeApp.whitecolor,
+                              child: Column(
+                                children: [
 
-                                material.Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(child: Text(tutore.nombrewhatsapp, style: themeApp.styleText(18, true, themeApp.primaryColor), textAlign: TextAlign.start,)),
-                                      Expanded(child: Text(tutore.numerowhatsapp.toString(), style: themeApp.styleText(18, false, themeApp.grayColor), textAlign: TextAlign.end,)),
-                                    ],
-                                  ),
-                                ),
-
-                                material.Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-
-                                    Expanded(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-
-                                          _textAndTitle("Calificacion obtenida: ", tutorEvaluator!.retornocalificacion(tutore).toStringAsFixed(1)),
-                                          _nivelTutor("Nivel: ", tutorEvaluator!.retornocalificacion(tutore)),
-
-                                          material.Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-
-                                                CircularButton(
-                                                  iconData: material.Icons.add,
-                                                  function: (){
-                                                    
-                                                  },
-                                                ),
-
-                                                CircularButton(
-                                                  buttonColor: themeApp.redColor,
-                                                  iconData: material.Icons.clear, 
-                                                  function: (){
-                                                    
-                                                  }
-                                                ),
-
-                                              ],
-                                            ),
-                                          )
-
-                                        ],
-                                      ),
+                                  material.Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(child: Text(tutore.nombrewhatsapp, style: themeApp.styleText(18, true, themeApp.primaryColor), textAlign: TextAlign.start,)),
+                                        Expanded(child: Text(tutore.numerowhatsapp.toString(), style: themeApp.styleText(18, false, themeApp.grayColor), textAlign: TextAlign.end,)),
+                                      ],
                                     ),
+                                  ),
 
-                                    _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
+                                  material.Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+
+                                      Expanded(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+
+                                            _textAndTitle("Calificacion obtenida: ", tutorEvaluator!.retornocalificacion(tutore).toStringAsFixed(1)),
+                                            _nivelTutor("Nivel: ", tutorEvaluator!.retornocalificacion(tutore)),
+
+                                            material.Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                children: [
+
+                                                  CircularButton(
+                                                    buttonColor: themeApp.primaryColor,
+                                                    iconData: material.Icons.add,
+                                                    function: (){
+
+                                                    },
+                                                  ),
+
+                                                  CircularButton(
+                                                      buttonColor: themeApp.redColor,
+                                                      iconData: material.Icons.clear,
+                                                      function: (){
+
+                                                      }
+                                                  ),
+
+                                                ],
+                                              ),
+                                            )
+
+                                          ],
+                                        ),
+                                      ),
+
+                                      _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
 
 
 
 
 
-                                    /*
+                                      /*
 
                                     Column(
                                       children: [
@@ -1127,23 +1156,28 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                      */
 
 
-                                  ],
-                                )
-                              ],
-                            )),
-                      );
-                    }
+                                    ],
+                                  )
+                                ],
+                              )),
+                        );
+                      }
+                  ),
                 ),
-              ),
-              PrimaryStyleButton(
-                  function: () => copiarNumerosWhatsApp(),
-                  text: "Copiar numeros de WhatsApp"
-              ),
-            ],
-          ),
+                PrimaryStyleButton(
+                  buttonColor: themeApp.primaryColor,
+                    invert: true,
+                    function: () => copiarNumerosWhatsApp(),
+                    text: "Copiar numeros de WhatsApp"
+                ),
+              ],
+            ),
 
-      ],
-    );
+        ],
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
   Padding _textAndTitle(String title, String text){
@@ -1218,10 +1252,15 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
   List<Universidad> universidadList = [];
   final CollectionReferencias referencias = CollectionReferencias();
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
   }
 
   @override
@@ -1229,39 +1268,40 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
 
     final TextStyle styleTextSub = themeApp.styleText(15, true, themeApp.grayColor);
 
-    return ItemsCard(
-      alignementColumn: MainAxisAlignment.start,
-      width: widget.currentwidth,
-      shadow: false,
-      horizontalPadding: 20.0,
-      children: [
-        material.Padding(
-          padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-          child: Text('Agregar', style: themeApp.styleText(24, true, themeApp.primaryColor)),
-        ),
-        //Nombre wsp
-        RoundedTextField(
-            controller: nombreWsp,
-            placeholder: "Nombre WhatsApp"
-        ),
+    if(construct){
+      return ItemsCard(
+        alignementColumn: MainAxisAlignment.start,
+        width: widget.currentwidth,
+        shadow: false,
+        horizontalPadding: 20.0,
+        children: [
+          material.Padding(
+            padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+            child: Text('Agregar', style: themeApp.styleText(24, true, themeApp.primaryColor)),
+          ),
+          //Nombre wsp
+          RoundedTextField(
+              controller: nombreWsp,
+              placeholder: "Nombre WhatsApp"
+          ),
 
-        //Nombre completo
-        RoundedTextField(
-            controller: nombrecompleto,
-            placeholder: "Nombre Completo"
-        ),
+          //Nombre completo
+          RoundedTextField(
+              controller: nombrecompleto,
+              placeholder: "Nombre Completo"
+          ),
 
-        //num wso
-        RoundedTextField(
-            controller: numWsp,
-            placeholder: "Numero WhatsApp con +57"
-        ),
+          //num wso
+          RoundedTextField(
+              controller: numWsp,
+              placeholder: "Numero WhatsApp con +57"
+          ),
 
-        //Carrera y universidad estudiadas
-        Consumer2<CarrerasProvider,UniversidadVistaProvider>(
-          builder: (context, carreraProviderselect, universidadProviderselect, child) {
-            carreraList = carreraProviderselect.todosLasCarreras;
-            universidadList = universidadProviderselect.todasLasUniversidades;
+          //Carrera y universidad estudiadas
+          Consumer2<CarrerasProvider,UniversidadVistaProvider>(
+            builder: (context, carreraProviderselect, universidadProviderselect, child) {
+              carreraList = carreraProviderselect.todosLasCarreras;
+              universidadList = universidadProviderselect.todasLasUniversidades;
 
               return material.Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -1339,29 +1379,33 @@ class _CrearTutorNuevoState extends State<_CrearTutorNuevo> {
               );
 
             },
-         ),
+          ),
 
-        //correo gmail
-        RoundedTextField(
-            controller: correoGmail,
-            placeholder: "Correo Gmail"
-        ),
+          //correo gmail
+          RoundedTextField(
+              controller: correoGmail,
+              placeholder: "Correo Gmail"
+          ),
 
-        //contraseña
-        RoundedTextField(
-            controller: password,
-            placeholder: "Contraseña"
-        ),
+          //contraseña
+          RoundedTextField(
+              controller: password,
+              placeholder: "Contraseña"
+          ),
 
-        //Botón
-        PrimaryStyleButton(
-            width: 120,
-            function: ()async{
-              validarAntesDeCrearTutor();
-            },
-            text: "Agregar")
-      ],
-    );
+          //Botón
+          PrimaryStyleButton(
+            buttonColor: themeApp.primaryColor,
+              width: 120,
+              function: ()async{
+                validarAntesDeCrearTutor();
+              },
+              text: "Agregar")
+        ],
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
   Future validarAntesDeCrearTutor() async{

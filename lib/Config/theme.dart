@@ -1,6 +1,11 @@
+import 'dart:async';
+import 'dart:js';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import '../Objetos/Configuracion/Configuracion_Configuracion.dart';
+import '../Utils/Firebase/StreamBuilders.dart';
+import '../Utils/Utiles/FuncionesUtiles.dart';
 
 class ThemeApp{
   Color primaryColor = const Color(0xFF235FD9);
@@ -13,7 +18,19 @@ class ThemeApp{
   Color whitecolor = const Color(0xFFFFFFFF);
   Color blackColor = const Color(0xFF000000);
   Color grayColor = const Color(0xFF444444);
+  late ConfiguracionPlugins? configaplicacion;
 
+  ThemeApp(){
+    print("Theme inicializado");
+    initTheme();
+  }
+
+  Future<void> initTheme() async{
+    final Utiles utiles = Utiles();
+    configaplicacion = await stream_builders().cargarconfiguracion();
+    primaryColor = utiles.hexToColor(configaplicacion!.PrimaryColor);
+    secundaryColor = utiles.hexToColor(configaplicacion!.SecundaryColor);
+  }
 
   Widget colorRow(Color color, String text){
     return Padding(
