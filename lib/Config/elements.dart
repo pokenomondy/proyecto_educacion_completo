@@ -269,6 +269,7 @@ class UtilDialogs{
 
   final BuildContext context;
   final double height;
+  late BuildContext contextCarga;
 
   UtilDialogs({
     required this.context,
@@ -292,8 +293,10 @@ class UtilDialogs{
 
   void cargar(String text, String title) => showDialog(
       context: context,
-      builder: (BuildContext context) => _cargaDialog(text, title)
+      builder: (BuildContext context) => _cargaDialog(text, title, context)
   );
+
+  void terminarCarga() => Navigator.pop(contextCarga);
 
   dialog.Dialog _errorDialog(String text, String title, BuildContext errorContext){
     final ThemeApp themeApp = ThemeApp();
@@ -408,8 +411,9 @@ class UtilDialogs{
     );
   }
 
-  dialog.Dialog _cargaDialog(String text, String title,){
+  dialog.Dialog _cargaDialog(String text, String title, BuildContext cargaDialog){
     final ThemeApp themeApp = ThemeApp();
+    contextCarga = cargaDialog;
     return dialog.Dialog(
       backgroundColor: themeApp.blackColor.withOpacity(0),
       child: ItemsCard(

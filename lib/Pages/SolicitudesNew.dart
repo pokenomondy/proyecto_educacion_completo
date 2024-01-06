@@ -288,7 +288,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
     return Stack(
       children: [
         solicitudescuadro(tamanowidht),
-        if(cargandoservicio==true)
+        if(cargandoservicio)
           const Positioned.fill(
             child: AbsorbPointer(
               absorbing: true, // Evita todas las interacciones del usuario
@@ -465,7 +465,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                                   },
                                 ),
                               ),
-                              SolicitudesDialog(),
+                              const SolicitudesDialog(),
 
                             ],
                           ),

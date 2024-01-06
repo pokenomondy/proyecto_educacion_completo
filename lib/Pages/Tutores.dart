@@ -256,7 +256,6 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                         itemCount: tutores.length,
                         itemBuilder: (context,index) {
                           Tutores? tutor = tutores[index];
-
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
                             child: material.Container(
@@ -318,7 +317,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                                               function: (){
                                                 final tutorProvider = Provider.of<VistaTutoresProvider>(context, listen: false);
                                                 material.Navigator.push(context, material.MaterialPageRoute(
-                                                  builder: (context)  => Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
+                                                  builder: (context)  => const Dashboard(showSolicitudesNew: false,showTutoresDetalles: true,),
                                                 ));
                                                 tutorProvider.seleccionarTutor(tutor);
                                               }
@@ -1036,9 +1035,7 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                 busquedatutor(materiaUno, materiaDos,materiaTres,materiaCuatro,materiaCinco,carreraUno,carreraDos,carreraTres,carreraCuatro,carreraCinco);
                 print(materiaDos);
                 loadDataTablasMaterias();
-
                 //cargarlistas
-
               },
               text: "Buscar"),
           if(_cargadotutoresfiltradosmateria==true)
