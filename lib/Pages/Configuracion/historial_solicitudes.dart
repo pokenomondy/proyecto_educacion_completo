@@ -1,4 +1,3 @@
-import 'package:dashboard_admin_flutter/Objetos/Configuracion/Configuracion_Configuracion.dart';
 import 'package:dashboard_admin_flutter/Pages/SolicitudesNew.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +11,8 @@ import '../../Utils/Utiles/FuncionesUtiles.dart';
 
 class SolicitudClientesDash extends StatefulWidget {
 
+  const SolicitudClientesDash({Key? key}) : super(key: key);
+
   @override
   SolicitudClientesDashState createState() => SolicitudClientesDashState();
 
@@ -23,22 +24,24 @@ class SolicitudClientesDashState extends State<SolicitudClientesDash> {
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
     final tamanowidth = (currentwidth/2)-Config.responsivepc;
-    return Container(
-      child: Row(
-        children: [
-          PrimarySolicitudClientesDash(currentwidth: tamanowidth,),
-          SecundarySolicitudClientesDash(currentwidth: tamanowidth)
-        ],
-      ),
+    final currentheight = MediaQuery.of(context).size.height-Config.tamnoHeihtConMenu;
+
+    return Row(
+      children: [
+        PrimarySolicitudClientesDash(currentwidth: tamanowidth,currentheight: currentheight,),
+        SecundarySolicitudClientesDash(currentwidth: tamanowidth,currentheight: currentheight,)
+      ],
     );
   }
 }
 
 class PrimarySolicitudClientesDash extends StatefulWidget {
   final double currentwidth;
+  final double currentheight;
 
   const PrimarySolicitudClientesDash({Key?key,
     required this.currentwidth,
+    required this.currentheight
   }) :super(key: key);
 
   @override
@@ -52,14 +55,13 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
 
   @override
   Widget build(BuildContext context) {
-      final currentheight = MediaQuery.of(context).size.height-140;
       return Consumer<ClientesVistaProvider>(
           builder: (context, clienteProviderselect, child) {
             clienteList = clienteProviderselect.todosLosClientes;
 
           return Column(
             children: [
-              Text('Busqueda por numero'),
+              const Text('Busqueda por numero'),
               //autosuggest
               SizedBox(
               height: 30,
@@ -75,12 +77,16 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
                 onSelected: (item) {
                   setState(() {
                     selectedCliente = item.value;
+                    final providersolicitud = Provider.of<SolicitudProvider>(context, listen: false);
+                    providersolicitud.busquedaSolicitudes(selectedCliente!.numero);
                   });
                 },
                 onChanged: (text, reason) {
                   if (text.isEmpty ) {
                     setState(() {
                       selectedCliente = null;
+                      final providersolicitud = Provider.of<SolicitudProvider>(context, listen: false);
+                      providersolicitud.clearBusqueda();
                     });
                   }
                 },
@@ -95,9 +101,11 @@ class PrimarySolicitudClientesDashState extends State<PrimarySolicitudClientesDa
 
 class SecundarySolicitudClientesDash extends StatefulWidget {
   final double currentwidth;
+  final double currentheight;
 
   const SecundarySolicitudClientesDash({Key?key,
     required this.currentwidth,
+    required this.currentheight
   }) :super(key: key);
 
   @override
@@ -105,30 +113,32 @@ class SecundarySolicitudClientesDash extends StatefulWidget {
 }
 
 class SecundarySolicitudClientesDashState extends State<SecundarySolicitudClientesDash> {
+  List<Solicitud> solicitudesList = [];
+  List<Clientes> clienteList = [];
+  List<Tutores> tutoresList = [];
 
   @override
   Widget build(BuildContext context) {
-    List<Solicitud> solicitudesList = [];
-    List<Clientes> clienteList = [];
-    List<Tutores> tutoresList = [];
-    ConfiguracionPlugins? configuracion;
 
 
     return Consumer<SolicitudProvider>(
         builder: (context, solicitudProviderselect, child) {
-          solicitudesList = solicitudProviderselect.todaslasSolicitudes;
+          solicitudesList = solicitudProviderselect.solicitudesBUSQUEDA;
 
-          //Toca filtrar la lista
-          //Toca bloquear en la lista ver cotizaciones y cotizar por tutor
-          return Expanded(
-            child: CuadroSolicitudes(
-              solicitudesList: solicitudesList,
-              height: 500,
-              clienteList: clienteList,
-              tutoresList: tutoresList,
-              primarycolor: Config.primarycikirbackground,
-            ),
-          );
+          if(solicitudesList.isEmpty){
+            return const Text('Seleccione un cliente, para poder ver las solicitudes');
+          }else{
+            return Expanded(
+              child: CuadroSolicitudes(
+                solicitudesList: solicitudesList,
+                height: widget.currentheight,
+                clienteList: clienteList,
+                tutoresList: tutoresList,
+                primarycolor: Config().primaryColor,
+                vistaBusqueda: true,
+              ),
+            );
+          }
         }
     );
   }

@@ -124,7 +124,6 @@ class Uploads{
     await expiradoglobal.doc(idsolicitud.toString()).update(dataAgendado);
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
-
   //modificar un servicio agendado
   Future<void> modifyServicioAgendado(int index,String codigo,String texto,String textoanterior,int valores,DateTime fechas)async {
     await referencias.initCollections();
@@ -273,6 +272,7 @@ class Uploads{
     });
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
+  //CLIENTES
   //Añadimos cliente
   Future<void> addCliente(String carrera, String universidad, String nombreCliente, int numero,String nombrecompletoCliente,String procedencia) async {
     await referencias.initCollections();

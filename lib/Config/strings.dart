@@ -1,7 +1,7 @@
 
 class Strings{
 
-  String appVersion = "1.0.25 ";
+  String appVersion = "1.0.26 ";
   String nombreApp = "Educacion App";
   //Strings de alertdialogs
   String errorUsarionoencontraTitle = 'Error, usuario no encontrado';
