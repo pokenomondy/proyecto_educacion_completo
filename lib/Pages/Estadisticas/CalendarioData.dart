@@ -51,111 +51,124 @@ class PrimaryColumnState extends State<PrimaryColumn> {
   Map<Appointment, ServicioAgendado> appointmentToServicioMap = {};
   String motivosPagos = "ENTREGAS";
 
+  final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
+
   @override
   void initState() {
     _calendarController.view = CalendarView.month;
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
     final currentheight = MediaQuery.of(context).size.height-100;
-    return SizedBox(
-      height: currentheight,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                PrimaryStyleButton(
-                    function: (){
-                      setState(() {
-                        motivosPagos = "ENTREGAS";
-                      });
-                    },
-                    text: " Entregas "
-                ),
+    if(construct){
+      return SizedBox(
+        height: currentheight,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  PrimaryStyleButton(
+                      buttonColor: themeApp.primaryColor,
+                      function: (){
+                        setState(() {
+                          motivosPagos = "ENTREGAS";
+                        });
+                      },
+                      text: " Entregas "
+                  ),
 
-                PrimaryStyleButton(
-                    function: (){
-                      setState(() {
-                        motivosPagos = "PAGOSCLIENTES";
-                      });
-                    },
-                    text: " Pagos Clientes "
-                ),
+                  PrimaryStyleButton(
+                      buttonColor: themeApp.primaryColor,
+                      function: (){
+                        setState(() {
+                          motivosPagos = "PAGOSCLIENTES";
+                        });
+                      },
+                      text: " Pagos Clientes "
+                  ),
 
-                PrimaryStyleButton(
-                    function: (){
-                      setState(() {
-                        motivosPagos = "PAGOSTUTORES";
-                      });
-                    },
-                    text: " Pagos Tutores "
-                ),
-              ],
+                  PrimaryStyleButton(
+                      buttonColor: themeApp.primaryColor,
+                      function: (){
+                        setState(() {
+                          motivosPagos = "PAGOSTUTORES";
+                        });
+                      },
+                      text: " Pagos Tutores "
+                  ),
+                ],
+              ),
             ),
-          ),
             Column(
               children: [
-                  Consumer<ContabilidadProvider>(
-                      builder: (context, contabilidadProvider, child) {
-                        List<ServicioAgendado> servicioagendadoList = contabilidadProvider.todoslosServiciosAgendados;
+                Consumer<ContabilidadProvider>(
+                    builder: (context, contabilidadProvider, child) {
+                      List<ServicioAgendado> servicioagendadoList = contabilidadProvider.todoslosServiciosAgendados;
 
-                        List<Appointment>? meetings = servicioagendadoList
-                            ?.map((servicio) {
-                          final appointment = Appointment(
-                            startTime: CalendarioStyle().tiempotarjetastart(servicio),
-                            endTime: CalendarioStyle().tiempotarjetaend(servicio),
-                            subject: "${servicio.identificadorcodigo}  ${servicio.materia} - ${servicio.idcontable}",
-                            notes: servicio.materia,
-                            color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
-                          );
-                          appointmentToServicioMap[appointment] = servicio;
-                          return appointment;
-                        }).toList();
+                      List<Appointment>? meetings = servicioagendadoList
+                          ?.map((servicio) {
+                        final appointment = Appointment(
+                          startTime: CalendarioStyle().tiempotarjetastart(servicio),
+                          endTime: CalendarioStyle().tiempotarjetaend(servicio),
+                          subject: "${servicio.identificadorcodigo}  ${servicio.materia} - ${servicio.idcontable}",
+                          notes: servicio.materia,
+                          color: CalendarioStyle().colortarjetaAdmin(servicio,motivosPagos),
+                        );
+                        appointmentToServicioMap[appointment] = servicio;
+                        return appointment;
+                      }).toList();
 
-                        return SizedBox(
-                          height: currentheight-50,
-                          child: SfCalendar(
-                            controller: _calendarController,
-                            showDatePickerButton: true,
-                            allowedViews: _vistascalendario,
-                            dataSource: meetings != null ? _DataSource(meetings!) : null,
-                            initialDisplayDate: DateTime.now(),
-                            initialSelectedDate: DateTime.now(),
-                            showNavigationArrow: true,
-                            monthViewSettings: const MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
-                            scheduleViewSettings: const ScheduleViewSettings(
-                                appointmentItemHeight: 70,
-                                monthHeaderSettings: MonthHeaderSettings(
-                                    monthFormat: 'MMMM, yyyy',
-                                    height: 100,
-                                    textAlign: TextAlign.left,
-                                    backgroundColor: material.Colors.green,
-                                    monthTextStyle: TextStyle(
+                      return SizedBox(
+                        height: currentheight-50,
+                        child: SfCalendar(
+                          controller: _calendarController,
+                          showDatePickerButton: true,
+                          allowedViews: _vistascalendario,
+                          dataSource: meetings != null ? _DataSource(meetings!) : null,
+                          initialDisplayDate: DateTime.now(),
+                          initialSelectedDate: DateTime.now(),
+                          showNavigationArrow: true,
+                          monthViewSettings: const MonthViewSettings(appointmentDisplayMode: MonthAppointmentDisplayMode.appointment),
+                          scheduleViewSettings: const ScheduleViewSettings(
+                              appointmentItemHeight: 70,
+                              monthHeaderSettings: MonthHeaderSettings(
+                                  monthFormat: 'MMMM, yyyy',
+                                  height: 100,
+                                  textAlign: TextAlign.left,
+                                  backgroundColor: material.Colors.green,
+                                  monthTextStyle: TextStyle(
                                       color: material.Colors.red,
                                       fontSize: 25,
                                       fontWeight: FontWeight.w400,
                                       fontFamily: "Poppins"
-                                    ))
-                            ),
-                            onTap: (CalendarTapDetails details) {
-                              CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN");
-                            },
+                                  ))
                           ),
-                        );
+                          onTap: (CalendarTapDetails details) {
+                            CalendarioStyle().calendario_oprimido(details, _subject!, _notes!, context, appointmentToServicioMap, "ADMIN", themeApp);
+                          },
+                        ),
+                      );
 
-                      }
-                  ),
+                    }
+                ),
               ],
             )
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
 }

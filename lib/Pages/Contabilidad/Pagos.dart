@@ -1,3 +1,4 @@
+import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
@@ -99,16 +100,26 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     String selectedtipopago = "";
     int valordepago = 0;
     String selectedmetodopago = "";
-    String referenciapago = "";
     DateTime fecharegistropago = DateTime.now();
     Map<String, List<RegistrarPago>> pagosPorServicio = {};
     List<PlatformFile>? selectedFiles ;
     List<ServicioAgendado> servicioagendadList = [];
     bool cargandopagos = false;
     final TextEditingController _controllerpagos = TextEditingController(); //controller valor de pago
+    final TextEditingController _referenciaPagos = TextEditingController();
     bool interfazpagos = false;
 
     final ThemeApp themeApp = ThemeApp();
+    late bool construct = false;
+
+    @override
+    void initState(){
+      super.initState();
+      WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+      themeApp.initTheme().then((_) {
+        setState(()=>construct = true);
+      });
+    }
 
     //Pagos
     int sumaPagosClientes = 0;
@@ -163,30 +174,34 @@ class _ContainerPagosState extends State<_ContainerPagos> {
 
     @override
     Widget build(BuildContext context) {
-      return Consumer<ContabilidadProvider>(
-          builder: (context, pagosProvider, child) {
-            List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
-            if(selectedservicio!=null){
-              actualizarpagosMain(serviciosAgendadosList,selectedservicio!.codigo);
-            }else{
-              clearProviderPagos();
-            }
-            return Stack(
-              children: [
-                cuadroPagos(serviciosAgendadosList),
-                if(cargandopagos==true)
-                  const Positioned.fill(
-                    child: AbsorbPointer(
-                      absorbing: true, // Evita todas las interacciones del usuario
-                      child: Center(
-                        child: material.CircularProgressIndicator(), // Puedes personalizar el indicador de carga
+      if(construct){
+        return Consumer<ContabilidadProvider>(
+            builder: (context, pagosProvider, child) {
+              List<ServicioAgendado> serviciosAgendadosList = pagosProvider.todoslosServiciosAgendados;
+              if(selectedservicio!=null){
+                actualizarpagosMain(serviciosAgendadosList,selectedservicio!.codigo);
+              }else{
+                clearProviderPagos();
+              }
+              return Stack(
+                children: [
+                  cuadroPagos(serviciosAgendadosList),
+                  if(cargandopagos==true)
+                    const Positioned.fill(
+                      child: AbsorbPointer(
+                        absorbing: true, // Evita todas las interacciones del usuario
+                        child: Center(
+                          child: material.CircularProgressIndicator(), // Puedes personalizar el indicador de carga
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            );
-          }
-      );
+                ],
+              );
+            }
+        );
+      }else{
+        return const Center(child: material.CircularProgressIndicator(),);
+      }
     }
 
     void comprobacionpagos(int debecliente,int debetutor) async{
@@ -244,10 +259,10 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       setState(() {
         cargandopagos = true;
       });
-      await Uploads().addPago(selectedservicio!.idcontable, selectedservicio!, selectedtipopago, valordepago, referenciapago, fecharegistropago, selectedmetodopago,context);
+      await Uploads().addPago(selectedservicio!.idcontable, selectedservicio!, selectedtipopago, valordepago, _referenciaPagos.text, fecharegistropago, selectedmetodopago,context);
       // Actualiza la lista de pagos por servicio
       if(configuracionSolicitudes){
-        await DriveApiUsage().subirPago(idcarpetaPagosDrive, selectedFiles,referenciapago);
+        await DriveApiUsage().subirPago(idcarpetaPagosDrive, selectedFiles, _referenciaPagos.text);
       }else{
       }
       //Borrar todas las variables anteriores
@@ -255,7 +270,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
         selectedFiles=null;
         selectedtipopago="";
         selectedmetodopago ="";
-        referenciapago="null";
+        _referenciaPagos.text ="null";
         valordepago=0;
         cargandopagos = false;
         _controllerpagos.text = "";
@@ -264,47 +279,48 @@ class _ContainerPagosState extends State<_ContainerPagos> {
     }
   
     Text textopagoclientetutor(int debecliente,int debetutor){
+      TextStyle style = themeApp.styleText(15, false, themeApp.blackColor);
       if(selectedtipopago=="CLIENTES"){
         if(debecliente!=0){
-          return Text("El cliente debe ${selectedservicio!.preciocobrado-sumaPagosClientes+sumaPagosReembolsoCliente}");
+          return Text("El cliente debe ${selectedservicio!.preciocobrado-sumaPagosClientes+sumaPagosReembolsoCliente}", style: style,);
         }else{
-          return const Text("TODO PAGO");
+          return Text("TODO PAGO", style: style,);
         }
       }else if(selectedtipopago =="TUTOR"){
         if(debetutor!=0){
-          return Text("El tutor debe ${selectedservicio!.preciotutor-sumaPagosTutores+sumaPagosReembolsoTutores}");
+          return Text("El tutor debe ${selectedservicio!.preciotutor-sumaPagosTutores+sumaPagosReembolsoTutores}", style: style,);
         }else{
-          return const Text("TODO PAGO");
+          return Text("TODO PAGO", style: style,);
         }
       }else if(selectedtipopago =="CANCELADO"){
         if(sumaPagosClientes > 0 || sumaPagosTutores > 0){
           setState(() {
             disabledbutton = true;
           });
-          return const Text('No se puede cancelar,hay pagos');
+          return Text('No se puede cancelar,hay pagos', style: style,);
         }else{
-          return Text("SE PUEDE CANCELAR ${selectedservicio!.idcontable}");
+          return Text("SE PUEDE CANCELAR ${selectedservicio!.idcontable}", style: style,);
         }
       }else if(selectedtipopago =="REEMBOLSOCLIENTE"){
         if(sumaPagosClientes-sumaPagosReembolsoCliente==0){
           setState(() {
             disabledbutton = true;
           });
-          return const Text('No se puede reembolsar saldo,el saldo es 0');
+          return Text('No se puede reembolsar saldo,el saldo es 0', style: style,);
         }else{
-          return Text('Se puede reembolsar ${sumaPagosClientes-sumaPagosReembolsoCliente}');
+          return Text('Se puede reembolsar ${sumaPagosClientes-sumaPagosReembolsoCliente}', style: style,);
         }
       }else if(selectedtipopago=="REEMBOLSOTUTOR"){
         if(sumaPagosTutores-sumaPagosReembolsoTutores==0){
           setState(() {
             disabledbutton = true;
           });
-          return const Text('No se puede reembolsar saldo,el saldo es 0');
+          return Text('No se puede reembolsar saldo,el saldo es 0', style: style,);
         }else{
-          return Text('SE PUEDEN REEMBOLSAR ${sumaPagosTutores-sumaPagosReembolsoTutores}');
+          return Text('SE PUEDEN REEMBOLSAR ${sumaPagosTutores-sumaPagosReembolsoTutores}', style: style,);
         }
       }else{
-        return const Text('Seleccione el tipo de pago a revisar');
+        return Text('Seleccione el tipo de pago a revisar', style: style,);
       }
     }
 
@@ -312,6 +328,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
 
       Text subText(String text, double tamanio, [bool? isBold]) => Text(text, style: themeApp.styleText(tamanio, isBold??false, themeApp.blackColor),);
       const double tamanioText = 14;
+      const double verticalPadding = 5.0;
 
       return ItemsCard(
         width: widget.currentwidth,
@@ -337,9 +354,10 @@ class _ContainerPagosState extends State<_ContainerPagos> {
 
           //Codigo de servicio
           if(widget.dataloaded == true)
-            SizedBox(
+            Container(
               height: 30,
               width: 200,
+              margin: const EdgeInsets.symmetric(vertical: 5.0),
               child: AutoSuggestBox<ServicioAgendado>(
                 items: serviciosAgendadosList.map<AutoSuggestBoxItem<ServicioAgendado>>(
                       (servicioagendado) => AutoSuggestBoxItem<ServicioAgendado>(
@@ -374,102 +392,110 @@ class _ContainerPagosState extends State<_ContainerPagos> {
             Column(
               children: [
                 // tipo de pago ?,
-                AutoSuggestBox<String>(
-                  items: tipodepagos.map((tipopago) {
-                    return AutoSuggestBoxItem<String>(
-                        value: tipopago,
-                        label: tipopago,
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused $tipopago');
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                  child: AutoSuggestBox<String>(
+                    items: tipodepagos.map((tipopago) {
+                      return AutoSuggestBoxItem<String>(
+                          value: tipopago,
+                          label: tipopago,
+                          onFocusChange: (focused) {
+                            if (focused) {
+                              debugPrint('Focused $tipopago');
+                            }
                           }
-                        }
-                    );
-                  }).toList(),
-                  onSelected: (item) {
-                    setState(() {
-                      selectedtipopago = item.value!;
-                      disabledbutton = false;
-                    }
-                    );
+                      );
+                    }).toList(),
+                    onSelected: (item) {
+                      setState(() {
+                        selectedtipopago = item.value!;
+                        disabledbutton = false;
+                      }
+                      );
 
-                  },
-                  decoration: Disenos().decoracionbuscador(),
-                  placeholder: 'Selecciona tu tipo pago',
+                    },
+                    decoration: Disenos().decoracionbuscador(),
+                    placeholder: 'Selecciona tu tipo pago',
+                  ),
                 ),
                 //Valor de pago
-                TextBox(
-                  controller: _controllerpagos,
-                  keyboardType: TextInputType.number,
-                  placeholder: 'Valor de pago',
-                  onChanged: (value) {
-                    // Utilizar una expresión regular para permitir solo números
-                    if (RegExp(r'^[0-9]*$').hasMatch(value)) {
-                      setState(() {
-                        // Convertir el valor a entero
-                        valordepago = int.tryParse(value) ?? 0;
-                      });
-                    } else {
-                      // Si se ingresa un valor no numérico, limpiar el campo
-                      setState(() {
-                        _controllerpagos.text = valordepago.toString();
-                      });
-                    }
-                  },
-                  maxLines: null,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                  child: TextBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    controller: _controllerpagos,
+                    keyboardType: TextInputType.number,
+                    placeholder: 'Valor de pago',
+                    onChanged: (value) {
+                      if (RegExp(r'^[0-9]*$').hasMatch(value)) {
+                        setState(() {
+                          valordepago = int.tryParse(value) ?? 0;
+                        });
+                      } else {
+                        setState(() {
+                          _controllerpagos.text = valordepago.toString();
+                        });
+                      }
+                    },
+                    maxLines: null,
+                  ),
                 ),
                 //Cliente - nombre cliente
                 if(selectedservicio!=null)
-                  Column(
-                    children: [
-                      textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                    child: textopagoclientetutor(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores),
                   ),
                 //metodo de pago
-                AutoSuggestBox<String>(
-                  items: metodopagos.map((metodopago) {
-                    return AutoSuggestBoxItem<String>(
-                        value: metodopago,
-                        label: metodopago,
-                        onFocusChange: (focused) {
-                          if (focused) {
-                            debugPrint('Focused $metodopago');
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                  child: AutoSuggestBox<String>(
+                    items: metodopagos.map((metodopago) {
+                      return AutoSuggestBoxItem<String>(
+                          value: metodopago,
+                          label: metodopago,
+                          onFocusChange: (focused) {
+                            if (focused) {
+                              debugPrint('Focused $metodopago');
+                            }
                           }
-                        }
-                    );
-                  }).toList(),
-                  onSelected: (item) {
-                    setState(() => selectedmetodopago = item.value!);
-                  },
-                  decoration: Disenos().decoracionbuscador(),
-                  placeholder: 'Selecciona tu metodo de pago',
+                      );
+                    }).toList(),
+                    onSelected: (item) {
+                      setState(() => selectedmetodopago = item.value!);
+                    },
+                    decoration: Disenos().decoracionbuscador(),
+                    placeholder: 'Selecciona tu metodo de pago',
+                  ),
                 ),
                 //Referencia
-                TextBox(
-                  placeholder: 'Referencia',
-                  onChanged: (value){
-                    setState(() {
-                      referenciapago = value;
-                    });
-                  },
-                  maxLines: null,
+                RoundedTextField(
+                  topMargin: verticalPadding,
+                  bottomMargin: verticalPadding,
+                  controller: _referenciaPagos,
+                  placeholder: "Referencia"
                 ),
                 //fecha de pago
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    DatePicker(
-                      header: 'Seleccionar fecha de registro de pago',
-                      selected: fecharegistropago,
-                      showYear: false,
-                      onChanged: (time){
-                        setState((){
-                          fecharegistropago = time.toUtc();
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DatePicker(
+                        header: 'Seleccionar fecha de registro de pago',
+                        selected: fecharegistropago,
+                        showYear: false,
+                        onChanged: (time){
+                          setState((){
+                            fecharegistropago = time.toUtc();
+                          },
+                          );
                         },
-                        );
-                      },
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
                 //Seleccionar archivo de pago, aun no hay archivos
                 Consumer<ConfiguracionAplicacion>(
@@ -478,13 +504,19 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                     configuracionSolicitudes = Utiles().obtenerBool(config!.pagosDriveApiFecha);
                     idcarpetaPagosDrive = config.idcarpetaPagos;
 
-                    return Column(
-                      children: [
-                        if(configuracionSolicitudes)
-                        FilledButton(child: const Text('Seleccionar archivos'), onPressed: (){
-                          selectFile();
-                        }),
-                      ],
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                      child: Column(
+                        children: [
+                          if(configuracionSolicitudes)
+                          PrimaryStyleButton(
+                            function: (){
+                              selectFile();
+                            },
+                            text: "Registrar Pago"
+                          ),
+                        ],
+                      ),
                     );
                   }
                 ),
@@ -494,17 +526,18 @@ class _ContainerPagosState extends State<_ContainerPagos> {
                     children: selectedFiles!.map((file) {
                       return Container(
                         color: Colors.blue,
-                        child: Text(file.name),
+                        child: subText(file.name, 14),
                       );
                     }).toList(),
                   ),
                 //Registrar pago
-                FilledButton(
-                    onPressed: disabledbutton ? null : ()async{
-                      comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
-
-                    },
-                    child: const Text('Registrar pago')),
+                PrimaryStyleButton(
+                  buttonColor: themeApp.primaryColor,
+                  function: disabledbutton ? (){} : ()async{
+                    comprobacionpagos(selectedservicio!.preciocobrado-sumaPagosClientes,selectedservicio!.preciotutor-sumaPagosTutores);
+                  },
+                  text: "Registrar Pago",
+                ),
               ],
             ),
         ],
@@ -532,56 +565,126 @@ class ContainerPagosDashboard extends StatefulWidget{
 class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
 
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ContabilidadProvider>(
-      builder: (context, pagosProvider, child) {
-        // Obtener la lista de pagos del provider
-        List<RegistrarPago> pagosDelServicioSeleccionado = pagosProvider.pagosDelServicioSeleccionado;
 
-        return ItemsCard(
-          shadow: false,
-          cardColor: themeApp.primaryColor,
-          width: widget.currentwidth,
-          height: widget.currentheight,
-          horizontalPadding: 15.0,
-          verticalPadding: 12.0,
-          children: [
-            const Text('Aquí tenemos historial'),
-            if (widget.dataloaded == true)
-              Column(
-                children: [
-                  SizedBox(
-                    height: widget.currentheight-50,
-                    child: ListView.builder(
-                      itemCount: pagosDelServicioSeleccionado.length,
-                      itemBuilder: (context, index) {
-                        RegistrarPago registrarpago = pagosDelServicioSeleccionado[index];
+    const double radioButton = 30.0;
+    const double horizontalPadding = 4.0;
 
-                        return SizedBox(
-                          height: 100,
-                          child: Card(
+    if(construct){
+      return Consumer<ContabilidadProvider>(
+        builder: (context, pagosProvider, child) {
+          // Obtener la lista de pagos del provider
+          List<RegistrarPago> pagosDelServicioSeleccionado = pagosProvider.pagosDelServicioSeleccionado;
+
+          return ItemsCard(
+            shadow: false,
+            cardColor: themeApp.primaryColor,
+            width: widget.currentwidth,
+            height: widget.currentheight + 5.0,
+            horizontalPadding: 15.0,
+            verticalPadding: 12.0,
+            children: [
+              Text('Historial', style: themeApp.styleText(20, true, themeApp.whitecolor),),
+              if (widget.dataloaded == true)
+                Column(
+                  children: [
+                    SizedBox(
+                      height: widget.currentheight-50,
+                      child: ListView.builder(
+                        itemCount: pagosDelServicioSeleccionado.length,
+                        itemBuilder: (context, index) {
+                          RegistrarPago registrarpago = pagosDelServicioSeleccionado[index];
+
+                          return Card(
+                            borderRadius: BorderRadius.circular(20),
+                            backgroundColor: themeApp.whitecolor,
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                            margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
                             child: Column(
                               children: [
-                                Text(registrarpago.id),
-                                Text(registrarpago.valor.toString()),
-                                Text(registrarpago.tipopago),
-                                Text("${registrarpago.fechapago.month}-${registrarpago.fechapago.day}")
+                                _textRow(registrarpago.id, registrarpago.tipopago, true),
+                                _textRow("Valor Pago:", registrarpago.valor.toString(), false),
+                                _textRow("Fecha Pago:", "${registrarpago.fechapago.month}-${registrarpago.fechapago.day}", false),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      CircularButton(
+                                        radio: radioButton,
+                                        horizontalPadding: horizontalPadding,
+                                        buttonColor: themeApp.primaryColor,
+                                        iconData: material.Icons.remove_red_eye,
+                                        function: (){
+
+                                        },
+                                      ),
+
+                                      CircularButton(
+                                        radio: radioButton,
+                                        horizontalPadding: horizontalPadding,
+                                        buttonColor: themeApp.primaryColor,
+                                        iconData: material.Icons.create_rounded,
+                                        function: (){
+
+                                        },
+                                      ),
+
+                                      CircularButton(
+                                        radio: radioButton,
+                                        horizontalPadding: horizontalPadding,
+                                        buttonColor: themeApp.redColor,
+                                        iconData: material.Icons.clear,
+                                        function: (){
+
+                                        },
+                                      ),
+
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              ),
-          ],
-        );
-      },
+                  ],
+                ),
+            ],
+          );
+        },
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
+  }
+
+  Padding _textRow(String title, String text, bool encabezado){
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 20.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: Text(title, style: themeApp.styleText(encabezado? 18: 16, true, encabezado? themeApp.primaryColor : themeApp.grayColor), textAlign: TextAlign.start,)),
+          Expanded(child: Text(text, style: themeApp.styleText(encabezado? 18: 20, encabezado, encabezado? themeApp.primaryColor : themeApp.grayColor), textAlign: TextAlign.end,)),
+        ],
+      ),
     );
   }
+
 }
 
 

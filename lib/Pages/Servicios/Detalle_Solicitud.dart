@@ -102,11 +102,16 @@ class PrimaryColumnDetallesSolicitudState extends State<PrimaryColumnDetallesSol
   //Cambios
   String? selectedServicio;
   String? cambio;
+  late bool construct = false;
 
   @override
-  void initState() {
-    loadtablas();
+  void initState(){
     super.initState();
+    loadtablas();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
   }
 
   Future loadtablas() async{
@@ -117,41 +122,45 @@ class PrimaryColumnDetallesSolicitudState extends State<PrimaryColumnDetallesSol
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<SolicitudProvider>(
-        builder: (context, solicitudprovider, child) {
-          Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
-          idcotizacionn = solicitudSeleccionado.idcotizacion;
+    if(construct){
+      return Consumer<SolicitudProvider>(
+          builder: (context, solicitudprovider, child) {
+            Solicitud solicitudSeleccionado = solicitudprovider.solicitudSeleccionado;
+            idcotizacionn = solicitudSeleccionado.idcotizacion;
 
-          return ItemsCard(
-            alignementColumn: MainAxisAlignment.start,
-            shadow: false,
-            width: widget.currentwith * 0.98,
-            height: widget.currentheight,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 15.0, bottom: 10),
-                child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-              ),
-              textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
-              if(widget.editDetalles)
-                Column(
-                  children: [
-                    textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
-                    textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
-                    textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
-                    textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
-                    textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
-                    textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
-
-                  ],
+            return ItemsCard(
+              alignementColumn: MainAxisAlignment.start,
+              shadow: false,
+              width: widget.currentwith * 0.98,
+              height: widget.currentheight,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 15.0, bottom: 10),
+                  child: Text("Detalles solicitud", style: themeApp.styleText(20, true, themeApp.primaryColor),),
                 ),
-              textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
-              textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
-              textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
-            ],
-          );
-        }
-    );
+                textoymodificable('Tipo de servicio',solicitudSeleccionado.servicio,0,false,),
+                if(widget.editDetalles)
+                  Column(
+                    children: [
+                      textoymodificable('Id cotización ',solicitudSeleccionado.idcotizacion.toString(),1,true),
+                      textoymodificable('Matería  ',solicitudSeleccionado.materia,2,false),
+                      textoymodificable('Fecha de entrega  ',solicitudSeleccionado.fechaentrega.toString(),3,false),
+                      textoymodificable('Cliente  ',solicitudSeleccionado.cliente.toString(),4,true),
+                      textoymodificable('fecha sistema  ',solicitudSeleccionado.fechasistema.toString(),5,true),
+                      textoymodificable('Estado  ',solicitudSeleccionado.estado,6,true),
+
+                    ],
+                  ),
+                textoymodificable('Resumen  ',solicitudSeleccionado.resumen,7,false),
+                textoymodificable('Info cliente ',solicitudSeleccionado.infocliente,8,false),
+                textoymodificable('url archivos ',solicitudSeleccionado.urlArchivos,9,true),
+              ],
+            );
+          }
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
   Widget textoymodificable(String text,String valor,int index, bool bool){
@@ -400,6 +409,16 @@ class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetalle
   ConfiguracionPlugins? config;
   Solicitud? solicitud;
   List<ArchivoResultado>? archivoList;
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
 
 
   void actualizarArchivos(int idcotizacion,String carpetaid) async{
@@ -411,70 +430,75 @@ class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetalle
 
   @override
   Widget build(BuildContext context) {
-    return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
-      builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
-        config = configuracionProviderselect.config;
-        solicitud = solicitudProviderselect.solicitudSeleccionado;
-        archivoList = archivoDriveProvider.todosLosArchivos;
-        configuracionSolicitudes = Utiles().obtenerBool(config!.solicitudesDriveApiFecha);
+    if(construct){
+      return Consumer3<ConfiguracionAplicacion, SolicitudProvider,ArchivoVistaDrive>(
+        builder: (context, configuracionProviderselect, solicitudProviderselect,archivoDriveProvider , child) {
+          config = configuracionProviderselect.config;
+          solicitud = solicitudProviderselect.solicitudSeleccionado;
+          archivoList = archivoDriveProvider.todosLosArchivos;
+          configuracionSolicitudes = Utiles().obtenerBool(config!.solicitudesDriveApiFecha);
 
-        if(!cargarArchivos && configuracionSolicitudes){
-          print("cargando archivos");
-          actualizarArchivos(solicitud!.idcotizacion,config!.idcarpetaSolicitudes);
-        }
+          if(!cargarArchivos && configuracionSolicitudes){
+            print("cargando archivos");
+            actualizarArchivos(solicitud!.idcotizacion,config!.idcarpetaSolicitudes);
+          }
 
-        if(configuracionSolicitudes){
-          return ItemsCard(
-            alignementColumn: MainAxisAlignment.start,
-            shadow: false,
-            width: widget.currentwith,
-            height: widget.currentheight,
-            cardColor: themeApp.primaryColor,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-                child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
-              ),
-              PrimaryStyleButton(
-                  buttonColor: themeApp.grayColor,
-                  tapColor: themeApp.blackColor,
-                  invert: true,
-                  function: (){
-                    selectFile();
-                  }, text: "Seleccionar archivos"),
+          if(configuracionSolicitudes){
+            return ItemsCard(
+              alignementColumn: MainAxisAlignment.start,
+              shadow: false,
+              width: widget.currentwith,
+              height: widget.currentheight,
+              cardColor: themeApp.primaryColor,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+                  child: Text("Seleccionar archivos", style: themeApp.styleText(24, true, themeApp.whitecolor),),
+                ),
+                PrimaryStyleButton(
+                    buttonColor: themeApp.grayColor,
+                    tapColor: themeApp.blackColor,
+                    invert: true,
+                    function: (){
+                      selectFile();
+                    }, text: "Seleccionar archivos"),
 
-              //Archivos nombre que se van a subir
-              if(selectedFiles  != null)
-                Column(
-                  children: selectedFiles!.map((file) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
-                      color: themeApp.primaryColor,
-                      child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
-                    );
-                  }).toList(),
+                //Archivos nombre que se van a subir
+                if(selectedFiles  != null)
+                  Column(
+                    children: selectedFiles!.map((file) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3.0),
+                        color: themeApp.primaryColor,
+                        child: Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor),),
+                      );
+                    }).toList(),
+                  ),
+
+                PrimaryStyleButton(
+                    invert: true,
+                    buttonColor: themeApp.primaryColor,
+                    function: (){
+                      subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
+                    }, text: "Subir mas archivos"),
+
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
+                  child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
                 ),
 
-              PrimaryStyleButton(
-                  invert: true,
-                  function: (){
-                    subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
-                  }, text: "Subir mas archivos"),
+                _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == -1 ? 1 : 4,),
 
-              Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 10.0),
-                child: Text("Archivos en Solicitud", style: themeApp.styleText(22, true, themeApp.whitecolor),),
-              ),
-
-              _TarjetaArchivos(archivosList: archivoList,numcontenedor: widget.currentheight == -1 ? 1 : 4,),
-
-            ],
-          );
-        }else{
-          return Text('Vos no tenes este plugin para ver los archivos');
-        }
-      },
-    );
+              ],
+            );
+          }else{
+            return Text('Vos no tenes este plugin para ver los archivos');
+          }
+        },
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
   Future subirarchivos(String idcarpetasolicitudesDrive, String idsolicitud) async{
@@ -525,6 +549,16 @@ class _TarjetaArchivos extends StatefulWidget{
 class _TarjetaArchivosState extends State<_TarjetaArchivos> {
 
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
+
+  @override
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -546,31 +580,35 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
       return containWidgets([
         for (int i = 0; i < widget.archivosList!.length; i++)
           if ((i + 1) % widget.numcontenedor == (index + 1) % widget.numcontenedor)
-            _TarjetaArchivo(archivo: widget.archivosList![i]),
+            _TarjetaArchivo(archivo: widget.archivosList![i], primaryColor: themeApp.primaryColor,),
       ]);
     });
 
-    return ItemsCard(
-      alignementColumn: MainAxisAlignment.start,
-      shadow: false,
-      cardColor: themeApp.primaryColor,
-      children: [
-        Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
+    if(construct){
+      return ItemsCard(
+        alignementColumn: MainAxisAlignment.start,
+        shadow: false,
+        cardColor: themeApp.primaryColor,
+        children: [
+          Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
 
-        material.Card(
-          color: themeApp.whitecolor.withOpacity(0),
-          shadowColor: themeApp.whitecolor.withOpacity(0),
-          child: SingleChildScrollView(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: contenedores,
+          material.Card(
+            color: themeApp.whitecolor.withOpacity(0),
+            shadowColor: themeApp.whitecolor.withOpacity(0),
+            child: SingleChildScrollView(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: contenedores,
+              ),
             ),
           ),
-        ),
 
 
-      ],
-    );
+        ],
+      );
+    }else{
+      return const Center(child: material.CircularProgressIndicator(),);
+    }
   }
 
 }
@@ -578,17 +616,19 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
 class _TarjetaArchivo extends StatelessWidget{
 
   final ArchivoResultado archivo;
+  final Color primaryColor;
 
   const _TarjetaArchivo({
     Key?key,
     required this.archivo,
+    required this.primaryColor,
   }):super(key: key);
 
   @override
   Widget build(BuildContext context){
+    final ThemeApp themeApp = ThemeApp();
     const double imageTamanio = 40;
     const double radioButton = 22;
-    final ThemeApp themeApp = ThemeApp();
 
     TextStyle styleText([double? tamanio]) => themeApp.styleText(tamanio?? 14, false, themeApp.blackColor);
     material.SizedBox textResponsive(String text, TextStyle styleText) => material.SizedBox(
@@ -647,11 +687,12 @@ class _TarjetaArchivo extends StatelessWidget{
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     CircularButton(
-                        radio: radioButton,
-                        iconData: material.Icons.download,
-                        function: (){
-                          _abrirEnlace(archivo.linkDescargaArchivo);
-                        }
+                      buttonColor: primaryColor,
+                      radio: radioButton,
+                      iconData: material.Icons.download,
+                      function: (){
+                        _abrirEnlace(archivo.linkDescargaArchivo);
+                      }
                     ),
                     CircularButton(
                         radio: radioButton,

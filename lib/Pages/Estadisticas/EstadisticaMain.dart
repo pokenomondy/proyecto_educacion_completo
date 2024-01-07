@@ -1,5 +1,6 @@
 import 'package:dashboard_admin_flutter/Utils/EnviarMensajesWhataspp.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:googleapis/cloudsearch/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -111,10 +112,16 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
 
 
   final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
 
-  void initState() {
-    _tooltipBehavior =  TooltipBehavior(enable: true);
+  @override
+  void initState(){
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
+    _tooltipBehavior =  TooltipBehavior(enable: true);
   }
 
   //reiniciar variables
@@ -212,35 +219,39 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
   @override
   Widget build(BuildContext context) {
     //Consumer para contabilidad y solicitudes
-    return Consumer2<ContabilidadProvider,SolicitudProvider>(
-        builder: (context, contabilidadproselect, solicitudproselect , child) {
-          List<Solicitud>? solicitudList = solicitudproselect.todaslasSolicitudes;
-          List<ServicioAgendado>? servicioAgendadoList = contabilidadproselect.todoslosServiciosAgendados;
+    if(construct){
+      return Consumer2<ContabilidadProvider,SolicitudProvider>(
+          builder: (context, contabilidadproselect, solicitudproselect , child) {
+            List<Solicitud>? solicitudList = solicitudproselect.todaslasSolicitudes;
+            List<ServicioAgendado>? servicioAgendadoList = contabilidadproselect.todoslosServiciosAgendados;
 
-          if (solicitudList != null && servicioAgendadoList != null) {
-            updateDataInDashboard(servicioAgendadoList, solicitudList);
-            updateDataCharts(servicioAgendadoList,solicitudList);
+            if (solicitudList != null && servicioAgendadoList != null) {
+              updateDataInDashboard(servicioAgendadoList, solicitudList);
+              updateDataCharts(servicioAgendadoList,solicitudList);
+            }
+
+
+            return SingleChildScrollView(
+              child: ItemsCard(
+                shadow: true,
+                width: widget.currentwidth,
+                horizontalPadding: 20.0,
+                verticalPadding: 15.0,
+                children: [
+
+                  if(!widget.showcelular)
+                    getComputadorVista(),
+                  if(widget.showcelular)
+                    getCelularVista(),
+
+                ],
+              ),
+            );
           }
-
-
-          return SingleChildScrollView(
-            child: ItemsCard(
-              shadow: true,
-              width: widget.currentwidth,
-              horizontalPadding: 20.0,
-              verticalPadding: 15.0,
-              children: [
-
-                if(!widget.showcelular)
-                  getComputadorVista(),
-                if(widget.showcelular)
-                  getCelularVista(),
-
-              ],
-            ),
-          );
-        }
-    );
+      );
+    }else{
+      return const Center(child: CircularProgressIndicator(),);
+    }
 
   }
 
@@ -387,7 +398,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
             //Ventas
             Column(
               children: [
-                Text('Ventas',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
+                Text('Ventas',style: Disenos().aplicarEstilo(themeApp.primaryColor, 30, true),),
                 SfCartesianChart(
                   primaryXAxis: DateTimeAxis(
                     labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
@@ -412,7 +423,7 @@ class _PrimaryColumnState extends State<PrimaryColumn> {
             //Ganancias
             Column(
               children: [
-                Text('Ganancias',style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
+                Text('Ganancias',style: Disenos().aplicarEstilo(themeApp.primaryColor, 30, true),),
                 SfCartesianChart(
                   primaryXAxis: DateTimeAxis(
                     labelIntersectAction: AxisLabelIntersectAction.rotate45, // Rotar las etiquetas para evitar superposiciones
