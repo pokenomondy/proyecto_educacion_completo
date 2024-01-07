@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -31,7 +30,7 @@ class ThemeApp{
     secundaryColor = utiles.hexToColor(configaplicacion!.secundaryColor);
   }
 
-  Widget colorRow(Color color, String text){
+  Padding colorRow(Color color, String text){
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -63,80 +62,6 @@ class ThemeApp{
         fontWeight: isBold? FontWeight.bold: FontWeight.w300,
         fontFamily: 'Poppins',
         color: color,
-    );
-  }
-
-  Dialog errorDialog(String text, BuildContext context){
-    return Dialog(
-      backgroundColor: whitecolor.withOpacity(0),
-      child: ItemsCard(
-        shadow: true,
-        width: 200,
-        height: 200,
-        children: [
-          Icon(Icons.error, size: 70, color: redColor,),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12.0),
-            child: Text(text),
-          ),
-          PrimaryStyleButton(
-              width: 100,
-              buttonColor: redColor,
-              function: (){
-                Navigator.pop(context);
-              }, text: "Cerrar")
-        ],
-      ),
-    );
-  }
-
-  Dialog ConfirmDialog(String text, BuildContext context){
-    return Dialog(
-      backgroundColor: whitecolor.withOpacity(0),
-      child: ItemsCard(
-        shadow: true,
-        width: 250,
-        height: 250,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: Icon(Icons.info, size: 70, color: primaryColor,),
-          ),
-          Expanded(
-              child:
-              SizedBox(
-                width: 220,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12.0),
-                  child: Text(
-                    text,
-                    maxLines: null,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )),
-          Container(
-            margin: const EdgeInsets.only(bottom: 15.0),
-            width: 180,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                PrimaryStyleButton(
-                    width: 80,
-                    function: (){
-                      Navigator.pop(context);
-                    }, text: "Aceptar"),
-                PrimaryStyleButton(
-                    width: 80,
-                    buttonColor: redColor,
-                    function: (){
-                      Navigator.pop(context);
-                    }, text: "Cerrar"),
-              ]
-            ),
-          )
-        ],
-      ),
     );
   }
 

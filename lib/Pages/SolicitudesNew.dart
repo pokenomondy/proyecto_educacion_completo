@@ -52,9 +52,16 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
   final GlobalKey<CuadroSolicitudesState> dialogKey = GlobalKey<CuadroSolicitudesState>();
   Config configuracion = Config();
   bool configloaded = false;
+  final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
 
   @override
-  void initState() {
+  void initState(){
+    super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     configuracion.initConfig().then((_) {
       setState(() {
@@ -62,8 +69,8 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
       });
     });
     loadtablas();
-    super.initState();
   }
+
 
   Future<void> loadtablas() async {
     //Cargar Tutores
@@ -97,37 +104,40 @@ class _SolicitudesNewState extends State<SolicitudesNew> {
     final currentwidth = MediaQuery.of(context).size.width;
     final currentheight = MediaQuery.of(context).size.height-Config.tamanoHeightnormal;
     final tamanowidth = (currentwidth/3)-Config.responsivepc/3;
-    if (!configloaded) {
-      print("carngado cosas de solicitudes");
-      return Text('cargando cosas');
-    }else{
-      return NavigationView(
-        content: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 12),
-          child: Row(
-            children: [
-              if(currentwidth >= 1200)
-                Row(
-                  children: [
-                    _subirsolicitudes(currentwidth: tamanowidth,onUpdateListaClientes: loadtablas,materiaList: materiaList,clienteList: clienteList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,),
-                    _CrearContainer(currentwidth: tamanowidth, title: "Disponible",descargadatos: true,estado: "DISPONIBLE",height: currentheight,clienteList: clienteList,tutoresList: tutoresList,onUpdateListaClientes: loadtablas,primarycolor: configuracion.primaryColor,),
-                    _CrearContainer(currentwidth: tamanowidth, title: "Esperando",descargadatos: false,estado: "ESPERANDO",height: currentheight,clienteList: clienteList,tutoresList: tutoresList,onUpdateListaClientes: loadtablas,primarycolor: configuracion.primaryColor,),
-                  ],
-                ),
-              if(currentwidth < 1200 && currentwidth > 620)
-                Container(
-                    width: currentwidth-Config.responsivetablet-20,
-                    child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,)),
-              if(currentwidth <= 620)
-                Container(
-                    width: currentwidth-Config.responsivecelular-20,
-                    child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: configuracion.primaryColor,))
-            ],
+    if(construct){
+      if (!configloaded) {
+        print("carngado cosas de solicitudes");
+        return const Text('cargando cosas');
+      }else{
+        return NavigationView(
+          content: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 12),
+            child: Row(
+              children: [
+                if(currentwidth >= 1200)
+                  Row(
+                    children: [
+                      _subirsolicitudes(currentwidth: tamanowidth,onUpdateListaClientes: loadtablas,materiaList: materiaList,clienteList: clienteList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: themeApp.primaryColor,),
+                      _CrearContainer(currentwidth: tamanowidth, title: "Disponible",descargadatos: true,estado: "DISPONIBLE",height: currentheight,clienteList: clienteList,tutoresList: tutoresList,onUpdateListaClientes: loadtablas,primarycolor: themeApp.primaryColor,),
+                      _CrearContainer(currentwidth: tamanowidth, title: "Esperando",descargadatos: false,estado: "ESPERANDO",height: currentheight,clienteList: clienteList,tutoresList: tutoresList,onUpdateListaClientes: loadtablas,primarycolor: themeApp.primaryColor,),
+                    ],
+                  ),
+                if(currentwidth < 1200 && currentwidth > 620)
+                  SizedBox(
+                      width: currentwidth-Config.responsivetablet-20,
+                      child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: themeApp.primaryColor,)),
+                if(currentwidth <= 620)
+                  SizedBox(
+                      width: currentwidth-Config.responsivecelular-20,
+                      child: SolicitudesResponsiveCelular(clienteList: clienteList,onUpdateListaClientes: loadtablas,materiaList: materiaList,tutoresList: tutoresList,carreraList: CarrerasList,universidadList: UniversidadList,primarycolor: themeApp.primaryColor,))
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
+    }else{
+      return const material.Center(child: material.CircularProgressIndicator(),);
     }
-
   }
 }
 
@@ -804,7 +814,7 @@ class _CrearContainerState extends State<_CrearContainer> {
         padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 8),
         child: Column(
           children: [
-            Text(widget.title,style: Disenos().aplicarEstilo(Config().primaryColor, 30, true),),
+            Text(widget.title,style: Disenos().aplicarEstilo(widget.primarycolor, 30, true),),
             Consumer<SolicitudProvider>(
                 builder: (context, solicitudProvider, child) {
                   List<Solicitud> solicitudesList = [];
@@ -859,6 +869,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
   }
 
   final ThemeApp themeApp = ThemeApp();
+
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.abs().toString().padLeft(2, "0");
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
@@ -866,8 +877,6 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
-  final TextStyle textStyle = TextStyle(
-      fontSize: 15.0, color: Config().primaryColor);
   Tutores? selectedTutor;
   final TextEditingController precioTutor = TextEditingController();
   final TextEditingController comentarioTutor = TextEditingController();
@@ -920,6 +929,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
 
   @override
   Widget build(BuildContext context) {
+    final TextStyle textStyle = TextStyle(fontSize: 15.0, color: widget.primarycolor);
     return Container(
       height: widget.height-60,
       child: ListView.builder(
@@ -996,8 +1006,9 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                               stream: _tick(
                                                   solicitud.fechasistema),
                                               builder: (context, snapshot) {
-                                                if (!snapshot.hasData)
+                                                if (!snapshot.hasData) {
                                                   return const Text('Cargando');
+                                                }
                                                 Duration duration = snapshot
                                                     .data!;
                                                 return Text(
@@ -1056,64 +1067,75 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                               ),
                               //Copiar solicitud
                               PrimaryStyleButton(
-                                  width: 100,
-                                  function: (){
-                                    copiarSolicitud(
-                                        solicitud.servicio,
-                                        solicitud.idcotizacion,
-                                        solicitud.materia,
-                                        solicitud.fechaentrega,
-                                        solicitud.resumen,
-                                        solicitud.infocliente,
-                                        solicitud.urlArchivos
-                                    );
-                                  },
-                                  text: "Copiar"
+                                invert: true,
+                                buttonColor: widget.primarycolor,
+                                width: 100,
+                                function: (){
+                                  copiarSolicitud(
+                                      solicitud.servicio,
+                                      solicitud.idcotizacion,
+                                      solicitud.materia,
+                                      solicitud.fechaentrega,
+                                      solicitud.resumen,
+                                      solicitud.infocliente,
+                                      solicitud.urlArchivos
+                                  );
+                                },
+                                text: "Copiar"
                               ),
                               Row(
                                 children: [
                                   //Ver detalles de cotización
-                                  GestureDetector(
-                                    onTap: () {
-                                      print("Ver detalles");
-                                      material.Navigator.push(context, material.MaterialPageRoute(
-                                        builder: (context)  => Dashboard(showSolicitudesNew: true, showTutoresDetalles: false,),
-                                      ));
-                                      //Vamos a seleccionar el servicio
-                                      final solicitudProvider = Provider.of<SolicitudProvider>(context, listen: false);
-                                      solicitudProvider.seleccionarSolicitud(solicitud.idcotizacion);
-                                    },
-                                    child: material.Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Icon(material.Icons.info_outline_rounded, color: themeApp.whitecolor,),
+                                  MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        print("Ver detalles");
+                                        material.Navigator.push(context, material.MaterialPageRoute(
+                                          builder: (context)  => const Dashboard(showSolicitudesNew: true, showTutoresDetalles: false,),
+                                        ));
+                                        //Vamos a seleccionar el servicio
+                                        final solicitudProvider = Provider.of<SolicitudProvider>(context, listen: false);
+                                        solicitudProvider.seleccionarSolicitud(solicitud.idcotizacion);
+                                      },
+                                      child: material.Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                                        child: Icon(material.Icons.info_outline_rounded, color: themeApp.whitecolor,),
+                                      ),
                                     ),
                                   ),
                                   if(!widget.vistaBusqueda)
                                     Row(
                                       children: [
                                         //Cotizar por tutor
-                                        GestureDetector(
-                                          onTap: () {
-                                            print("Cotizar por otro tutor");
-                                            cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
+                                        MouseRegion(
+                                          cursor: SystemMouseCursors.click,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              print("Cotizar por otro tutor");
+                                              cotizarPorOtroTutorDialog(context, solicitud.idcotizacion, solicitud.fechasistema);
 
-                                          },
-                                          child: material.Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                                            child: Icon(material.Icons.accessibility, color: themeApp.whitecolor,),
+                                            },
+                                            child: material.Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                                              child: Icon(material.Icons.accessibility, color: themeApp.whitecolor,),
+                                            ),
                                           ),
                                         ),
                                         //Ver cotizaciones
-                                        GestureDetector(
-                                          onTap: () {
-                                            //se debe seleccionar el cliente para agendarle
-                                            final clienteProvider = Provider.of<ClientesVistaProvider>(context, listen: false);
-                                            clienteProvider.seleccionarCliente(solicitud.cliente);
-                                            vistaCotizaciones(context, solicitud);
-                                          },
-                                          child: material.Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                                            child: Icon(material.Icons.note_rounded, color: themeApp.whitecolor,),
+                                        MouseRegion(
+                                          cursor: SystemMouseCursors.click,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              //se debe seleccionar el cliente para agendarle
+                                              final clienteProvider = Provider.of<ClientesVistaProvider>(context, listen: false);
+                                              clienteProvider.seleccionarCliente(solicitud.cliente);
+                                              vistaCotizaciones(context, solicitud);
+                                            },
+                                            child: material.Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                                              child: Icon(material.Icons.note_rounded, color: themeApp.whitecolor,),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -1178,7 +1200,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
         children: [
           material.Padding(
             padding: const EdgeInsets.symmetric(vertical: verticalPadding + 5),
-            child: Text("Cotizar por tutor", style: themeApp.styleText(22, true, themeApp.primaryColor),),
+            child: Text("Cotizar por tutor", style: themeApp.styleText(22, true, widget.primarycolor),),
           ),
           material.Padding(
             padding: const EdgeInsets.symmetric(vertical: verticalPadding),
@@ -1268,6 +1290,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 PrimaryStyleButton(
+                    buttonColor: widget.primarycolor,
                     function: (){
                       final DateTime ahora = DateTime.now();
                       final Duration duration = ahora.difference(fechaSistema);
@@ -1277,6 +1300,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                     text: "Subir precio"
                 ),
                 PrimaryStyleButton(
+                    buttonColor: widget.primarycolor,
                     function: (){
                       Navigator.pop(context, 'User canceled dialog');
                     },
@@ -1383,22 +1407,16 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                               children: [
                                 Expanded(child: Text("${cotizacion.tiempoconfirmacion.toString()} minutos", style: themeApp.styleText(14, false, themeApp.blackColor),)),
                                 Expanded(child: Text('Fecha max confirmación', style: themeApp.styleText(14, false, themeApp.blackColor),)),
-                                GestureDetector(
-                                  child: Container(
-                                      decoration: BoxDecoration(
-                                          color: themeApp.primaryColor,
-                                          borderRadius: BorderRadius.circular(80)
-                                      ),
-                                      height: 25,
-                                      width: 25,
-                                      child: Icon(FluentIcons.add, color: themeApp.whitecolor, size: 12,)
-                                  ),
-                                  onTap: () async {
-                                    codigocontabilidad(solicitud);
-                                    
-                                    agendarTrabajo(context,solicitud,cotizacion);
-                                  },
-                                )
+
+                                CircularButton(
+                                  buttonColor: widget.primarycolor,
+                                  iconData: material.Icons.add,
+                                  radio: 25,
+                                  function: () async {
+                                  codigocontabilidad(solicitud);
+                                  agendarTrabajo(context,solicitud,cotizacion);
+                                }),
+
                               ],
                             ),
                           ),
@@ -1421,16 +1439,18 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
               material.Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 20.0),
                 child: PrimaryStyleButton(
-                    function: (){
+                  buttonColor: widget.primarycolor,
+                  function: (){
 
-                    },
-                    text: "Subir precio"
+                  },
+                  text: "Subir precio"
                 ),
               ),
 
               material.Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 8.0),
                 child: PrimaryStyleButton(
+                    buttonColor: widget.primarycolor,
                     width: 120,
                     function: (){
                       Navigator.pop(context);
@@ -1465,11 +1485,11 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
             child: ItemsCard(
               alignementColumn: MainAxisAlignment.center,
               width: currentwidth,
-              height: 450,
+              height: 470,
               children: [
                 material.Padding(
                   padding: const EdgeInsets.only(bottom: 18.0),
-                  child: Text("Agendar trabajo", style: themeApp.styleText(24, true, themeApp.primaryColor),),
+                  child: Text("Agendar trabajo", style: themeApp.styleText(24, true, widget.primarycolor),),
                 ),
 
                 Consumer<ContabilidadProvider>(
@@ -1574,11 +1594,13 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                         //Mensaje de confirmación
                         if(selectedCliente!.nombreCliente != 'PROSPECTO CLIENTE')
                           PrimaryStyleButton(
+                            buttonColor: widget.primarycolor,
                               function: (){
                                 copiarConfirmacion(solicitud,true,cotizacion);
                               },
                               text: "Copiar confirmacion"),
                         PrimaryStyleButton(
+                            buttonColor: widget.primarycolor,
                             function: (){
                               copiarConfirmacion(solicitud,false,cotizacion);
                             },
@@ -1591,6 +1613,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                             material.Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4.0),
                               child: PrimaryStyleButton(
+                                  buttonColor: widget.primarycolor,
                                   function: (){
                                     comprobacionagendartrabajo(cotizacion,solicitud,context);
                                   },
@@ -1601,11 +1624,11 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                             material.Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4.0),
                               child: PrimaryStyleButton(
-                                  width: 100,
+                                  buttonColor: widget.primarycolor,
                                   function: (){
                                     Navigator.pop(context);
                                   },
-                                  text: "Cerrar"
+                                  text: " Cerrar "
                               ),
                             ),
 

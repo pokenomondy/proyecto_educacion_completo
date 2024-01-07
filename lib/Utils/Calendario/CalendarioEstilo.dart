@@ -17,11 +17,8 @@ import '../../Providers/Providers.dart';
 import '../Firebase/Uploads.dart';
 
 class CalendarioStyle {
-  final ThemeApp themeApp = ThemeApp();
-
-
   dialog.Color colortarjetaTutor(ServicioAgendado servicio){
-    if(servicio!.fechasistema.isBefore(DateTime(2023,9,29))){
+    if(servicio.fechasistema.isBefore(DateTime(2023,9,29))){
       return dialog.Colors.yellow;
     }else if(servicio.entregadotutor == "ENTREGADO"){
       return dialog.Colors.green; //Ya esta entregado
@@ -148,7 +145,7 @@ class CalendarioStyle {
     }
   }
 
-  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context, Map<Appointment, ServicioAgendado> appointmentToServicioMap, String rol){
+  void calendario_oprimido(CalendarTapDetails details,String _subject,String _notes,BuildContext context, Map<Appointment, ServicioAgendado> appointmentToServicioMap, String rol, ThemeApp themeApp){
     ServicioAgendado? servicioseleccionado;
     if(details.targetElement == CalendarElement.appointment || details.targetElement == CalendarElement.agenda) {
       final Appointment appointmentdetails = details.appointments![0];
@@ -157,33 +154,30 @@ class CalendarioStyle {
       servicioseleccionado = appointmentToServicioMap[appointmentdetails];
     }
 
-    showDialog(context: context, builder: (BuildContext context) => servicioTarjeta(servicioseleccionado!, context, rol));
+    showDialog(context: context, builder: (BuildContext context) => servicioTarjeta(servicioseleccionado!, context, rol, themeApp));
   }
 
-  dialog.Dialog servicioTarjeta(ServicioAgendado servicioseleccionado, BuildContext context, String rol){
+  dialog.Dialog servicioTarjeta(ServicioAgendado servicioseleccionado, BuildContext context, String rol, ThemeApp themeApp){
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
-      child: dialog.Card(
-        color: themeApp.whitecolor.withOpacity(0),
-        shadowColor: themeApp.whitecolor.withOpacity(0),
-        child: ItemsCard(
-          verticalPadding: 20.0,
-          horizontalPadding: 15.0,
-          width: 450,
-          children: [
-            Text("Agenda ${servicioseleccionado.idcontable}", style: themeApp.styleText(20, true, themeApp.primaryColor),),
-            tarjetas(servicioseleccionado,context,rol),
-          ],
-        ),
+      child: ItemsCard(
+        verticalPadding: 20.0,
+        horizontalPadding: 15.0,
+        height: 580,
+        width: 450,
+        children: [
+          Text("Agenda ${servicioseleccionado.idcontable}", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+          tarjetas(servicioseleccionado,context,rol,themeApp),
+        ],
       ),
     );
   }
 
-  dialog.Widget tarjetas(ServicioAgendado servicioseleccionado, BuildContext context, String rol){
+  dialog.Widget tarjetas(ServicioAgendado servicioseleccionado, BuildContext context, String rol, ThemeApp themeApp){
     if (rol == "TUTOR"){
-      return calendariovistaTutor(servicioseleccionado!);
+      return calendariovistaTutor(servicioseleccionado);
     }else{
-      return calendariovistaAdmin(servicioseleccionado!,context);
+      return calendariovistaAdmin(servicioseleccionado,context, themeApp);
     }
 
   }
@@ -230,7 +224,7 @@ class CalendarioStyle {
                     return Text(
                       'Tiempo restante: ${timeRemaining.inDays} días, ${timeRemaining.inHours.remainder(24)} horas '
                           ', ${timeRemaining.inMinutes.remainder(60)} minutos',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     );
                   },
                 ),
@@ -241,78 +235,78 @@ class CalendarioStyle {
     );
   }
 
-  Widget calendariovistaAdmin(ServicioAgendado servicioseleccionado, BuildContext context){
-    return Container(
-      child: Column(
-        children: [
-          //Código
-          textoYVista('Código',servicioseleccionado.codigo),
-          //Matería
-          textoYVista('Matería',servicioseleccionado.materia),
-          //Cliente
-          textoCopy('Cliente'," ${servicioseleccionado.cliente} "),
-          //Tutor
-          textoCopy('Tutor'," ${servicioseleccionado.tutor} "),
+  Widget calendariovistaAdmin(ServicioAgendado servicioseleccionado, BuildContext context, ThemeApp themeApp){
+    return Column(
+      children: [
+        //Código
+        textoYVista('Código',servicioseleccionado.codigo, themeApp),
+        //Matería
+        textoYVista('Matería',servicioseleccionado.materia, themeApp),
+        //Cliente
+        textoCopy('Cliente'," ${servicioseleccionado.cliente} ", themeApp),
+        //Tutor
+        textoCopy('Tutor'," ${servicioseleccionado.tutor} ", themeApp),
 
-          // PRECIOS
-          //precio cobrado
-          textoYVista('Precío',servicioseleccionado.preciocobrado.toString()),
-          //precio tutor
-          textoYVista('Precío tutor',servicioseleccionado.preciotutor.toString()),
-          //Ganancias
-          textoYVista('Ganancías','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)}'),
-          //% precio cobrado
-          textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)/servicioseleccionado.preciocobrado}'),
+        // PRECIOS
+        //precio cobrado
+        textoYVista('Precío',servicioseleccionado.preciocobrado.toString(), themeApp),
+        //precio tutor
+        textoYVista('Precío tutor',servicioseleccionado.preciotutor.toString(), themeApp),
+        //Ganancias
+        textoYVista('Ganancías','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)}', themeApp),
+        //% precio cobrado
+        textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)/servicioseleccionado.preciocobrado}', themeApp),
 
-          //PAGOS
-          //DEBE CLIENTE
+        //PAGOS
+        //DEBE CLIENTE
 
-          //DEBE TUTOR
+        //DEBE TUTOR
 
-          //ENTREGAS
-          //TUTOR ENTREGO TRABAJO EN XX
-          textoYVista('Entrega Tutor',servicioseleccionado.entregadotutor),
-          textoYVista('Entrega Cliente',servicioseleccionado.entregadocliente),
-          const Text('TOCA REGISTRAR FECHAS DE ENTREGAS, EN VES DE TEXTO'),
+        //ENTREGAS
+        //TUTOR ENTREGO TRABAJO EN XX
+        textoYVista('Entrega Tutor',servicioseleccionado.entregadotutor, themeApp),
+        textoYVista('Entrega Cliente',servicioseleccionado.entregadocliente, themeApp),
+        const Text('TOCA REGISTRAR FECHAS DE ENTREGAS, EN VES DE TEXTO'),
 
-          //ENTREGAS DE CLIENTE
-          //entregado tutor
-          if(servicioseleccionado.entregadotutor == "ENTREGADO")
-            PrimaryStyleButton(
-                function: (){
-              Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
-              Navigator.pop(context, 'User deleted file');},
-                text: "Entregar trabajo",
-            ),
-          if(servicioseleccionado.entregadotutor != "ENTREGADO")
-            const Text('No se ha entregado por tutor'),
-
-          //No entregar
+        //ENTREGAS DE CLIENTE
+        //entregado tutor
+        if(servicioseleccionado.entregadotutor == "ENTREGADO")
           PrimaryStyleButton(
+            buttonColor: themeApp.primaryColor,
               function: (){
-            Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
-            Navigator.pop(context, 'User deleted file');
-          },
-              text: "No Entregar trabajo",
+            Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"CLIENTE");
+            Navigator.pop(context, 'User deleted file');},
+              text: "Entregar trabajo",
           ),
+        if(servicioseleccionado.entregadotutor != "ENTREGADO")
+          const Text('No se ha entregado por tutor'),
 
-          //Ver detalles de servicio
-          GestureDetector(
-            child: Text('detalles'),
-            onTap: (){
-              final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
-              contabilidadProvider.seleccionarServicio(servicioseleccionado);
-              dialog.Navigator.push(context, dialog.MaterialPageRoute(
-                builder: (context)  => MainTutoresDash(showDetallesSolicitud: true,),
-              ));
-            },
-          )
-        ],
-      ),
+        //No entregar
+        PrimaryStyleButton(
+          buttonColor: themeApp.primaryColor,
+            function: (){
+          Uploads().modifyServicioAgendadoEntregadoCliente(servicioseleccionado!.codigo,"NOENTREGAR");
+          Navigator.pop(context, 'User deleted file');
+        },
+            text: "No Entregar trabajo",
+        ),
+
+        //Ver detalles de servicio
+        GestureDetector(
+          child: const Text('detalles'),
+          onTap: (){
+            final contabilidadProvider = Provider.of<ContabilidadProvider>(context, listen: false);
+            contabilidadProvider.seleccionarServicio(servicioseleccionado);
+            dialog.Navigator.push(context, dialog.MaterialPageRoute(
+              builder: (context)  => const MainTutoresDash(showDetallesSolicitud: true,),
+            ));
+          },
+        )
+      ],
     );
   }
 
-  Widget textoYVista(String title, String valor){
+  Widget textoYVista(String title, String valor, ThemeApp themeApp){
     const double verticalPadding = 3.0;
 
     return Row(
@@ -333,7 +327,7 @@ class CalendarioStyle {
     );
   }
 
-  Widget textoCopy(String title, String valor){
+  Widget textoCopy(String title, String valor, ThemeApp themeApp){
     const double verticalPadding = 3.0;
     return Row(
       children: [
@@ -346,7 +340,9 @@ class CalendarioStyle {
                   padding: const EdgeInsets.only(bottom: 5, right: 5, top: 5),
                   margin: const EdgeInsets.only(left: 15),
                   child: Text("$title", style: themeApp.styleText(14, false, themeApp.blackColor),)),
-              PrimaryStyleButton(function: () {
+              PrimaryStyleButton(
+                buttonColor: themeApp.primaryColor,
+                function: () {
                 final textToCopy = valor;
                 Clipboard.setData(
                     ClipboardData(text: textToCopy));
