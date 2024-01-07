@@ -262,7 +262,7 @@ class _ContainerPagosState extends State<_ContainerPagos> {
       await Uploads().addPago(selectedservicio!.idcontable, selectedservicio!, selectedtipopago, valordepago, _referenciaPagos.text, fecharegistropago, selectedmetodopago,context);
       // Actualiza la lista de pagos por servicio
       if(configuracionSolicitudes){
-        await DriveApiUsage().subirPago(idcarpetaPagosDrive, selectedFiles, _referenciaPagos.text);
+        //await DriveApiUsage().subirPago(idcarpetaPagosDrive, selectedFiles, _referenciaPagos.text);
       }else{
       }
       //Borrar todas las variables anteriores

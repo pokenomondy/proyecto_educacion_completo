@@ -1,19 +1,18 @@
+import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Pages/Contabilidad/DashboardContabilidad.dart';
 import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
+import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:googleapis/drive/v3.dart';
 import 'package:provider/provider.dart';
+import '../../Config/theme.dart';
 import '../../Objetos/AgendadoServicio.dart';
 import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
-import '../../Utils/EnviarMensajesWhataspp.dart';
-import '../../Utils/Firebase/Load_Data.dart';
-import '../../Utils/Firebase/StreamBuilders.dart';
 import 'package:flutter/material.dart' as material;
-
 import '../Servicios/Detalle_Solicitud.dart';
 
 class EntregaTutor extends StatefulWidget{
@@ -29,8 +28,6 @@ class _EntregaTutorState extends State<EntregaTutor> {
   void initState() {
     super.initState();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +50,12 @@ class _EntregaTutorState extends State<EntregaTutor> {
         //mostramos archivos
         SecundaryColumnDetallesSolicitud(currentwith: tamano, currentheight: currentheight,),
         //entregamos trabajo
-        PrimaryColumnEntregaTutor(nombretutor: "",currentwidth: tamano,),
+        Column(
+          children: [
+            PrimaryColumnEntregaTutor(currentwidth: tamano),
+            SecundaryColumnEntregaTutor(currentwidth: tamano,),
+          ],
+        ),
       ],
     );
   }
@@ -61,11 +63,9 @@ class _EntregaTutorState extends State<EntregaTutor> {
 }
 
 class PrimaryColumnEntregaTutor extends StatefulWidget{
-  final String nombretutor;
   final double currentwidth;
 
   const PrimaryColumnEntregaTutor({Key?key,
-    required this.nombretutor,
     required this.currentwidth,
   }) :super(key: key);
 
@@ -76,16 +76,15 @@ class PrimaryColumnEntregaTutor extends StatefulWidget{
 
 class _PrimaryColumnEntregaTutorState extends State<PrimaryColumnEntregaTutor> {
   List<PlatformFile>? selectedFiles ;
-  List<ServicioAgendado>? serviciosListTutor = [];
   ServicioAgendado? selectedServicio;
 
   bool subiendoentrega = false;
 
   String textoestado = "";
 
-  bool cargaseleccionarcodigo = false;
-
   bool cargandoentrega = false;
+
+  ConfiguracionPlugins? config;
 
   @override
   void initState() {
@@ -112,19 +111,27 @@ class _PrimaryColumnEntregaTutorState extends State<PrimaryColumnEntregaTutor> {
   }
 
   Widget entregasCuadro(double tamanowidht){
-    return Consumer<ContabilidadProvider>(
-        builder: (context, contabilidadProviderselect, child) {
+    return Consumer2<ContabilidadProvider,ConfiguracionAplicacion>(
+        builder: (context, contabilidadProviderselect,configuracionProviderselet, child) {
+          selectedServicio = contabilidadProviderselect.servicioSeleccionado;
+          config = configuracionProviderselet.config;
 
           return Padding(
             padding: const EdgeInsets.all(20.0),
-            child: SizedBox(
+            child: Container(
+              color: Colors.red,
               width: widget.currentwidth,
-              height: tamanowidht,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-
+                    Text('Entregas de trabajo en ${selectedServicio!.codigo}'),
+                    //Botón de subir archivos
+                    FilledButton(
+                        style: Disenos().boton_estilo(),
+                        child: Text('seleccionar archivos'), onPressed: (){
+                      selectFile();
+                    }),
                     if(selectedFiles  != null)
                     //Lista de archivos
                       Wrap(
@@ -143,38 +150,13 @@ class _PrimaryColumnEntregaTutorState extends State<PrimaryColumnEntregaTutor> {
                           );
                         }).toList(),
                       ),
-                    if(subiendoentrega == true)
-                    //Archivos ya subidos
-                      FilledButton(
-                          style: Disenos().boton_estilo(),
-                          child: Text('seleccionar archivos'), onPressed: (){
-                        selectFile();
-                      }),
                     FilledButton(
                         style: Disenos().boton_estilo(),
                         child: Text('ENTREGAR'), onPressed:() async{
-                      setState(() {
-                        textoestado = "Archivos subiendose ..., espere mensaje de confirmación";
-                        subiendoentrega = true;
-                        cargandoentrega = true;
-                      });
-                      await DriveApiUsage().entregartrabajo(selectedServicio!.codigo, selectedFiles, "1I2RvuF9pOVgN5laPkahMdBoYaAY9Ma_1", context,selectedServicio!);
-
-                      setState(() {
-                        selectedFiles = [];
-                        selectedServicio = null;
-                        textoestado = "SUBIDO COMPLETO";
-                        cargandoentrega = false;
-                      });
+                      entregarTrabajo();
                     }),
+                    Disenos().textoentregatrabajoTutor(selectedServicio!.fechaentrega)
 
-                    //Tiempo restante de entrega
-                    if(selectedServicio != null)
-                      Column(
-                        children: [
-                          Disenos().textoentregatrabajoTutor(selectedServicio!.fechaentrega)
-                        ],
-                      )
                   ],
                 ),
               ),
@@ -183,6 +165,15 @@ class _PrimaryColumnEntregaTutorState extends State<PrimaryColumnEntregaTutor> {
 
         }
     );
+  }
+  
+  Future entregarTrabajo() async{
+    final result = await DriveApiUsage().subirArchivosDrive(config!.idcarpetaEntregaTutores, selectedFiles, selectedServicio!.codigo, context);
+    Uploads().modifyServicioAgendadoEntregado(selectedServicio!.codigo,result.folderUrl);
+
+    setState(() {
+      selectedFiles = [];
+    });
   }
 
   Future selectFile() async{
@@ -204,7 +195,38 @@ class _PrimaryColumnEntregaTutorState extends State<PrimaryColumnEntregaTutor> {
     }
   }
 
+}
+
+class SecundaryColumnEntregaTutor extends StatefulWidget{
+  final double currentwidth;
+
+  const SecundaryColumnEntregaTutor({Key?key,
+    required this.currentwidth,
+  }) :super(key: key);
+
+  @override
+  _SecundaryColumnEntregaTutorState createState() => _SecundaryColumnEntregaTutorState();
 
 }
+
+class _SecundaryColumnEntregaTutorState extends State<SecundaryColumnEntregaTutor> {
+  List<ArchivoResultado> archivosDrive = [];
+  @override
+  Widget build(BuildContext context) {
+    return ItemsCard(
+      alignementColumn: MainAxisAlignment.start,
+      shadow: false,
+      width: 300,
+      cardColor: ThemeApp().primaryColor,
+      children: [
+        Text('Aqui vienne archivos de contabilidad'),
+        //TarjetaArchivosDrive(archivosList: archivosDrive, numcontenedor: 1)
+      ],
+    );
+  }
+}
+
+
+
 
 

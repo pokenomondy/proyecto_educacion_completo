@@ -107,7 +107,7 @@ class Uploads{
     DateTime fechasistema = DateTime.now();
     CollectionReference contabilidad = referencias.contabilidad!;
     List<RegistrarPago> pagos = [];
-    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],timestamphoy);
+    ServicioAgendado newservicioagendado = ServicioAgendado(codigo, sistema, materia, fechasistema, cliente, preciocobrado, fechaentrega, tutor, preciotutor, identificadorcodigo,idsolicitud,numerocontabilidadagenda,pagos,entregado,"NO ENTREGADO",[],timestamphoy,"");
     await contabilidad.doc(codigo).set(newservicioagendado.toMap());
     await stream_builders().estadisticasEscrituraFirestore(1);
 
@@ -169,14 +169,16 @@ class Uploads{
     });
     await stream_builders().estadisticasEscrituraFirestore(1);
   }
+
   //Entregar trabajos tutores
-  Future<void> modifyServicioAgendadoEntregado(String codigo)async {
+  Future<void> modifyServicioAgendadoEntregado(String codigo,String linkCarpeta)async {
     await referencias.initCollections();
-    print("entregado de tutor");
     CollectionReference contabilidad = referencias.contabilidad!;
     Map<String, dynamic> uploadinformacion = {};
     uploadinformacion = {
       "entregadotutor": "ENTREGADO",
+      'ultimaModificacion' : timestamphoy,
+      'linkEntregaTutor' : linkCarpeta,
     };
     await contabilidad.doc(codigo).update(uploadinformacion);
     await stream_builders().estadisticasEscrituraFirestore(1);

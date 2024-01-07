@@ -23,10 +23,12 @@ class ServicioAgendado{
   String entregadocliente = "";
   //lasTime
   int ultimaModificacion = 1672534800;
+  //Entrega por parte de tutores, link de entrega
+  String linkEntregaTutor = "";
 
   ServicioAgendado(this.codigo,this.sistema,this.materia,this.fechasistema,this.cliente,this.preciocobrado,this.fechaentrega,
       this.tutor,this.preciotutor,this.identificadorcodigo,this.idsolicitud,this.idcontable,this.pagos,this.entregadotutor,
-      this.entregadocliente,this.historial,this.ultimaModificacion);
+      this.entregadocliente,this.historial,this.ultimaModificacion,this.linkEntregaTutor);
 
   Map<String,dynamic> toMap(){
     return{
@@ -47,6 +49,7 @@ class ServicioAgendado{
       'pagos' : pagos,
       'historial' : historial,
       'ultimaModificacion' : ultimaModificacion,
+      'linkEntregaTutor' : linkEntregaTutor,
     };
   }
 
@@ -71,6 +74,7 @@ class ServicioAgendado{
       'entregadocliente' : entregadocliente,
       'historial' :historial.map((historialData) => historialData.toJson()).toList(),
       'ultimaModificacion' : ultimaModificacion,
+      'linkEntregaTutor' : linkEntregaTutor,
     };
   }
 
@@ -97,6 +101,7 @@ class ServicioAgendado{
           .map((pagoData) => HistorialAgendado.fromJson(pagoData))
           .toList(),
       json['ultimaModificacion'],
+      json['linkEntregaTutor'],
     );
   }
 

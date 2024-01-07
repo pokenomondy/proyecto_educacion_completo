@@ -127,6 +127,7 @@ class stream_builders{
       String SecundaryColor = dataConfiguracion['Secundarycolor'] ?? '';
       String idcarpetaPagos = dataConfiguracion['idcarpetaPagos'] ?? '';
       String idcarpetaSolicitudes = dataConfiguracion['idcarpetaSolicitudes'] ?? '';
+      String idcarpetaEntregaTutores = dataConfiguracion['idcarpetaEntregaTutores'] ?? '';
       String nombre_empresa = dataConfiguracion['nombre_empresa'] ?? '';
 
       //documento plugins
@@ -140,7 +141,7 @@ class stream_builders{
       String SOLICITUD = dataMensajes['SOLICITUD'] ?? '';
       int ultimaModificacion = dataMensajes.containsKey('ultimaModificacion') ? dataMensajes['ultimaModificacion'] : 1672534800;
 
-      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD,ultimaModificacion,tutoresSistemaFecha);
+      ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, PagosDriveApiFecha, SolicitudesDriveApiFecha, basicoFecha, CONFIRMACION_CLIENTE, SOLICITUD,ultimaModificacion,tutoresSistemaFecha,idcarpetaEntregaTutores);
 
       String configJson = jsonEncode(newconfig);
       await prefs.setString('configuracion_list_stream', configJson);
@@ -326,6 +327,8 @@ class stream_builders{
           int idcontable = servicio['idcontable'];
           String entregado = servicio.data().toString().contains('entregadotutor') ? servicio.get('entregadotutor') : 'NO APLICA < 10/10/23';
           String entregadocliente = servicio.data().toString().contains('entregadocliente') ? servicio.get('entregadocliente') : 'NO APLICA < 10/10/23';
+          String linkEntregaTutor = servicio.data().toString().contains('linkEntregaTutor') ? servicio.get('linkEntregaTutor') : 'NO APLICA < 05/01/23';
+
           // Obtener los pagos directamente del documento
           List<RegistrarPago> pagos = [];
           if (servicio.data() != null && servicio.data().toString().contains('pagos')) {
@@ -388,7 +391,8 @@ class stream_builders{
             entregado,
             entregadocliente,
             historial,
-              ultimaModificacion
+            ultimaModificacion,
+            linkEntregaTutor,
           );
 
           serviciosAgendadosList.add(newservicioagendado);

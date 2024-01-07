@@ -105,13 +105,13 @@ class PrimaryColumnDetallesSolicitudState extends State<PrimaryColumnDetallesSol
   late bool construct = false;
 
   @override
-  void initState(){
-    super.initState();
+  void initState() {
     loadtablas();
     WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
     themeApp.initTheme().then((_) {
       setState(()=>construct = true);
     });
+    super.initState();
   }
 
   Future loadtablas() async{
@@ -161,6 +161,7 @@ class PrimaryColumnDetallesSolicitudState extends State<PrimaryColumnDetallesSol
     }else{
       return const Center(child: material.CircularProgressIndicator(),);
     }
+    
   }
 
   Widget textoymodificable(String text,String valor,int index, bool bool){
@@ -422,10 +423,12 @@ class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetalle
 
 
   void actualizarArchivos(int idcotizacion,String carpetaid) async{
-    DriveApiUsage().viewarchivosolicitud(idcotizacion, carpetaid,context);
+    final archivosProvider =  context.read<ArchivoVistaDrive>();
+    List<ArchivoResultado> archivosObtenidos= await DriveApiUsage().vistaArchivosDrive(solicitud!.idcotizacion.toString(), config!.idcarpetaSolicitudes, context);
+    archivosProvider.clearTodosLosArchivos();
+    archivosProvider.cargarTodosLosArchivos(archivosObtenidos);
     cargarArchivos = true;
   }
-
 
 
   @override
@@ -477,7 +480,6 @@ class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetalle
 
                 PrimaryStyleButton(
                     invert: true,
-                    buttonColor: themeApp.primaryColor,
                     function: (){
                       subirarchivos(config!.idcarpetaSolicitudes,solicitud!.idcotizacion.toString());
                     }, text: "Subir mas archivos"),
@@ -499,13 +501,15 @@ class SecundaryColumnDetallesSolicitudState extends State<SecundaryColumnDetalle
     }else{
       return const Center(child: material.CircularProgressIndicator(),);
     }
+    
   }
 
   Future subirarchivos(String idcarpetasolicitudesDrive, String idsolicitud) async{
-    final result = await DriveApiUsage().subirSolicitudes(idcarpetasolicitudesDrive, selectedFiles,idsolicitud,context);
-    print("Número de archivos subidos: ${result.numberfilesUploaded}");
-    print("URL de la carpeta: ${result.folderUrl}");
-    //Ahora avisar numero de archivos subidos y url
+    final result = await DriveApiUsage().subirArchivosDrive(config!.idcarpetaSolicitudes, selectedFiles, solicitud!.idcotizacion.toString(), context);
+    final archivosProvider =  context.read<ArchivoVistaDrive>();
+    for(var archivo in result.listaArchivos){
+      archivosProvider.addNewArchivos(archivo);
+    }
   }
 
   Future selectFile() async{
@@ -604,6 +608,27 @@ class _TarjetaArchivosState extends State<_TarjetaArchivos> {
           ),
 
 
+        ],
+      );
+    }
+    
+    if(construct){
+      return ItemsCard(
+        alignementColumn: MainAxisAlignment.start,
+        shadow: false,
+        cardColor: themeApp.primaryColor,
+        children: [
+          Text("hay ${widget.archivosList?.length.toString()} archivos", style: styleText(),),
+          material.Card(
+            color: themeApp.whitecolor.withOpacity(0),
+            shadowColor: themeApp.whitecolor.withOpacity(0),
+            child: SingleChildScrollView(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: contenedores,
+              ),
+            ),
+          ),
         ],
       );
     }else{
