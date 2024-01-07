@@ -4,6 +4,7 @@ class ConfiguracionPlugins{
   String secundaryColor = "";
   String idcarpetaPagos = "";
   String idcarpetaSolicitudes = "";
+  String idcarpetaEntregaTutores = "";
   String nombreEmpresa = "";
 
   //Plugins - Aca se agregan mas si se necesitan
@@ -20,7 +21,7 @@ class ConfiguracionPlugins{
 
 
   ConfiguracionPlugins(this.primaryColor,this.secundaryColor,this.idcarpetaPagos,this.idcarpetaSolicitudes,this.nombreEmpresa,
-      this.pagosDriveApiFecha,this.solicitudesDriveApiFecha,this.basicoFecha,this.mensajeConfirmacionCliente,this.mensajeSolicitudes,this.ultimaModificacion,this.tutoresSistemaFecha);
+      this.pagosDriveApiFecha,this.solicitudesDriveApiFecha,this.basicoFecha,this.mensajeConfirmacionCliente,this.mensajeSolicitudes,this.ultimaModificacion,this.tutoresSistemaFecha,this.idcarpetaEntregaTutores);
 
   Map<String,dynamic> toMap(){
     return{
@@ -36,6 +37,7 @@ class ConfiguracionPlugins{
       'SOLICITUD' : mensajeSolicitudes,
       'ultimaModificacion' : ultimaModificacion,
       'tutoresSistemaFecha' : tutoresSistemaFecha,
+      'idcarpetaEntregaTutores' : idcarpetaEntregaTutores,
     };
   }
 
@@ -52,6 +54,7 @@ class ConfiguracionPlugins{
     mensajeSolicitudes = "";
     ultimaModificacion = 0;
     tutoresSistemaFecha = DateTime(2023,1,1);
+    idcarpetaEntregaTutores = "";
   }
 
   Map<String, dynamic> toJson() {
@@ -68,6 +71,7 @@ class ConfiguracionPlugins{
       'SOLICITUD' : mensajeSolicitudes,
       'ultimaModificacion' : ultimaModificacion,
       'tutoresSistemaFecha' : tutoresSistemaFecha.toIso8601String(),
+      'idcarpetaEntregaTutores' : idcarpetaEntregaTutores,
     };
   }
 
@@ -85,6 +89,7 @@ class ConfiguracionPlugins{
         json['SOLICITUD'],
         json['ultimaModificacion'],
         DateTime.parse(json['tutoresSistemaFecha']),
+        json['idcarpetaEntregaTutores'],
     );
   }
 }

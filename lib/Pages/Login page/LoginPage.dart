@@ -35,8 +35,10 @@ import '../../Config/strings.dart';
     @override
     void initState(){
       super.initState();
-      redireccion();
+      if (mounted) {
+        redireccion();
       }
+    }
 
     @override
     void dispose() {
@@ -46,6 +48,8 @@ import '../../Config/strings.dart';
     }
 
     Future redireccion() async{
+      if (!mounted) return; // Verificar si el widget todavía está activo
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         nombre_Empresa = prefs.getString("Nombre_Empresa");
@@ -59,6 +63,8 @@ import '../../Config/strings.dart';
         print("no hay nueva versión");
       }
 
+      if (!mounted) return;
+
       if(Config.dufyadmon==true){
         currentUser = FirebaseAuth.instance.currentUser;
         authdirection = FirebaseAuth.instance;
@@ -66,6 +72,9 @@ import '../../Config/strings.dart';
         currentUser =  FirebaseAuth.instanceFor(app: Firebase.app('LIBADB')).currentUser;
         authdirection = FirebaseAuth.instanceFor(app: Firebase.app('LIBADB'));
       }
+
+      if (!mounted) return;
+
 
       if (currentUser != null) {
         _redireccionaDashboarc(currentUser!.uid,currentUser!,Config.dufyadmon);

@@ -308,7 +308,7 @@ class TercerColumnContaDash extends StatefulWidget {
 }
 
 class TercerColumnContaDashState extends State<TercerColumnContaDash> {
-  List<bool> editarcasilla = List.generate(11, (index) => false);
+  List<bool> editarcasilla = List.generate(15, (index) => false);
   //Pagos
   int sumaPagosClientes = 0;
   int sumaPagosTutores = 0;
@@ -425,7 +425,10 @@ class TercerColumnContaDashState extends State<TercerColumnContaDash> {
                         Text('pagos clientes ${sumaPagosClientes-sumaPagosReembolsoCliente}', style: themeApp.styleText(14, false, themeApp.grayColor),),
                         Text('pagos tutores ${sumaPagosTutores-sumaPagosReembolsoTutores}', style: themeApp.styleText(14, false, themeApp.grayColor),)
                       ],
-                    )
+                    ),
+                  //Entrega
+                  textoymodificable('Entrega Tutor: ', servicioAgendado.linkEntregaTutor.toString(),11,false),
+
 
                 ],
               );

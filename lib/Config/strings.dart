@@ -28,4 +28,11 @@ class Strings{
   //Exito global
   String exitoglobaltitulo = "Exito";
   String exitoglobal = "La operación salio exitosa";
+
+  //Eror drive api
+  String errorDriveApi = "No se ha seleccionado la carpeta de Drive API, debido a eso este error, seleecione y compartaselo a la cuenta"
+      "\n para que este puede acceder correctamente a los archivos"
+      "\n"
+      "\n"
+      "No se subieron los archivos, tendra que corregir para poder revisarlos";
 }

@@ -32,7 +32,6 @@ class LoadData {
   Future<ConfiguracionPlugins> configuracion_inicial() async {
     await referencias.initCollections();
     DocumentSnapshot documentConfiguracion = await referencias.configuracion!.doc("CONFIGURACION").get();
-    DocumentSnapshot documentPlugins = await referencias.configuracion!.doc("Plugins").get();
 
     //documetno configuración
     String PrimaryColor = documentConfiguracion['Primarycolor'] ?? '';
@@ -40,14 +39,13 @@ class LoadData {
     String idcarpetaPagos = documentConfiguracion['idcarpetaPagos'] ?? '';
     String idcarpetaSolicitudes = documentConfiguracion['idcarpetaSolicitudes'] ?? '';
     String nombre_empresa = documentConfiguracion['nombre_empresa'] ?? '';
+    String idcarpetaEntregaTutores = documentConfiguracion['idcarpetaEntregaTutores'] ?? '';
 
-
-    ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, DateTime.now(), DateTime.now(), DateTime.now(), "CONFIRMACION_CLIENTE", "SOLICITUD",0,DateTime.now());
+    ConfiguracionPlugins newconfig = ConfiguracionPlugins(PrimaryColor, SecundaryColor, idcarpetaPagos, idcarpetaSolicitudes, nombre_empresa, DateTime.now(), DateTime.now(), DateTime.now(), "CONFIRMACION_CLIENTE", "SOLICITUD",0,DateTime.now(),idcarpetaEntregaTutores);
 
     await  stream_builders().estadisticasLectutaFirestore(1);
     return newconfig;
   }
-
 
   //Tutores en local
   Future getinfotutor(User currentUser) async {
@@ -100,7 +98,6 @@ class LoadData {
 
   }
 
-
   //Cargar lista de emrpesas y contraseñas -- Este contador lo asume Liba Soluciones
   Future cargaListaEmpresas() async{
     await referencias.initCollections();
@@ -119,6 +116,9 @@ class LoadData {
 
     return listaClaves;
   }
+
+  //Cargamos solicitud de forma local, cada vez que el tutor intenta acceder
+
 }
 
 
