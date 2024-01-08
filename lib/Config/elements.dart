@@ -268,12 +268,10 @@ class MensajeTextBox extends StatelessWidget{
 class UtilDialogs{
 
   final BuildContext context;
-  final double height;
   late BuildContext contextCarga;
 
   UtilDialogs({
     required this.context,
-    this.height = 220,
   });
 
   void error (String text, String title) => showDialog(
@@ -299,22 +297,34 @@ class UtilDialogs{
   void terminarCarga() => Navigator.pop(contextCarga);
 
   dialog.Dialog _errorDialog(String text, String title, BuildContext errorContext){
+    const double tamanioTitle = 20;
+    const double tamanioText = 14;
+    const double iconSize = 70;
+
     final ThemeApp themeApp = ThemeApp();
+    final int espaciosText = text.split("\n").length;
+    final double heightTitle = (title.length / 20).ceilToDouble() * tamanioTitle;
+    final double heightText = ((text.length / 25).ceilToDouble() + espaciosText) * tamanioText;
+
+    final double height = heightTitle + heightText + iconSize + 110.0;
+
     return dialog.Dialog(
       backgroundColor: themeApp.whitecolor.withOpacity(0),
       child: ItemsCard(
         shadow: true,
         width: 200,
         height: height,
+        horizontalPadding: 15.0,
+        verticalPadding: 10.0,
         children: [
-          Icon(dialog.Icons.error, size: 70, color: themeApp.redColor,),
+          Icon(dialog.Icons.error, size: iconSize, color: themeApp.redColor,),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3.0),
-            child: Text(title, style: themeApp.styleText(20, true, themeApp.grayColor), textAlign: TextAlign.center,),
+            child: Text(title, style: themeApp.styleText(tamanioTitle, true, themeApp.grayColor), textAlign: TextAlign.center,),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 5.0, bottom: 10.0),
-            child: Text(text),
+            child: Text(text, style: themeApp.styleText(tamanioText, false, themeApp.grayColor), textAlign: TextAlign.center,),
           ),
           PrimaryStyleButton(
               width: 100,
@@ -334,7 +344,7 @@ class UtilDialogs{
       child: ItemsCard(
         shadow: true,
         width: 200,
-        height: height,
+        height: 220,
         children: [
           Icon(dialog.Icons.check_circle_rounded, size: 70, color: themeApp.greenColor,),
           Padding(
@@ -363,7 +373,7 @@ class UtilDialogs{
       child: ItemsCard(
         shadow: true,
         width: 250,
-        height: height + 10,
+        height: 220 + 10,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
@@ -418,7 +428,7 @@ class UtilDialogs{
       backgroundColor: themeApp.blackColor.withOpacity(0),
       child: ItemsCard(
         width: 260,
-        height: height - 50,
+        height: 220 - 50,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 12.0, bottom: 10.0),

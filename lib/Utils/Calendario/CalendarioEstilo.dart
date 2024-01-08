@@ -235,6 +235,11 @@ class CalendarioStyle {
     );
   }
 
+  String formatPrecio(double precio) {
+    NumberFormat formatoMoneda = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatoMoneda.format(precio);
+  }
+  
   Widget calendariovistaAdmin(ServicioAgendado servicioseleccionado, BuildContext context, ThemeApp themeApp){
     return Column(
       children: [
@@ -249,13 +254,13 @@ class CalendarioStyle {
 
         // PRECIOS
         //precio cobrado
-        textoYVista('Precío',servicioseleccionado.preciocobrado.toString(), themeApp),
+        textoYVista('Precío', formatPrecio(servicioseleccionado.preciocobrado as double), themeApp),
         //precio tutor
-        textoYVista('Precío tutor',servicioseleccionado.preciotutor.toString(), themeApp),
+        textoYVista('Precío tutor', formatPrecio(servicioseleccionado.preciotutor as double), themeApp),
         //Ganancias
-        textoYVista('Ganancías','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)}', themeApp),
+        textoYVista('Ganancías', formatPrecio((servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor) as double), themeApp),
         //% precio cobrado
-        textoYVista('Precío cobrado','${(servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)/servicioseleccionado.preciocobrado}', themeApp),
+        textoYVista('Precío cobrado', formatPrecio((servicioseleccionado.preciocobrado-servicioseleccionado.preciotutor)/servicioseleccionado.preciocobrado), themeApp),
 
         //PAGOS
         //DEBE CLIENTE

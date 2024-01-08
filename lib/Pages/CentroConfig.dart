@@ -18,7 +18,6 @@ class CentroConfiguracionDashState extends State<CentroConfiguracionDash> {
   @override
   Widget build(BuildContext context) {
     final currentwidth = MediaQuery.of(context).size.width;
-    final tamanowidth = (currentwidth/1.5)-30;
     print("se dibuja la solicitud");
     return NavigationView(
       pane: NavigationPane(

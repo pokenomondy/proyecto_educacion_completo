@@ -3,10 +3,8 @@ import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Objetos/AgendadoServicio.dart';
 import 'package:dashboard_admin_flutter/Objetos/Objetos%20Auxiliares/Universidad.dart';
 import 'package:dashboard_admin_flutter/Objetos/Tutores_objet.dart';
-import 'package:dashboard_admin_flutter/Pages/ShowDialogs/SolicitudesDialogs.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/CollectionReferences.dart';
 import 'package:flutter/material.dart' as material;
-import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/StreamBuilders.dart';
 import 'package:dashboard_admin_flutter/Pages/MainTutores/NotaTutores.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -251,7 +249,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                 contarTutoresRoles(tutoresList),
 
                 SizedBox(
-                    height: currentHeight * 0.6,
+                    height: currentHeight * 0.55,
                     child: ListView.builder(
                         itemCount: tutores.length,
                         itemBuilder: (context,index) {
@@ -388,23 +386,27 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
       children: [
         Text('$tutoresActivos tutores activos, $tutoreInactivos tutores inactivos', style: styleText,),
         Text('$administradores administradores activos', style: styleText,),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Column(
           children: [
-            PrimaryStyleButton(
-              buttonColor: themeApp.primaryColor,
-                function: () {
-                  tutoresProvider.setFiltro('TutorA');
-                },
-                text: "Tutor Activo"
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PrimaryStyleButton(
+                  buttonColor: themeApp.primaryColor,
+                    function: () {
+                      tutoresProvider.setFiltro('TutorA');
+                    },
+                    text: "Tutor Activo"
+                ),
 
-            PrimaryStyleButton(
-                buttonColor: themeApp.primaryColor,
-                function: () {
-                  tutoresProvider.setFiltro('TutorInac');
-                },
-                text: "Tutor Inactivo"
+                PrimaryStyleButton(
+                    buttonColor: themeApp.primaryColor,
+                    function: () {
+                      tutoresProvider.setFiltro('TutorInac');
+                    },
+                    text: "Tutor Inactivo"
+                ),
+              ],
             ),
 
             PrimaryStyleButton(
@@ -414,6 +416,7 @@ class _TarjetaTutoresState extends State<_TarjetaTutores> {
                 },
                 text: "Administradores"
             ),
+
           ],
         ),
         material.Padding(
@@ -1085,23 +1088,13 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                               child: Row(
                                                 mainAxisAlignment: MainAxisAlignment.start,
                                                 children: [
-
                                                   CircularButton(
                                                     buttonColor: themeApp.primaryColor,
-                                                    iconData: material.Icons.add,
+                                                    iconData: material.Icons.format_list_bulleted,
                                                     function: (){
-
+                                                      _mostrarDetalles(context, tutore, tutorEvaluator!);
                                                     },
                                                   ),
-
-                                                  CircularButton(
-                                                      buttonColor: themeApp.redColor,
-                                                      iconData: material.Icons.clear,
-                                                      function: (){
-
-                                                      }
-                                                  ),
-
                                                 ],
                                               ),
                                             )
@@ -1111,47 +1104,6 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
                                       ),
 
                                       _pieChart(tutorEvaluator!.retornocalificacion(tutore), 90),
-
-
-
-
-
-                                      /*
-
-                                    Column(
-                                      children: [
-                                        Text("# cot global ${tutorEvaluator?.getNumeroCotizacionesGlobal(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                        Text("# cot materia ${tutorEvaluator?.getNumeroCotizaciones(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                        Text("% resp global ${tutorEvaluator?.getPromedioRespuesta(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                        Text("% resp materia ${tutorEvaluator?.getPromedioRespuestaMateria(tutore.nombrewhatsapp, selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                        Text("% precio global ${tutorEvaluator?.getPromedioPrecioTutor(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                        Text("% precio materiar ${tutorEvaluator?.getPromedioPrecioTutorMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                        Text("# agendados ${tutorEvaluator?.getNumeroCotizacionesAgendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                        Text("# agendados mater ${tutorEvaluator?.getNumeroCotizacionesAgendadoMateria(tutore.nombrewhatsapp,selectedMateria!.nombremateria).toStringAsFixed(1)}"),
-                                        Text("% precio age glo  ${tutorEvaluator?.gerpromedioprecioglobalagendado(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                        Text("% ganancias glo  ${tutorEvaluator?.getpromediogananciasgeneradas(tutore.nombrewhatsapp).toStringAsFixed(1)}"),
-                                      ],
-                                    ), //de materia
-                                    Column(
-                                      children: [
-                                        Text("not cot global ${tutorNotas[tutore.nombrewhatsapp]?['num_materiasglobal']?.toStringAsFixed(1)}"),
-                                        Text("not cot materia ${tutorNotas[tutore.nombrewhatsapp]?['num_materiaslocal']?.toStringAsFixed(1)}"),
-                                        Text("not % resp global ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestaglobal']?.toStringAsFixed(2)}"),
-                                        Text("not % resp materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_respuestalocal']?.toStringAsFixed(1)}"),
-                                        Text("not % precio global ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobal']?.toStringAsFixed(1)}"),
-                                        Text("not % precio materia ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioglobalmateria']?.toStringAsFixed(1)}"),
-                                        Text("not # agendados ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndados']?.toStringAsFixed(1)}"),
-                                        Text("not # agendados materia ${tutorNotas[tutore.nombrewhatsapp]?['num_serviciosagedndadosmateria']?.toStringAsFixed(1)}"),
-                                        Text("not % precio age glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_precioagendadosglobal']?.toStringAsFixed(1)}"),
-                                        Text("not % ganancias glo ${tutorNotas[tutore.nombrewhatsapp]?['prom_preciogananciasglobal']?.toStringAsFixed(1)}"),
-
-                                        Text('calificación ${tutorEvaluator?.retornocalificacion(tutore).toStringAsFixed(1)}'),
-                                        Text('ult fecha ${tutorEvaluator?.ultimaFechaCotizacionTutor(tutore.nombrewhatsapp)}'),
-                                      ],
-                                    ),
-
-                                     */
-
 
                                     ],
                                   )
@@ -1175,6 +1127,45 @@ class _BusquedaTutorState extends State<_BusquedaTutor> {
     }else{
       return const Center(child: material.CircularProgressIndicator(),);
     }
+  }
+
+  void _mostrarDetalles(BuildContext context, Tutores tutores, TutorEvaluator tutorEvaluator) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _detallesBusqueda(context, tutores, tutorEvaluator),
+  );
+
+  material.Dialog _detallesBusqueda(BuildContext context, Tutores tutor, TutorEvaluator tutorEvaluator){
+    TextStyle styleText([double? tamanio]) => themeApp.styleText(tamanio ?? 14, false, themeApp.grayColor);
+    return material.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: ItemsCard(
+        width: 400,
+        height: 340,
+        horizontalPadding: 20.0,
+        children: [
+          Text("Detalles ${tutor.nombrewhatsapp}", style: themeApp.styleText(20, true, themeApp.primaryColor),),
+          material.Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(tutor.nombrecompleto, style: styleText(12),),
+          ),
+
+          _textAndTitle("Materia:", tutorEvaluator.selectedMateria!.nombremateria),
+          _textAndTitle("Servicios:", "${tutorEvaluator.serviciosagendadosList.length.toString()} agendados"),
+          _textAndTitle("Solicitudes:", "${tutorEvaluator.solicitudesList.length.toString()} solicitudes"),
+          _textAndTitle("WhatsApp:", tutor.numerowhatsapp.toString()),
+
+          material.Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
+            child: PrimaryStyleButton(
+              buttonColor: themeApp.primaryColor,
+              function: () => Navigator.pop(context),
+              text: " Cancelar "
+            ),
+          ),
+
+        ],
+      ),
+    );
   }
 
   Padding _textAndTitle(String title, String text){

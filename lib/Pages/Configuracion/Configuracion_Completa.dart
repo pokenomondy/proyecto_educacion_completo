@@ -1,4 +1,5 @@
 import 'package:dashboard_admin_flutter/Config/Config.dart';
+import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Config/theme.dart';
 import 'package:dashboard_admin_flutter/Objetos/Configuracion/objeto_configuracion.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Load_Data.dart';
@@ -32,7 +33,7 @@ class ConfiguracionDatosState extends State<ConfiguracionDatos> {
     final currentwidth = MediaQuery.of(context).size.width;
     final tamanowidth = (currentwidth/1.5)-30;
     print("se dibuja la solicitud");
-    return _PrimaryColumnDatos(currentwidth: tamanowidth,);
+    return SingleChildScrollView(child: _PrimaryColumnDatos(currentwidth: tamanowidth,));
   }
 }
 
@@ -60,11 +61,16 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
   List<bool> editarcasillamensajes = List.generate(2, (index) => false);
   TextEditingController controllersolicitud = TextEditingController();
   TextEditingController controllerconfirmacion = TextEditingController();
-
+  final ThemeApp themeApp = ThemeApp();
+  late bool construct = false;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
+    WidgetsFlutterBinding.ensureInitialized(); // Asegura que Flutter esté inicializado
+    themeApp.initTheme().then((_) {
+      setState(()=>construct = true);
+    });
   }
 
   @override
@@ -74,99 +80,89 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
         builder: (context, ConfigProvider, child) {
           ConfiguracionPlugins? configuracioncargada = ConfigProvider.config;
 
-          return Column(
+          return ItemsCard(
+            shadow: false,
+            width: widget.currentwidth+400,
+            height: currentheight,
+            alignementColumn: MainAxisAlignment.start,
+            alignementCrossColumn: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: widget.currentwidth+400,
-                height: currentheight-110,
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text('Nombre de la empresa : ${configuracioncargada!.nombreEmpresa}',
+                  style: themeApp.styleText(20, true, themeApp.primaryColor),),
+              ),
+              //Primary Color
+              editColor('Color principal',configuracioncargada.primaryColor,0),
+              //Secundary Color
+              editColor('Color secundario',configuracioncargada.secundaryColor,1),
+              //Solicitudes con Drive Api
+              if(obtenerBool(configuracioncargada.solicitudesDriveApiFecha)==true)
+                Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text('------ SOLICITUDES DRIVE API PLUGIN -----',
+                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    ),
+                    Text("id carpeta solicitudes = ${configuracioncargada.idcarpetaSolicitudes}")
+                  ],
+                ),
+              //Pagos con Drive Api
+              if(obtenerBool(configuracioncargada.pagosDriveApiFecha)==true)
+                Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text('------ PAGOS DRIVE API PLUGIN -----',
+                        style: TextStyle(fontWeight: FontWeight.bold),),
+                    ),
+                    Text("id carpeta pagos = ${configuracioncargada.idcarpetaPagos}")
+                  ],
+                ),
+              //Plugins con fechas de validez del programa
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
                 child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          //Nombre de la empresa
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text('Nombre de la empresa : ${configuracioncargada!.nombreEmpresa}',
-                              style: ThemeApp().styleText(16, true, ThemeApp().primaryColor),),
-                          ),
-                          //Primary Color
-                          editColor('Color principal',configuracioncargada!.primaryColor,0),
-                          //Secundary Color
-                          editColor('Color secundario',configuracioncargada!.secundaryColor,1),
-                          //Solicitudes con Drive Api
-                          if(obtenerBool(configuracioncargada.solicitudesDriveApiFecha)==true)
-                            Column(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Text('------ SOLICITUDES DRIVE API PLUGIN -----',
-                                    style: TextStyle(fontWeight: FontWeight.bold),),
-                                ),
-                                Text("id carpeta solicitudes = ${configuracioncargada.idcarpetaSolicitudes}")
-                              ],
-                            ),
-                          //Pagos con Drive Api
-                          if(obtenerBool(configuracioncargada.pagosDriveApiFecha)==true)
-                            Column(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 10),
-                                  child: Text('------ PAGOS DRIVE API PLUGIN -----',
-                                    style: TextStyle(fontWeight: FontWeight.bold),),
-                                ),
-                                Text("id carpeta pagos = ${configuracioncargada.idcarpetaPagos}")
-                              ],
-                            ),
-                          //Plugins con fechas de validez del programa
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CartaPlugin(function: (){
-                                    print("Sistema basico");
-                                  }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada!.basicoFecha), fecha: configuracioncargada!.basicoFecha, ),
-                                  CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada!.solicitudesDriveApiFecha), fecha: configuracioncargada!.solicitudesDriveApiFecha),
-                                  CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada!.pagosDriveApiFecha), fecha: configuracioncargada!.pagosDriveApiFecha),
-                                  //Tutores
-                                  CartaPlugin(function: (){}, titulo: "Tutores System", activacion: obtenerBool(configuracioncargada!.tutoresSistemaFecha), fecha: configuracioncargada!.tutoresSistemaFecha),
-
-                                ],
-                              ),
-                            ),
-                          ),
-                          //Mensajes personalizados
-                          const Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Text('------ MENSAJES PERSONALIZADOS -----',
-                              style: TextStyle(fontWeight: FontWeight.bold),),
-                          ),
-                          editMensajes('Mensajes Solicitud',configuracioncargada.mensajeSolicitudes,0,controllersolicitud),
-                          editMensajes('Mensajes de confirmación',configuracioncargada.mensajeConfirmacionCliente,1,controllerconfirmacion),
-                          //Cerrar sesión
-                          PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
-                          //Experimentos
-                          Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Text('------ FUNCIONES EXPERIMENTALES -----',
-                              style: TextStyle(fontWeight: FontWeight.bold),),
-                          ),
-                          //Bases de datos en Stream
-                          Text('Numero de lecturas en Drive'),
-                          Text('Numero de lecturas en base de datos'),
-                        ],
-                      ),
+                      CartaPlugin(function: (){
+                        print("Sistema basico");
+                      }, titulo: "Sistema Básico", activacion: obtenerBool(configuracioncargada.basicoFecha), fecha: configuracioncargada.basicoFecha, primaryColor: themeApp.primaryColor,),
+                      CartaPlugin(function: (){}, titulo: "Solicitudes Drive Api", activacion: obtenerBool(configuracioncargada.solicitudesDriveApiFecha), fecha: configuracioncargada.solicitudesDriveApiFecha, primaryColor: themeApp.primaryColor,),
+                      CartaPlugin(function: (){}, titulo: "Pagos Drive Api", activacion: obtenerBool(configuracioncargada.pagosDriveApiFecha), fecha: configuracioncargada.pagosDriveApiFecha, primaryColor: themeApp.primaryColor,),
+                      //Tutores
+                      CartaPlugin(function: (){}, titulo: "Tutores System", activacion: obtenerBool(configuracioncargada.tutoresSistemaFecha), fecha: configuracioncargada.tutoresSistemaFecha, primaryColor: themeApp.primaryColor,),
                     ],
                   ),
                 ),
-              )
+              ),
+              //Mensajes personalizados
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text('------ MENSAJES PERSONALIZADOS -----',
+                  style: TextStyle(fontWeight: FontWeight.bold),),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(child: editMensajes('Mensajes Solicitud',configuracioncargada.mensajeSolicitudes,0,controllersolicitud, true)),
+                  Flexible(child: editMensajes('Mensajes de confirmación',configuracioncargada.mensajeConfirmacionCliente,1,controllerconfirmacion, false)),
+                ],
+              ),
+              //Cerrar sesión
+              PrimaryStyleButton(function: signOut, text: "Cerrar Sesion"),
+              //Experimentos
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text('------ FUNCIONES EXPERIMENTALES -----',
+                  style: TextStyle(fontWeight: FontWeight.bold),),
+              ),
+              //Bases de datos en Stream
+              Text('Numero de lecturas en Drive'),
+              Text('Numero de lecturas en base de datos')
             ],
           );
         }
@@ -177,20 +173,29 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
     const double verticalPadding = 3.0;
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (!editarcasilla[index])
           Padding(
             padding: const EdgeInsets.symmetric(vertical: verticalPadding),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                ThemeApp().colorRow(Utiles().hexToColor(color), title),
-                GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      editarcasilla[index] = !editarcasilla[index];
-                    });
-                  },
-                  child: const Icon(FluentIcons.edit),
+                themeApp.colorRow(Utiles().hexToColor(color), title),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: (){
+                        setState(() {
+                          editarcasilla[index] = !editarcasilla[index];
+                        });
+                      },
+                      child: const Icon(FluentIcons.edit),
+                    ),
+                  ),
                 )
               ],
             )
@@ -199,41 +204,44 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    seleccionadorcolor(colorcambio, 'Color primario', (Color newColor) {
-                      setState(() {
-                        colorcambio = newColor;
-                      });
-                    }),
-                    //Actualizar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                      child: GestureDetector(
-                        onTap: () async{
-                          //cambiando de color
-                          Uploads().modifyColors(index,colorToHex(colorcambio) );
-                          setState(() {
-                            editarcasilla[index] = !editarcasilla[index];
-                          });
-                        },
-                        child: const Icon(FluentIcons.check_list),
-                      ),
+                seleccionadorcolor(colorcambio, 'Color primario', (Color newColor) {
+                  setState(() {
+                    colorcambio = newColor;
+                  });
+                }),
+                //Actualizar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () async{
+                        //cambiando de color
+                        Uploads().modifyColors(index,colorToHex(colorcambio) );
+                        setState(() {
+                          editarcasilla[index] = !editarcasilla[index];
+                        });
+                      },
+                      child: const Icon(FluentIcons.check_list),
                     ),
-                    //cancelar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                      child: GestureDetector(
-                        onTap: (){
-                          setState(() {
-                            editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                          });
-                        },
-                        child: const Icon(FluentIcons.cancel),
-                      ),
-                    )
-                  ],
+                  ),
+                ),
+                //cancelar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: (){
+                        setState(() {
+                          editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                        });
+                      },
+                      child: const Icon(FluentIcons.cancel),
+                    ),
+                  ),
                 )
               ],
             ),
@@ -242,78 +250,74 @@ class _PrimaryColumnDatosState extends State<_PrimaryColumnDatos> {
     );
   }
 
-  Widget editMensajes(String title,String mensaje, int index, TextEditingController controller){
+  Widget editMensajes(String title,String mensaje, int index, TextEditingController controller, bool solicitud){
     const double verticalPadding = 3.0;
     //meter al controller el texto
     controller = TextEditingController(text: mensaje);
 
-
-    return Row(
-      children: [
-        if (!editarcasillamensajes[index])
-          Padding(
-              padding: const EdgeInsets.symmetric(vertical: verticalPadding),
-              child: Row(
-                children: [
-                  Text("${title} = ${mensaje}"),
-                  GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        editarcasillamensajes[index] = !editarcasillamensajes[index];
-                      });
-                    },
-                    child: const Icon(FluentIcons.edit),
-                  )
-                ],
-              )
-          ),
-        if (editarcasillamensajes[index])
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
-            child: Row(
-              children: [
-                Row(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 1500),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (!editarcasillamensajes[index])
+            Padding(
+                padding: const EdgeInsets.symmetric(vertical: verticalPadding),
+                child: Row(
                   children: [
-                    //cambio
-                    Container(
-                      width: 120,
-                      child: TextBox(
-                        controller: controller,
-                        maxLines: null,
-                      ),
-                    ),
-                    //Actualizar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                    Text("$title = $mensaje", style: themeApp.styleText(14, false, themeApp.grayColor),),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
                       child: GestureDetector(
-                        onTap: () async{
-                          print("el texto es ${controller.text}");
-                          Uploads().modifyMensajes(index, controller.text);
+                        onTap: (){
                           setState(() {
                             editarcasillamensajes[index] = !editarcasillamensajes[index];
                           });
                         },
-                        child: const Icon(FluentIcons.check_list),
-                      ),
-                    ),
-                    //cancelar
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                      child: GestureDetector(
-                        onTap: (){
-                          setState(() {
-                            editarcasillamensajes[index] = !editarcasillamensajes[index]; // Alterna entre los modos de visualización y edición
-                          });
-                        },
-                        child: const Icon(FluentIcons.cancel),
+                        child: const Icon(FluentIcons.edit),
                       ),
                     )
                   ],
                 )
-              ],
             ),
-          ),
-      ],
+          if (editarcasillamensajes[index])
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 5.0),
+              child: Row(
+                children: [
+                  MensajeTextBox(
+                    solicitud: solicitud,
+                    controller: controller,
+                    placeholder: "Mensaje",
+                  ),
+
+                  //Actualizar
+                  CircularButton(
+                    buttonColor: themeApp.primaryColor,
+                    iconData: dialog.Icons.check,
+                    function: () async{
+                      print("el texto es ${controller.text}");
+                      Uploads().modifyMensajes(index, controller.text);
+                      setState(() {
+                        editarcasillamensajes[index] = !editarcasillamensajes[index];
+                      });
+                    }
+                  ),
+                  //cancelar
+                  CircularButton(
+                    buttonColor: themeApp.redColor,
+                    iconData: dialog.Icons.clear,
+                    function: (){
+                      setState(() {
+                        editarcasillamensajes[index] = !editarcasillamensajes[index]; // Alterna entre los modos de visualización y edición
+                      });
+                    }
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
 
   }

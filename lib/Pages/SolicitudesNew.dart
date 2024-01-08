@@ -275,7 +275,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
   //apoyo para configuiración
   bool configuracionSolicitudes = false;
   String idcarpetasolicitudesDrive = "";
-
+  final ThemeApp themeApp = ThemeApp();
   int numSolicitud = 0;
 
   void updatedata(){
@@ -475,7 +475,7 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                                   },
                                 ),
                               ),
-                              const SolicitudesDialog(),
+                              SolicitudesDialog(primaryColor: widget.primarycolor,),
 
                             ],
                           ),
@@ -527,13 +527,13 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
 
                     //Archivos nombre que se van a subir
                     if(selectedFiles  != null)
-                      Column(
-                        children: selectedFiles!.map((file) {
-                          return Container(
-                            color: Colors.blue,
-                            child: Text(file.name),
-                          );
-                        }).toList(),
+                      material.Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5.0),
+                        child: Column(
+                          children: selectedFiles!.map((file) {
+                            return Text(file.name, style: themeApp.styleText(14, false, themeApp.whitecolor), textAlign: TextAlign.center,);
+                          }).toList(),
+                        ),
                       ),
                     if(uploadedCount != 0)
                       Column(
@@ -547,26 +547,32 @@ class _subirsolicitudesState extends State<_subirsolicitudes> {
                         ConfiguracionPlugins? config = condifuracionProvider.config;
                         configuracionSolicitudes = Utiles().obtenerBool(config!.solicitudesDriveApiFecha);
                         idcarpetasolicitudesDrive = config.idcarpetaSolicitudes;
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        return Column(
                           children:[
                             if(configuracionSolicitudes)
-                              FilledButton(
-                                  style: Disenos().boton_estilo(),
-                                  child: Text('seleccionar archivos'), onPressed: (){
-                                selectFile();
-                              }),
+                              material.Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                child: PrimaryStyleButton(
+                                  buttonColor: widget.primarycolor,
+                                  invert: true,
+                                  function: (){
+                                    selectFile();
+                                  },
+                                  text: "Seleccionar archivos"
+                                ),
+                              ),
                           ],
                         );
                       }
                     ),
                     //Botón para añadir servicio
-                    FilledButton(
-                      style: Disenos().boton_estilo(),
-                      child: const Text('Subir servicio'),
-                      onPressed: () {
+                    PrimaryStyleButton(
+                      buttonColor: widget.primarycolor,
+                      invert: true,
+                      function: () {
                         validar_antesde_solicitar(context);
                       },
+                      text: "Subir servicio"
                     ),
                   ],
                 ),
@@ -1024,7 +1030,7 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                                     Container(
                                         padding: const EdgeInsets.only(
                                             bottom: 15, right: 25, top: 5),
-                                        margin: EdgeInsets.only(left: 25),
+                                        margin: const EdgeInsets.only(left: 25),
                                         child: Align(
                                             alignment: Alignment.centerLeft,
                                             child: Text(solicitud.resumen,
@@ -1575,20 +1581,12 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
                         ),
 
                         if(selectedCliente!.nombreCliente == "PROSPECTO CLIENTE")
-                          GestureDetector(
-                            child: Container(
-                                height: 30,
-                                width: 30,
-                                decoration: BoxDecoration(
-                                  color: Config.secundaryColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Icon(FluentIcons.add,
-                                  color: Config().primaryColor,
-                                  weight: 30,)),
-                            onTap: (){
-                              addInfoFaltanteCliente(context,solicitud);
-                            },
+                          CircularButton(
+                            buttonColor: widget.primarycolor,
+                            iconData: material.Icons.add,
+                            function: (){
+                              _addInfoCliente(context,solicitud);
+                            }
                           ),
 
                         //Mensaje de confirmación
@@ -1742,59 +1740,78 @@ class CuadroSolicitudesState extends State<CuadroSolicitudes> {
     Clipboard.setData(ClipboardData(text: confirmacion));
   }
 
-  void addInfoFaltanteCliente(BuildContext context, Solicitud solicitud) async {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Agregar info cliente'),
-              content: Column(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      //NOMBRE WSP CLIENTE
-                      Text('Nombre cliente ${stringnombrecliente}'),
-                      TextBox(
-                        placeholder: 'Nombre wsp cliente',
-                        onChanged: (value){
-                          setState(() {
-                            editnombrewspcliente = value;
-                          });
-                        },
-                        maxLines: null,
-                      ),
-                      TextBox(
-                        placeholder: 'Nombre completo Cliente',
-                        onChanged: (value){
-                          setState(() {
-                            editnombrecliente = value;
-                          });
-                        },
-                        maxLines: null,
-                      ),
-                    ],
-                  ),
-                ],
+  void _addInfoCliente(BuildContext context, Solicitud solicitud) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _dialogInfoCliente(context, solicitud),
+  );
+
+  material.Dialog _dialogInfoCliente(BuildContext context, Solicitud solicitud){
+    return material.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return ItemsCard(
+            width: 350,
+            height: 320,
+            horizontalPadding: 20.0,
+            children: [
+              material.Padding(
+                padding: const EdgeInsets.only(bottom: 5.0),
+                child: Text('Agregar info cliente', style: themeApp.styleText(20, true, widget.primarycolor),),
               ),
-              actions: [
-                Button(
-                  child: const Text('Agregar Cliente'),
-                  onPressed: () async{
-                    validarantesdeactualizarprospecto(solicitud,context);
+              material.Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Text('Nombre cliente $stringnombrecliente', style: themeApp.styleText(14, false, themeApp.grayColor),),
+              ),
+              material.Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: TextBox(
+                  placeholder: 'Nombre wsp cliente',
+                  onChanged: (value){
+                    setState(() {
+                      editnombrewspcliente = value;
+                    });
                   },
+                  maxLines: null,
                 ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
+              ),
+              material.Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: TextBox(
+                  placeholder: 'Nombre completo Cliente',
+                  onChanged: (value){
+                    setState(() {
+                      editnombrecliente = value;
+                    });
+                  },
+                  maxLines: null,
                 ),
-              ],
-            );
-          },
-        );
-      },
+              ),
+
+              material.Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: material.Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    PrimaryStyleButton(
+                      buttonColor: widget.primarycolor,
+                      function: () async{
+                        validarantesdeactualizarprospecto(solicitud,context);
+                      },
+                      text: " Agregar ",
+                    ),
+                    PrimaryStyleButton(
+                      buttonColor: themeApp.redColor,
+                      text: ' Cancelar ',
+                      function: () => Navigator.pop(context, 'User canceled dialog'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
