@@ -1,6 +1,5 @@
 import 'package:dashboard_admin_flutter/Config/elements.dart';
 import 'package:dashboard_admin_flutter/Objetos/RegistrarPago.dart';
-import 'package:dashboard_admin_flutter/Utils/Drive%20Api/GoogleDrive.dart';
 import 'package:dashboard_admin_flutter/Utils/Utiles/FuncionesUtiles.dart';
 import 'package:dashboard_admin_flutter/Utils/Firebase/Uploads.dart';
 import 'package:file_picker/file_picker.dart';
@@ -14,6 +13,8 @@ import '../../Providers/Providers.dart';
 import '../../Utils/Disenos.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart' as material;
+import 'package:intl/intl.dart';
+
 
 class ContablePagos extends StatefulWidget {
   const ContablePagos({super.key});
@@ -615,8 +616,8 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
                             child: Column(
                               children: [
                                 _textRow(registrarpago.id, registrarpago.tipopago, true),
-                                _textRow("Valor Pago:", registrarpago.valor.toString(), false),
-                                _textRow("Fecha Pago:", "${registrarpago.fechapago.month}-${registrarpago.fechapago.day}", false),
+                                _textRow("Valor Pago:", formatPrecio(registrarpago.valor as double), false),
+                                _textRow("Fecha Pago:", formatFecha(registrarpago.fechapago), false),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
                                   child: Row(
@@ -672,6 +673,16 @@ class ContainerPagosDashboardState extends State<ContainerPagosDashboard> {
     }
   }
 
+  String formatPrecio(double precio) {
+    NumberFormat formatoMoneda = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    return formatoMoneda.format(precio);
+  }
+
+  String formatFecha(DateTime fecha) {
+    DateFormat formatoFecha = DateFormat('yyyy-MM-dd');
+    return formatoFecha.format(fecha);
+  }
+  
   Padding _textRow(String title, String text, bool encabezado){
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 20.0),

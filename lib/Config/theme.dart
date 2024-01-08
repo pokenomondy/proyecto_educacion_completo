@@ -48,7 +48,10 @@ class ThemeApp{
           Container(
             height: 20,
             width: 20,
-            color: color,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(80),
+              color: color,
+            ),
             child: const Text(''),
           ),
         ],
@@ -141,6 +144,7 @@ class CartaPlugin extends StatefulWidget{
   final bool activacion;
   final DateTime fecha;
   final VoidCallback function;
+  final Color primaryColor;
 
   const CartaPlugin({
     Key?key,
@@ -148,6 +152,7 @@ class CartaPlugin extends StatefulWidget{
     required this.activacion,
     required this.fecha,
     required this.function,
+    required this.primaryColor,
   }):super(key: key);
 
   @override
@@ -162,12 +167,12 @@ class CartaPluginState extends State<CartaPlugin>{
     final ThemeApp theme = ThemeApp();
     TextStyle subtitulos = theme.styleText(12, false, theme.whitecolor);
     return Container(
-      width: 150,
+      width: 180,
       height: 150,
       margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: widget.activacion? theme.buttonSecundaryColor: theme.redColor,
+        color: widget.activacion? widget.primaryColor: theme.redColor,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -195,7 +200,7 @@ class CartaPluginState extends State<CartaPlugin>{
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                PrimaryStyleButton(tamanio: 12, function: widget.function, text: !widget.activacion? "Mas informacion" : "Desactivar", invert: true,)
+                PrimaryStyleButton(buttonColor: widget.primaryColor,tamanio: 12, function: widget.function, text: !widget.activacion? "Mas informacion" : "Desactivar", invert: true,)
               ],
             ),
           )

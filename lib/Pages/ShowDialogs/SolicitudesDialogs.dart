@@ -19,7 +19,10 @@ import 'package:flutter/material.dart' as dialog;
 
 class SolicitudesDialog extends StatefulWidget {
 
+  final Color primaryColor;
+
   const SolicitudesDialog({Key?key,
+    required this.primaryColor,
   }) :super(key: key);
 
   @override
@@ -35,10 +38,12 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
   List<String> EstadoList = ['FACEBOOK','WHATSAPP','REFERIDO AMIGO','INSTAGRAM','CAMPAÑA INSTAGRAM',];
   String? selectedProcedencia;
   List<Clientes> clienteList = [];
+  final ThemeApp themeApp = ThemeApp();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
       child: GestureDetector(
       child: Container(
           height: 30,
@@ -53,176 +58,202 @@ class _SolicitudesDialogState extends State<SolicitudesDialog> {
       onTap: (){
         _showDialog(context);
       },
-    ),);
-  }
-
-  void _showDialog(BuildContext context)  {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Consumer3<CarrerasProvider, UniversidadVistaProvider,ClientesVistaProvider>(
-          builder: (context, carreraProviderselect, universidadProviderselect,clienteProviderselect ,child) {
-            List<Carrera> carreraList = carreraProviderselect.todosLasCarreras;
-            List<Universidad> universidadList = universidadProviderselect.todasLasUniversidades;
-            clienteList = clienteProviderselect.todosLosClientes;
-
-            return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return ContentDialog(
-                  title: const Text('Agregar Prospecto'),
-                  content: Column(
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          //NOMBRE WSP CLIENTE
-                          Text('PROSPECTO CLIENTE'),
-                          //Nombre Completo
-                          Container(
-                            width: 200,
-                            child: TextBox(
-                              placeholder: 'Nombre Completo',
-                              onChanged: (value){
-                                setState(() {
-                                  nombreCompleto = value;
-                                });
-                              },
-                              maxLines: null,
-                            ),
-                          ),
-                          //Num de cliente
-                          Container(
-                            width: 200,
-                            child: TextBox(
-                              placeholder: 'Num de cliente',
-                              onChanged: (value){
-                                setState(() {
-                                  numwasaCliente = int.parse(value);
-                                });
-                              },
-                              maxLines: null,
-                            ),
-                          ),
-                          //Carrera
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Carrera'),
-                              Container(
-                                height: 30,
-                                width: 200,
-                                child: AutoSuggestBox<Carrera>(
-                                  items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
-                                        (carrera) => AutoSuggestBoxItem<Carrera>(
-                                      value: carrera,
-                                      label: carrera.nombrecarrera,
-                                      onFocusChange: (focused) {
-                                        if (focused) {
-                                          debugPrint('Focused #${carrera.nombrecarrera} - ');
-                                        }
-                                      },
-                                    ),
-                                  )
-                                      .toList(),
-                                  onSelected: (item) {
-                                    setState(() {
-                                      print("seleccionado ${item.label}");
-                                      selectedCarreraobject = item.value; // Actualizar el valor seleccionado
-                                    });
-                                  },
-                                ),
-                              ),
-                              AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "CARRERA"),
-                            ],
-                          ),
-                          //Universidad
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Universidad'),
-                              Container(
-                                height: 30,
-                                width: 200,
-                                child: AutoSuggestBox<Universidad>(
-                                  items: universidadList.map<AutoSuggestBoxItem<Universidad>>(
-                                        (universidad) => AutoSuggestBoxItem<Universidad>(
-                                      value: universidad,
-                                      label: universidad.nombreuniversidad,
-                                      onFocusChange: (focused) {
-                                        if (focused) {
-                                          debugPrint('Focused #${universidad.nombreuniversidad} - ');
-                                        }
-                                      },
-                                    ),
-                                  )
-                                      .toList(),
-                                  onSelected: (item) {
-                                    setState(() {
-                                      print("seleccionado ${item.label}");
-                                      selectedUniversidadobject = item.value; // Actualizar el valor seleccionado
-                                    });
-                                  },
-                                ),
-                              ),
-                              AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "UNIVERSIDAD"),
-                            ],
-                          ),
-                          //Lista de procedencia del cliente
-                          Container(
-                            child: AutoSuggestBox<String>(
-                              items: EstadoList.map((servicio) {
-                                return AutoSuggestBoxItem<String>(
-                                    value: servicio,
-                                    label: servicio,
-                                    onFocusChange: (focused) {
-                                      if (focused) {
-                                        debugPrint('Focused $servicio');
-                                      }
-                                    }
-                                );
-                              }).toList(),
-                              onSelected: (item) {
-                                setState(() {
-                                  selectedProcedencia = item.value;
-                                });
-                              },
-                              decoration: Disenos().decoracionbuscador(),
-                              placeholder: 'Procedencia',
-                              onChanged: (text, reason) {
-                                if (text.isEmpty ) {
-                                  setState(() {
-                                    selectedProcedencia = null; // Limpiar la selección cuando se borra el texto
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-
-                        ],
-                      ),
-                    ],
-                  ),
-                  actions: [
-                    Button(
-                      child: const Text('Agregar Cliente'),
-                      onPressed: () async{
-                        validar_antes_de_subir_cliente(context);
-                      },
-                    ),
-                    FilledButton(
-                      child: const Text('Cancel'),
-                      onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                    ),
-                  ],
-                );
-              },
-            );
-
-          },
-        );
-      },
+      ),
     );
   }
+
+  void _showDialog(BuildContext context) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _dialog(context),
+  );
+
+  dialog.Dialog _dialog(BuildContext context){
+    
+    TextStyle styleText () => themeApp.styleText(14, false, themeApp.grayColor);
+    
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: Consumer3<CarrerasProvider, UniversidadVistaProvider,ClientesVistaProvider>(
+        builder: (context, carreraProviderselect, universidadProviderselect,clienteProviderselect ,child) {
+          List<Carrera> carreraList = carreraProviderselect.todosLasCarreras;
+          List<Universidad> universidadList = universidadProviderselect.todasLasUniversidades;
+          clienteList = clienteProviderselect.todosLosClientes;
+
+          return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return ItemsCard(
+                width: 420,
+                height: 380,
+                horizontalPadding: 20.0,
+                verticalPadding: 15.0,
+                children: [
+                  Text('Agregar Prospecto', style: themeApp.styleText(20, true, widget.primaryColor),),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text('PROSPECTO CLIENTE', style: styleText(),),
+                  ),
+                  //Nombre Completo
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Flexible(
+                      child: TextBox(
+                        placeholder: 'Nombre Completo',
+                        onChanged: (value){
+                          setState(() {
+                            nombreCompleto = value;
+                          });
+                        },
+                        maxLines: null,
+                      ),
+                    ),
+                  ),
+                  //Num de cliente
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Flexible(
+                      child: TextBox(
+                        placeholder: 'Num de cliente',
+                        onChanged: (value){
+                          setState(() {
+                            numwasaCliente = int.parse(value);
+                          });
+                        },
+                        maxLines: null,
+                      ),
+                    ),
+                  ),
+                  //Carrera
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Carrera', style: styleText(),),
+                        SizedBox(
+                          height: 30,
+                          width: 220,
+                          child: AutoSuggestBox<Carrera>(
+                            items: carreraList.map<AutoSuggestBoxItem<Carrera>>(
+                                  (carrera) => AutoSuggestBoxItem<Carrera>(
+                                value: carrera,
+                                label: carrera.nombrecarrera,
+                                onFocusChange: (focused) {
+                                  if (focused) {
+                                    debugPrint('Focused #${carrera.nombrecarrera} - ');
+                                  }
+                                },
+                              ),
+                            )
+                                .toList(),
+                            onSelected: (item) {
+                              setState(() {
+                                print("seleccionado ${item.label}");
+                                selectedCarreraobject = item.value; // Actualizar el valor seleccionado
+                              });
+                            },
+                          ),
+                        ),
+                        AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "CARRERA", primaryColor: widget.primaryColor,),
+                      ],
+                    ),
+                  ),
+                  //Universidad
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Universidad', style: styleText(),),
+                        SizedBox(
+                          height: 30,
+                          width: 220,
+                          child: AutoSuggestBox<Universidad>(
+                            items: universidadList.map<AutoSuggestBoxItem<Universidad>>(
+                                  (universidad) => AutoSuggestBoxItem<Universidad>(
+                                value: universidad,
+                                label: universidad.nombreuniversidad,
+                                onFocusChange: (focused) {
+                                  if (focused) {
+                                    debugPrint('Focused #${universidad.nombreuniversidad} - ');
+                                  }
+                                },
+                              ),
+                            )
+                                .toList(),
+                            onSelected: (item) {
+                              setState(() {
+                                print("seleccionado ${item.label}");
+                                selectedUniversidadobject = item.value; // Actualizar el valor seleccionado
+                              });
+                            },
+                          ),
+                        ),
+                        AgregarCarreraDialog(carreraList: carreraList, universidadList: universidadList,CarreUniver: "UNIVERSIDAD", primaryColor: widget.primaryColor,),
+                      ],
+                    ),
+                  ),
+                  //Lista de procedencia del cliente
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: AutoSuggestBox<String>(
+                      items: EstadoList.map((servicio) {
+                        return AutoSuggestBoxItem<String>(
+                            value: servicio,
+                            label: servicio,
+                            onFocusChange: (focused) {
+                              if (focused) {
+                                debugPrint('Focused $servicio');
+                              }
+                            }
+                        );
+                      }).toList(),
+                      onSelected: (item) {
+                        setState(() {
+                          selectedProcedencia = item.value;
+                        });
+                      },
+                      decoration: Disenos().decoracionbuscador(),
+                      placeholder: 'Procedencia',
+                      onChanged: (text, reason) {
+                        if (text.isEmpty ) {
+                          setState(() {
+                            selectedProcedencia = null; // Limpiar la selección cuando se borra el texto
+                          });
+                        }
+                      },
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        PrimaryStyleButton(
+                          buttonColor: widget.primaryColor,
+                          function: () async{
+                            validar_antes_de_subir_cliente(context);
+                          },
+                          text: "Agregar Cliente"
+                        ),
+
+                        PrimaryStyleButton(
+                          buttonColor: themeApp.redColor,
+                          function: () => Navigator.pop(context, 'User canceled dialog'),
+                          text: " Cancelar "
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      )
+    );
+  }
+
 
   Future<void> validar_antes_de_subir_cliente(BuildContext context) async {
     String universidad = selectedUniversidadobject?.nombreuniversidad ?? "NO REGISTRADO";
@@ -248,11 +279,13 @@ class AgregarCarreraDialog extends StatefulWidget {
   final List<Carrera> carreraList;
   final List<Universidad> universidadList;
   final String CarreUniver;
+  final Color primaryColor;
 
   const AgregarCarreraDialog({Key?key,
     required this.carreraList,
     required this.universidadList,
     required this.CarreUniver,
+    required this.primaryColor,
   }) :super(key: key);
 
   @override
@@ -262,101 +295,113 @@ class AgregarCarreraDialog extends StatefulWidget {
 class _AgregarCarreraDialogState extends State<AgregarCarreraDialog> {
   String agregarcarrera = "";
   String agregaruniversidad = "";
+  final ThemeApp themeApp = ThemeApp();
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: GestureDetector(
-      child: Container(
-          height: 30,
-          width: 30,
-          decoration: BoxDecoration(
-            color: Config.secundaryColor,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Icon(FluentIcons.add,
-            color: Config().primaryColor,
-            weight: 30,)),
-      onTap: (){
-        _showDialog(context);
-      },
-    ),);
+    return CircularButton(buttonColor: widget.primaryColor,
+        iconData: dialog.Icons.add,
+        function: () => _showDialog(context));
   }
 
-  void _showDialog(BuildContext context)  {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return ContentDialog(
-              title: const Text('Agregar Prospecto'),
-              content: Column(
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      //UNIVERSIDAD
-                      if(widget.CarreUniver=="UNIVERSIDAD")
-                      Column(
-                        children: [
-                          Text('Agregar universidad'),
-                          //Agregar universidad
-                          Container(
-                            width: 200,
-                            child: TextBox(
-                              placeholder: 'Agregar universidad',
-                              onChanged: (value){
-                                setState(() {
-                                  agregaruniversidad = value;
-                                });
-                              },
-                              maxLines: null,
-                            ),
-                          ),
-                        ],
+  void _showDialog(BuildContext context) => showDialog(
+    context: context,
+    builder: (BuildContext context) => _dialog(context),
+  );
+
+  dialog.Dialog _dialog(BuildContext context){
+
+    final TextStyle styleText = themeApp.styleText(14, false, themeApp.grayColor);
+
+    return dialog.Dialog(
+      backgroundColor: themeApp.whitecolor.withOpacity(0),
+      child: StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+            return ItemsCard(
+              width: 250,
+              height: 220,
+              horizontalPadding: 20.0,
+              children: [
+              Text('Agregar Prospecto', style: themeApp.styleText(20, true, widget.primaryColor)),
+              if(widget.CarreUniver=="UNIVERSIDAD")
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Text('Agregar universidad', style: styleText,),
+                    ),
+                    //Agregar universidad
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Flexible(
+                        child: TextBox(
+                          placeholder: 'Agregar universidad',
+                          onChanged: (value){
+                            setState(() {
+                              agregaruniversidad = value;
+                            });
+                          },
+                          maxLines: null,
+                        ),
                       ),
-                      if(widget.CarreUniver=="CARRERA")
-                      //CARRERA
-                      Column(
-                        children: [
-                          Text('Agregar carrera'),
-                          //Agregar carrera
-                          Container(
-                            width: 200,
-                            child: TextBox(
-                              placeholder: 'Agregar agregarcarrera',
-                              onChanged: (value){
-                                setState(() {
-                                  agregarcarrera = value;
-                                });
-                              },
-                              maxLines: null,
-                            ),
-                          ),
-                        ],
+                    ),
+                  ],
+                ),
+              if(widget.CarreUniver=="CARRERA")
+              //CARRERA
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Text('Agregar carrera', style: styleText,),
+                    ),
+                    //Agregar carrera
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Flexible(
+                        child: TextBox(
+                          placeholder: 'Agregar agregarcarrera',
+                          onChanged: (value){
+                            setState(() {
+                              agregarcarrera = value;
+                            });
+                          },
+                          maxLines: null,
+                        ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    PrimaryStyleButton(
+                      buttonColor: widget.primaryColor,
+                      function: () async{
+                        validar_antes_de_subir();
+                      },
+                      text: " Agregar "
+                    ),
+
+                    PrimaryStyleButton(
+                      buttonColor: themeApp.redColor,
+                      function: () => Navigator.pop(context, 'User canceled dialog'),
+                      text: " Cancelar "
+                    ),
+                  ],
+                ),
               ),
-              actions: [
-                Button(
-                  child: const Text('Agregar Cliente'),
-                  onPressed: () async{
-                    validar_antes_de_subir();
-                  },
-                ),
-                FilledButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context, 'User canceled dialog'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+
+            ],
+          );
+        },
+      ),
     );
   }
+
 
   Future<void> validar_antes_de_subir() async {
     if(widget.CarreUniver == "UNIVERSIDAD"){

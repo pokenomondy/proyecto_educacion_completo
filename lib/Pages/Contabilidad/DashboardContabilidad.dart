@@ -259,7 +259,7 @@ class SecundaryColumnContaDashState extends State<SecundaryColumnContaDash> {
                               _textRow("Modificacion", historialcod.motivocambio, true, false),
                               _textRow("Anterior:", historialcod.cambioant, false, false),
                               _textRow("Nuevo:", historialcod.cambionew, false, false),
-                              _textRow(historialcod.codigo, historialcod.fechacambio.toString(), false, true),
+                              _textRow("Fecha modificacion", historialcod.fechacambio.toString(), false, true),
                             ],
                           ),
                         ),

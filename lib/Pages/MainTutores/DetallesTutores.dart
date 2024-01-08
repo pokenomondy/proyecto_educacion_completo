@@ -331,13 +331,16 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                   margin: const EdgeInsets.only(left: 10),
                   child: Text("$text : $valor", style: styleText,)),
               if(!active)
-                GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
-                    });
-                  },
-                  child: const Icon(FluentIcons.edit),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        editarcasilla[index] = !editarcasilla[index]; // Alterna entre los modos de visualización y edición
+                      });
+                    },
+                    child: const Icon(FluentIcons.edit),
+                  ),
                 )
             ],
           ),
@@ -429,10 +432,12 @@ class PrimaryColumnTutoresState extends State<PrimaryColumnTutores> {
                   children: [
 
                     CircularButton(
-                        iconData: FluentIcons.check_list,
-                        function: () async{
-                      verificarUploadTutor(index,cambio);
-                    }),
+                      buttonColor: themeApp.primaryColor,
+                      iconData: material.Icons.check,
+                      function: () async{
+                        verificarUploadTutor(index,cambio);
+                      }
+                    ),
 
                     CircularButton(
                         buttonColor: themeApp.redColor,
